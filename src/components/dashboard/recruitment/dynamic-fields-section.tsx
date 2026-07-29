@@ -15,7 +15,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Textarea } from "@/components/ui/textarea";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { supabase } from "@/lib/supabase";
-import { Control } from "react-hook-form";
+import { Control, FieldPath, FieldValues } from "react-hook-form";
 import { Loader2 } from "lucide-react";
 
 interface MasterCategory {
@@ -27,17 +27,19 @@ interface MasterCategory {
     values?: { id: string; name: string }[];
 }
 
-interface DynamicFieldsSectionProps {
+interface DynamicFieldsSectionProps<TFieldValues extends FieldValues> {
     formName: string;
-    control: Control<any>;
-    parentFieldName?: string; // usually "dynamic_fields"
+    control: Control<TFieldValues>;
+    parentFieldName?: string;
 }
 
-export function DynamicFieldsSection({
+export function DynamicFieldsSection<
+    TFieldValues extends FieldValues
+>({
     formName,
     control,
     parentFieldName = "dynamic_fields",
-}: DynamicFieldsSectionProps) {
+}: DynamicFieldsSectionProps<TFieldValues>) {
     const [fields, setFields] = useState<MasterCategory[]>([]);
     const [isLoading, setIsLoading] = useState(true);
 
@@ -118,7 +120,7 @@ export function DynamicFieldsSection({
                     <FormField
                         key={field.id}
                         control={control}
-                        name={`${parentFieldName}.${field.name}`}
+                        name={`${parentFieldName}.${field.name}` as FieldPath<TFieldValues>}
                         render={({ field: formField }) => (
                             <FormItem className="flex flex-col">
                                 <FormLabel className="flex items-center gap-1.5 text-xs font-bold text-slate-700 uppercase tracking-tight">
