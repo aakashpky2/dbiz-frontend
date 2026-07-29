@@ -1,0 +1,430 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+
+@layer base {
+  :root {
+    --background: 210 50% 99%;
+    /* Clean, airy almost-white background */
+    --foreground: 222 47% 11%;
+    /* Deep slate for high-contrast text */
+
+    --card: 0 0% 100%;
+    /* White cards */
+    --card-foreground: 220 15% 20%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 220 15% 20%;
+
+    --primary: 220 80% 60%;
+    /* Professional medium-light blue */
+    --primary-foreground: 0 0% 98%;
+    /* White */
+
+    --secondary: 220 50% 92%;
+    /* Lightened primary */
+    --secondary-foreground: 220 80% 30%;
+    /* Darker primary for text */
+
+    --muted: 210 40% 96%;
+    /* Sophisticated soft gray-blue */
+    --muted-foreground: 215 16% 47%;
+    /* Balanced gray for secondary text */
+
+    --accent: 210 90% 55%;
+    /* Complementary brighter blue */
+    --accent-foreground: 0 0% 98%;
+    /* White */
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
+
+    --border: 214 32% 91%;
+    --input: 214 32% 91%;
+    --ring: 221 83% 53%;
+    /* Primary color for focus rings */
+    --radius: 0.5rem;
+
+    --chart-1: 220 80% 60%;
+    --chart-2: 210 90% 55%;
+    --chart-3: 220 50% 75%;
+    --chart-4: 210 60% 70%;
+    --chart-5: 220 15% 60%;
+    /* Sidebar specific theme (kept as is) */
+    --sidebar-background: 226 35% 25%;
+    /* Darker, more desaturated blue */
+    --sidebar-foreground: 0 0% 95%;
+    --sidebar-primary: 0 0% 98%;
+    --sidebar-primary-foreground: 226 35% 25%;
+    --sidebar-accent: 220 80% 60%;
+    /* Primary color for hover/active */
+    --sidebar-accent-foreground: 0 0% 98%;
+    --sidebar-border: 226 35% 20%;
+    --sidebar-ring: 210 90% 55%;
+    /* Accent color for focus */
+  }
+
+  /* ── Theme: Blue (default – no override needed) ── */
+
+  /* ── Theme: Indigo ── */
+  [data-theme="indigo"] {
+    --primary: 243 75% 59%;
+    --primary-foreground: 0 0% 98%;
+    --secondary: 243 50% 93%;
+    --secondary-foreground: 243 75% 30%;
+    --accent: 263 70% 58%;
+    --accent-foreground: 0 0% 98%;
+    --ring: 243 75% 59%;
+    --chart-1: 243 75% 59%;
+    --chart-2: 263 70% 58%;
+    --chart-3: 243 50% 75%;
+    --chart-4: 263 55% 70%;
+    --chart-5: 243 20% 60%;
+    --sidebar-accent: 243 75% 59%;
+  }
+
+  /* ── Theme: Emerald ── */
+  [data-theme="emerald"] {
+    --primary: 152 69% 42%;
+    --primary-foreground: 0 0% 98%;
+    --secondary: 152 50% 92%;
+    --secondary-foreground: 152 69% 20%;
+    --accent: 168 76% 42%;
+    --accent-foreground: 0 0% 98%;
+    --ring: 152 69% 42%;
+    --chart-1: 152 69% 42%;
+    --chart-2: 168 76% 42%;
+    --chart-3: 152 55% 65%;
+    --chart-4: 168 60% 60%;
+    --chart-5: 152 20% 55%;
+    --sidebar-accent: 152 69% 42%;
+  }
+
+  /* ── Theme: Rose ── */
+  [data-theme="rose"] {
+    --primary: 347 77% 55%;
+    --primary-foreground: 0 0% 98%;
+    --secondary: 347 60% 93%;
+    --secondary-foreground: 347 77% 27%;
+    --accent: 328 72% 55%;
+    --accent-foreground: 0 0% 98%;
+    --ring: 347 77% 55%;
+    --chart-1: 347 77% 55%;
+    --chart-2: 328 72% 55%;
+    --chart-3: 347 60% 72%;
+    --chart-4: 328 55% 68%;
+    --chart-5: 347 20% 58%;
+    --sidebar-accent: 347 77% 55%;
+  }
+
+  /* ── Theme: Amber ── */
+  [data-theme="amber"] {
+    --primary: 38 92% 50%;
+    --primary-foreground: 38 100% 10%;
+    --secondary: 38 80% 93%;
+    --secondary-foreground: 38 92% 25%;
+    --accent: 25 95% 53%;
+    --accent-foreground: 25 100% 10%;
+    --ring: 38 92% 50%;
+    --chart-1: 38 92% 50%;
+    --chart-2: 25 95% 53%;
+    --chart-3: 38 80% 68%;
+    --chart-4: 25 75% 65%;
+    --chart-5: 38 20% 55%;
+    --sidebar-accent: 38 92% 50%;
+  }
+
+  /* ── Theme: Slate ── */
+  [data-theme="slate"] {
+    --primary: 215 25% 27%;
+    --primary-foreground: 0 0% 98%;
+    --secondary: 215 20% 92%;
+    --secondary-foreground: 215 25% 15%;
+    --accent: 215 30% 45%;
+    --accent-foreground: 0 0% 98%;
+    --ring: 215 25% 27%;
+    --chart-1: 215 25% 27%;
+    --chart-2: 215 30% 45%;
+    --chart-3: 215 22% 58%;
+    --chart-4: 215 18% 68%;
+    --chart-5: 215 12% 75%;
+    --sidebar-accent: 215 30% 45%;
+  }
+
+
+  .dark {
+    --background: 240 10% 3.9%;
+    --foreground: 0 0% 98%;
+
+    --card: 240 10% 3.9%;
+    --card-foreground: 0 0% 98%;
+
+    --popover: 240 10% 3.9%;
+    --popover-foreground: 0 0% 98%;
+
+    --primary: 220 80% 60%;
+    --primary-foreground: 220 15% 10%;
+
+    --secondary: 240 3.7% 15.9%;
+    --secondary-foreground: 0 0% 98%;
+
+    --muted: 240 3.7% 15.9%;
+    --muted-foreground: 0 0% 60%;
+
+    --accent: 210 90% 55%;
+    --accent-foreground: 0 0% 98%;
+
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 98%;
+
+    --border: 240 3.7% 15.9%;
+    --input: 240 3.7% 15.9%;
+    --ring: 220 80% 60%;
+
+    --chart-1: 220 80% 60%;
+    --chart-2: 210 90% 55%;
+    --chart-3: 220 50% 75%;
+    --chart-4: 210 60% 70%;
+    --chart-5: 220 15% 70%;
+
+    /* Sidebar specific theme for dark mode */
+    --sidebar-background: 240 5.9% 10%;
+    --sidebar-foreground: 0 0% 95%;
+    --sidebar-primary: 0 0% 98%;
+    --sidebar-primary-foreground: 240 5.9% 10%;
+    --sidebar-accent: 220 80% 60%;
+    --sidebar-accent-foreground: 220 15% 10%;
+    --sidebar-border: 240 3.7% 15.9%;
+    --sidebar-ring: 210 90% 55%;
+  }
+
+  .dark-grey {
+    --background: 220 10% 20%;
+    /* Charcoal */
+    --foreground: 0 0% 98%;
+
+    --card: 220 10% 24%;
+    --card-foreground: 0 0% 98%;
+
+    --popover: 220 10% 24%;
+    --popover-foreground: 0 0% 98%;
+
+    --primary: 220 80% 60%;
+    --primary-foreground: 220 15% 10%;
+
+    --secondary: 220 10% 30%;
+    --secondary-foreground: 0 0% 98%;
+
+    --muted: 220 10% 28%;
+    --muted-foreground: 0 0% 70%;
+
+    --accent: 220 10% 30%;
+    --accent-foreground: 0 0% 98%;
+
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 98%;
+
+    --border: 220 10% 30%;
+    --input: 220 10% 30%;
+    --ring: 220 80% 60%;
+
+    /* Sidebar specific theme for dark-grey mode */
+    --sidebar-background: 220 10% 15%;
+    --sidebar-foreground: 0 0% 95%;
+    --sidebar-primary: 0 0% 98%;
+    --sidebar-primary-foreground: 220 10% 15%;
+    --sidebar-accent: 220 80% 60%;
+    --sidebar-accent-foreground: 220 15% 10%;
+    --sidebar-border: 220 10% 25%;
+    --sidebar-ring: 210 90% 55%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+}
+
+/* Custom styles for Attendance Calendar */
+.day-complete {
+  background-color: hsl(142.1 76.2% 36.3% / 0.9) !important;
+  color: hsl(var(--primary-foreground)) !important;
+  border-radius: var(--radius);
+}
+
+.day-incomplete {
+  background-color: hsl(var(--destructive) / 0.9) !important;
+  color: hsl(var(--destructive-foreground)) !important;
+  border-radius: var(--radius);
+}
+
+.day-present {
+  background-color: hsl(var(--primary) / 0.8) !important;
+  color: hsl(var(--primary-foreground)) !important;
+  border-radius: var(--radius);
+}
+
+.rdp-day_today:not([aria-selected=true]) {
+  border: 1px solid hsl(var(--primary)) !important;
+  border-radius: var(--radius);
+}
+
+/* ── GLOBAL CUSTOM SCROLLBAR ────────────────────────────────────────── */
+::-webkit-scrollbar {
+  width: 12px;
+  height: 12px;
+}
+
+::-webkit-scrollbar-track {
+  background: hsl(var(--muted) / 0.3);
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: hsl(var(--muted-foreground) / 0.25);
+  border-radius: 10px;
+  border: 3px solid transparent;
+  background-clip: content-box;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: hsl(var(--muted-foreground) / 0.45);
+}
+
+/* Firefox */
+* {
+  scrollbar-width: auto;
+  scrollbar-color: hsl(var(--muted-foreground) / 0.25) hsl(var(--muted) / 0.3);
+}
+
+/* ── SIDEBAR SCROLLBAR OVERRIDE (Ultra-Thin 3px) ──────────────────── */
+[data-sidebar="content"]::-webkit-scrollbar {
+  width: 3px;
+  height: 6px;
+}
+
+[data-sidebar="content"]::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+[data-sidebar="content"]::-webkit-scrollbar-thumb {
+  background-color: transparent;
+  border-radius: 10px;
+}
+
+[data-sidebar="content"]:hover::-webkit-scrollbar-thumb {
+  background-color: hsl(var(--muted-foreground) / 0.2);
+}
+
+@layer utilities {
+  .animate-progress-stripes {
+    background-image: linear-gradient(45deg,
+        rgba(255, 255, 255, 0.15) 25%,
+        transparent 25%,
+        transparent 50%,
+        rgba(255, 255, 255, 0.15) 50%,
+        rgba(255, 255, 255, 0.15) 75%,
+        transparent 75%,
+        transparent);
+    background-size: 1rem 1rem;
+    animation: progress-stripes 1s linear infinite;
+  }
+
+  @keyframes progress-stripes {
+    from {
+      background-position: 1rem 0;
+    }
+
+    to {
+      background-position: 0 0;
+    }
+  }
+
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+}
+
+.glass-card {
+  @apply bg-white/70 dark:bg-slate-900/70 backdrop-blur-md border border-white/20 dark:border-slate-800/20 shadow-xl;
+}
+
+.premium-gradient-1 {
+  background: linear-gradient(135deg, hsl(var(--primary)) 0%, #a855f7 100%);
+}
+
+.premium-gradient-2 {
+  background: linear-gradient(135deg, #3b82f6 0%, #2dd4bf 100%);
+}
+
+.premium-gradient-3 {
+  background: linear-gradient(135deg, #f59e0b 0%, #ef4444 100%);
+}
+
+.premium-gradient-4 {
+  background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
+}
+
+.text-gradient {
+  @apply bg-clip-text text-transparent bg-gradient-to-r from-primary to-purple-500;
+}
+
+.hover-lift {
+  @apply transition-transform duration-300 hover:-translate-y-1 hover:shadow-2xl;
+}
+
+/* TipTap Editor & Preview Styles */
+.ProseMirror, .rendered-content {
+  outline: none;
+}
+
+.ProseMirror p.is-editor-empty:first-child::before {
+  content: attr(data-placeholder);
+  float: left;
+  color: #adb5bd;
+  pointer-events: none;
+  height: 0;
+}
+
+/* Alignment Styles - Priority over tailwind defaults */
+.is-text-align-left, [style*="text-align: left"], [style*="text-align:left"] {
+  text-align: left !important;
+}
+
+.is-text-align-center, [style*="text-align: center"], [style*="text-align:center"] {
+  text-align: center !important;
+}
+
+.is-text-align-right, [style*="text-align: right"], [style*="text-align:right"] {
+  text-align: right !important;
+}
+
+.is-text-align-justify, [style*="text-align: justify"], [style*="text-align:justify"] {
+  text-align: justify !important;
+}
+
+/* Lists and Headings for Prose/Tiptap */
+.ProseMirror ul, .rendered-content ul {
+  list-style-type: disc !important;
+  padding-left: 1.5rem !important;
+}
+
+.ProseMirror ol, .rendered-content ol {
+  list-style-type: decimal !important;
+  padding-left: 1.5rem !important;
+}
+
+.ProseMirror h1, .rendered-content h1 { font-size: 2.25rem !important; font-weight: 800 !important; }
+.ProseMirror h2, .rendered-content h2 { font-size: 1.875rem !important; font-weight: 700 !important; }
+.ProseMirror h3, .rendered-content h3 { font-size: 1.5rem !important; font-weight: 600 !important; }

@@ -1,0 +1,30 @@
+
+{
+  "rules": {
+    ".read": "true",
+    ".write": "true",
+    "employees": {
+      ".indexOn": [
+        "employmentDetails/employeeId",
+        "personalDetails/email",
+        "personalDetails/phoneNumber"
+      ]
+    },
+    "attendance": {
+      ".indexOn": [
+        "userId",
+        "date",
+        "userId_date"
+      ]
+    },
+    "business_constitutions": {
+      ".indexOn": "type_subtype_key"
+    },
+    "pdf_templates": {
+      ".indexOn": "isOfferLetterTemplate"
+    },
+    "forms": {
+      ".indexOn": "name"
+    }
+  }
+}
