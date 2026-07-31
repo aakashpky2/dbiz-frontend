@@ -373,9 +373,11 @@ export default function ProfilePage() {
                             {user.email}
                         </p>
                         <div className="flex flex-wrap justify-center md:justify-start gap-2 pt-2">
-                            <Badge variant="outline" className="bg-slate-50 text-slate-600 border-slate-200 font-bold text-[10px] uppercase tracking-wider px-3 py-1 flex gap-1.5 items-center">
-                                <Building className="h-3 w-3" /> {deptName}
-                            </Badge>
+                            {deptName && deptName !== 'Unassigned' && (
+                                <Badge variant="outline" className="bg-slate-50 text-slate-600 border-slate-200 font-bold text-[10px] uppercase tracking-wider px-3 py-1 flex gap-1.5 items-center">
+                                    <Building className="h-3 w-3" /> {deptName}
+                                </Badge>
+                            )}
                             {rolesDisplay.map((r: string) => (
                                 <Badge key={r} variant="outline" className="bg-slate-50 text-slate-600 border-slate-200 font-bold text-[10px] uppercase tracking-wider px-3 py-1">
                                     {r}

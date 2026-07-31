@@ -3,9 +3,11 @@ import { NextRequest, NextResponse } from 'next/server';
 
 export const dynamic = 'force-dynamic';
 
+import { getApiBaseUrl } from '@/lib/api-config';
+
 async function proxyRequest(request: NextRequest, { params }: { params: { path?: string[] } }) {
     try {
-        const backendUrl = process.env.BACKEND_URL;
+        const backendUrl = getApiBaseUrl();
         if (!backendUrl) {
             console.error('BACKEND_URL is not set');
             return NextResponse.json({ success: false, message: 'Backend URL not configured' }, { status: 500 });
@@ -15,7 +17,7 @@ async function proxyRequest(request: NextRequest, { params }: { params: { path?:
         const searchParams = request.nextUrl.searchParams.toString();
         const query = searchParams ? `?${searchParams}` : '';
         
-        const targetUrl = `${backendUrl.replace(/\/$/, '')}/api/employees${pathStr ? '/' + pathStr : ''}${query}`;
+        const targetUrl = `${backendUrl}/api/employees${pathStr ? '/' + pathStr : ''}${query}`;
 
         const headers = new Headers(request.headers);
         headers.set('host', new URL(targetUrl).host);

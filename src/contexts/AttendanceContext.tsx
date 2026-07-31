@@ -21,6 +21,7 @@ export interface EmployeeDetails {
   roles: string[];
   permissions: string[];
   userProfile: any;
+  systemRole?: { id: string; name: string } | null;
 }
 
 interface AttendanceContextState {
@@ -71,7 +72,7 @@ export function AttendanceProvider({ children }: { children: ReactNode }) {
 
     try {
       const [attRes, empRes] = await Promise.all([
-          apiFetch(`/api/attendance?userId=${user.uid}`),
+          apiFetch(`/api/attendance?userId=${user.uid}`, { authMode: 'bearer' }),
           apiFetch(`/api/employee/me`, { authMode: 'bearer' })
       ]);
       

@@ -61,7 +61,7 @@ export function ActiveWorkProvider({ children }: { children: React.ReactNode }) 
             return;
         }
         try {
-            const res = await apiFetch(`/api/active-work/current`, { signal });
+            const res = await apiFetch(`/api/active-work/current`, { authMode: 'bearer', signal });
             if (res.ok) {
                 const json = await res.json();
                 applyActiveWork(json.data || null);

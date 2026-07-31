@@ -30,7 +30,7 @@ export function DashboardHero() {
     }
 
     const initials = (user?.displayName || 'U').substring(0, 2).toUpperCase();
-    const roleDisplay = employeeDetails?.roles && employeeDetails.roles.length > 0 ? employeeDetails.roles[0] : 'Unassigned Role';
+    const roleDisplay = employeeDetails?.systemRole?.name ?? (attendanceLoading ? 'Loading...' : 'Unassigned Role');
     const deptDisplay = employeeDetails?.department?.name || 'Not Assigned';
     const profileDisplay = employeeDetails?.profile?.profile_name || 'Not Assigned';
 

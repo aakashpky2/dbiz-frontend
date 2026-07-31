@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getSupabaseAdmin } from '@/lib/supabase-admin';
+import { createClient } from '@supabase/supabase-js';
 
 export const dynamic = 'force-dynamic';
 
@@ -10,8 +10,20 @@ export async function GET(request: NextRequest) {
             return NextResponse.json({ error: 'Unauthorized: Missing token' }, { status: 401 });
         }
         const token = authHeader.replace('Bearer ', '');
-        const supabase = getSupabaseAdmin();
-        const { data: { user }, error: authError } = await supabase.auth.getUser(token);
+        
+        // Use an authenticated client with the user's Bearer token to ensure RLS is enforced
+        const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+        const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+        
+        if (!supabaseUrl || !supabaseAnonKey) {
+            return NextResponse.json({ error: 'Missing standard Supabase environment variables' }, { status: 500 });
+        }
+        
+        const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+            global: { headers: { Authorization: `Bearer ${token}` } }
+        });
+
+        const { data: { user }, error: authError } = await supabase.auth.getUser();
 
         if (authError || !user) {
             return NextResponse.json({ error: 'Unauthorized: Invalid token' }, { status: 401 });
@@ -59,16 +71,18 @@ export async function GET(request: NextRequest) {
         // Resolve Roles & Permissions
         let roles: string[] = [];
         let permissions: string[] = [];
+        let systemRole: { id: string, name: string } | null = null;
         
         if (userProfile?.role_ids && Array.isArray(userProfile.role_ids) && userProfile.role_ids.length > 0) {
             const { data: roleData } = await supabase
                 .from('system_roles')
-                .select('name, permissions')
+                .select('id, name, permissions')
                 .in('id', userProfile.role_ids);
             
             if (roleData) {
                 const fetchedRoles = roleData.map((r: any) => r.name);
                 roles = [...roles, ...fetchedRoles];
+                
                 // Aggregate all unique permissions from all assigned roles
                 const permSet = new Set<string>();
                 roleData.forEach((r: any) => {
@@ -77,16 +91,38 @@ export async function GET(request: NextRequest) {
                     }
                 });
                 permissions = Array.from(permSet);
+
+                // Set systemRole to the first assigned role (could add priority sorting later if needed)
+                if (roleData.length > 0) {
+                    systemRole = {
+                        id: roleData[0].id,
+                        name: roleData[0].name
+                    };
+                }
             }
         }
+
+        const employeeFormatted = employee ? {
+            id: employee.id,
+            fullName: employee.full_name || (employee.first_name ? `${employee.first_name} ${employee.last_name || ''}`.trim() : user.email),
+            email: employee.email || user.email,
+            designation: employee.employee_role || null,
+            avatarUrl: employee.photo_url || null,
+            // Keep original properties for backward compatibility
+            ...employee
+        } : null;
 
         // Return gracefully without profile as business_profile mapping isn't cleanly in user_profiles
         return NextResponse.json({
             success: true,
             data: {
+                // New target shape
+                employee: employeeFormatted,
+                systemRole: systemRole,
+                
+                // Backward compatibility properties
                 user: user,
                 profile: null,
-                employee: employee || null,
                 department: department || null,
                 roles: roles,
                 permissions: permissions,
