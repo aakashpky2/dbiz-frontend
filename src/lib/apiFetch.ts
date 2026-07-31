@@ -25,6 +25,7 @@ export async function apiFetch(url: string, options: ApiFetchOptions = {}): Prom
         try {
             const { data: { session } } = await supabase.auth.getSession();
             const token = session?.access_token;
+
             if (token && !headers.has('Authorization')) {
                 headers.set('Authorization', `Bearer ${token}`);
             }
@@ -33,12 +34,12 @@ export async function apiFetch(url: string, options: ApiFetchOptions = {}): Prom
         }
     }
 
-    // DO NOT manually set Content-Type for FormData, the browser must set the boundary
-    if (fetchOptions.body instanceof FormData) {
-        headers.delete('Content-Type');
-    }
+    const plainHeaders: Record<string, string> = {};
+    headers.forEach((value, key) => {
+        plainHeaders[key] = value;
+    });
 
-    fetchOptions.headers = headers;
+    fetchOptions.headers = plainHeaders;
 
     // Make the initial request
     const response = await fetch(url, fetchOptions);

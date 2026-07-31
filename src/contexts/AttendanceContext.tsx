@@ -71,9 +71,16 @@ export function AttendanceProvider({ children }: { children: ReactNode }) {
     if (process.env.NODE_ENV === 'development') console.log('[Attendance] Fetching from backend');
 
     try {
+      if (process.env.NODE_ENV === 'development') {
+          console.log(`[Attendance Debug] Before fetch. Session user: ${!!user} | uid: ${user?.uid}`);
+          // Let's get the token manually just to check if it's there
+          const { data: { session } } = await supabase.auth.getSession();
+          console.log(`[Attendance Debug] Session from getSession: ${!!session} | Token length: ${session?.access_token?.length}`);
+      }
+
       const [attRes, empRes] = await Promise.all([
-          apiFetch(`/api/attendance?userId=${user.uid}`, { authMode: 'bearer' }),
-          apiFetch(`/api/employee/me`, { authMode: 'bearer' })
+          apiFetch(`/api/attendance?userId=${user.uid}`),
+          apiFetch(`/api/employee/me`)
       ]);
       
       const response = attRes;

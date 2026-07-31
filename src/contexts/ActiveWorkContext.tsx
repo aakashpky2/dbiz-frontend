@@ -61,7 +61,10 @@ export function ActiveWorkProvider({ children }: { children: React.ReactNode }) 
             return;
         }
         try {
-            const res = await apiFetch(`/api/active-work/current`, { authMode: 'bearer', signal });
+            if (process.env.NODE_ENV === 'development') {
+                console.log(`[ActiveWork Debug] Before fetch. Session user: ${!!user} | uid: ${user?.uid}`);
+            }
+            const res = await apiFetch(`/api/active-work/current`, { signal });
             if (res.ok) {
                 const json = await res.json();
                 applyActiveWork(json.data || null);
