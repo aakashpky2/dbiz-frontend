@@ -83,6 +83,19 @@ function initializeSharedAuth() {
 
     const { data } = supabase.auth.onAuthStateChange(async (event, session) => {
         sharedUser = session?.user ?? null;
+
+        if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
+            if (session?.access_token) {
+                fetch('/api/auth/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ access_token: session.access_token })
+                }).catch(console.error);
+            }
+        } else if (event === 'SIGNED_OUT') {
+            fetch('/api/auth/logout', { method: 'POST' }).catch(console.error);
+        }
+
         if (sharedUser) {
             await fetchEmployeeData(sharedUser);
         } else {
