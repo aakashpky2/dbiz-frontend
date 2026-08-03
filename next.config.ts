@@ -31,7 +31,7 @@ const nextConfig: NextConfig = {
 
     return [
       {
-        source: '/api/:path((?!auth(?:/|$)|employee(?:/|$)|employees(?:/|$)|performance(?:/|$)).*)',
+        source: '/api/:path((?!auth(?:/|$)|employee(?:/|$)|employees(?:/|$)|performance(?:/|$)|attendance(?:/|$)|active-work(?:/|$)).*)',
         destination: `${backendUrl}/api/:path*`,
       },
     ];
