@@ -39,6 +39,10 @@ export async function apiFetch(url: string, options: ApiFetchOptions = {}): Prom
         }
     }
 
+    if (fetchOptions.body instanceof FormData) {
+        headers.delete('Content-Type');
+    }
+
     const plainHeaders: Record<string, string> = {};
     headers.forEach((value, key) => {
         plainHeaders[key] = value;

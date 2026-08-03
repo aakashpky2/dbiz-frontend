@@ -39,7 +39,7 @@ export function ActiveWorkProvider({ children }: { children: React.ReactNode }) 
     const [activeWork, setActiveWork] = useState<ActiveWork | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<Error | null>(null);
-    const { user } = useAuth();
+    const { user, loading: authLoading, serverSessionReady, serverSessionError } = useAuth();
     const { toast } = useToast();
 
     // Local ticker for real-time counter
@@ -55,9 +55,12 @@ export function ActiveWorkProvider({ children }: { children: React.ReactNode }) 
     }, []);
 
     const fetchActiveWork = useCallback(async (signal: AbortSignal) => {
-        if (!user) {
+        if (!user || !serverSessionReady) {
             setActiveWork(null);
             setLoading(false);
+            if (serverSessionError) {
+                setError(serverSessionError);
+            }
             return;
         }
         try {
@@ -82,7 +85,7 @@ export function ActiveWorkProvider({ children }: { children: React.ReactNode }) 
                 setLoading(false);
             }
         }
-    }, [user, applyActiveWork]);
+    }, [user, applyActiveWork, serverSessionReady, serverSessionError]);
 
     const refreshActiveWork = useCallback(async () => {
         // Concurrency Strategy: If a refresh is already running, return the existing promise
@@ -104,18 +107,28 @@ export function ActiveWorkProvider({ children }: { children: React.ReactNode }) 
         return promise;
     }, [fetchActiveWork]);
 
-    // Initial fetch + poll every 30s
+    // Initial fetch + poll every 30s when ready
     useEffect(() => {
+        if (authLoading) return;
+        
+        if (!serverSessionReady) {
+            // Cancel any ongoing fetch if session becomes unready
+            if (abortControllerRef.current) {
+                abortControllerRef.current.abort();
+                abortControllerRef.current = null;
+            }
+            return;
+        }
+
         refreshActiveWork();
         const interval = setInterval(refreshActiveWork, 30000);
         return () => {
             clearInterval(interval);
-            // Cancel any ongoing fetch on unmount
             if (abortControllerRef.current) {
                 abortControllerRef.current.abort();
             }
         };
-    }, [refreshActiveWork]);
+    }, [refreshActiveWork, authLoading, serverSessionReady]);
 
     // --- Timer ---
     useEffect(() => {

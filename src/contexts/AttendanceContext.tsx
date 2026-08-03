@@ -38,7 +38,7 @@ interface AttendanceContextState {
 const AttendanceContext = createContext<AttendanceContextState | undefined>(undefined);
 
 export function AttendanceProvider({ children }: { children: ReactNode }) {
-  const { user, loading: authLoading } = useAuth();
+  const { user, loading: authLoading, serverSessionReady } = useAuth();
   const { toast } = useToast();
 
   const [isPunchedIn, setIsPunchedIn] = useState(false);
@@ -52,7 +52,7 @@ export function AttendanceProvider({ children }: { children: ReactNode }) {
   const lastFetchRef = useRef<{ userId: string; time: number } | null>(null);
 
   const fetchAttendance = useCallback(async (force = false) => {
-    if (!user?.uid) return;
+    if (!user?.uid || !serverSessionReady) return;
     
     if (!force) {
         if (
@@ -73,9 +73,6 @@ export function AttendanceProvider({ children }: { children: ReactNode }) {
     try {
       if (process.env.NODE_ENV === 'development') {
           console.log(`[Attendance Debug] Before fetch. Session user: ${!!user} | uid: ${user?.uid}`);
-          // Let's get the token manually just to check if it's there
-          const { data: { session } } = await supabase.auth.getSession();
-          console.log(`[Attendance Debug] Session from getSession: ${!!session} | Token length: ${session?.access_token?.length}`);
       }
 
       const [attRes, empRes] = await Promise.all([
@@ -143,16 +140,16 @@ export function AttendanceProvider({ children }: { children: ReactNode }) {
       setIsLoading(false);
       isFetchingRef.current = false;
     }
-  }, [user?.uid]);
+  }, [user, user?.uid, serverSessionReady]);
 
   // Fetch attendance as soon as auth is ready — no time sync wait
   useEffect(() => {
-    if (!authLoading && user?.uid) {
+    if (!authLoading && user?.uid && serverSessionReady) {
       fetchAttendance();
-    } else if (!authLoading && !user) {
+    } else if (!authLoading && (!user || !serverSessionReady)) {
       setIsLoading(false);
     }
-  }, [user, user?.uid, authLoading, fetchAttendance]);
+  }, [user, user?.uid, authLoading, serverSessionReady, fetchAttendance]);
 
   const handlePunchAction = useCallback(async (type: 'punchIn' | 'punchOut') => {
     setIsSubmitting(true);

@@ -5,7 +5,7 @@ export const dynamic = 'force-dynamic';
 
 export async function GET(request: NextRequest) {
     try {
-        let token = request.cookies.get('session')?.value;
+        let token = request.cookies.get('session')?.value?.trim();
         
         if (!token) {
             const authHeader = request.headers.get('Authorization');

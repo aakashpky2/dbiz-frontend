@@ -39,8 +39,8 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ error: 'Malformed token' }, { status: 401 });
         }
 
-        if (!exp) {
-            return NextResponse.json({ error: 'Missing expiry in token' }, { status: 401 });
+        if (!exp || !Number.isFinite(exp)) {
+            return NextResponse.json({ error: 'Missing or malformed expiry in token' }, { status: 401 });
         }
 
         const now = Math.floor(Date.now() / 1000);
@@ -50,7 +50,7 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ error: 'Token has expired' }, { status: 401 });
         }
 
-        const maxAge = Math.max(1, remainingSeconds);
+        const maxAge = remainingSeconds;
 
         const response = NextResponse.json({ status: 'success' });
 
