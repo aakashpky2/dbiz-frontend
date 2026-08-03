@@ -22,15 +22,20 @@ export async function apiFetch(url: string, options: ApiFetchOptions = {}): Prom
 
     // Only fetch session if explicitly requested (e.g. external API or specific backend requirement)
     if (authMode === 'bearer') {
+        let token: string | undefined;
         try {
             const { data: { session } } = await supabase.auth.getSession();
-            const token = session?.access_token;
-
-            if (token && !headers.has('Authorization')) {
-                headers.set('Authorization', `Bearer ${token}`);
-            }
+            token = session?.access_token;
         } catch (err) {
             console.error('[apiFetch] Error getting session for bearer auth:', err);
+        }
+
+        if (!token) {
+            throw new Error('Authentication session is unavailable');
+        }
+
+        if (!headers.has('Authorization')) {
+            headers.set('Authorization', `Bearer ${token}`);
         }
     }
 

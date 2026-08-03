@@ -9,6 +9,7 @@ let sharedEmployeePhoto: string | null = null;
 let sharedEmployeeName: string | null = null;
 let isInitialized = false;
 let authSubscription: Subscription | null = null;
+let lastSyncedToken: string | null = null;
 
 // Set of state setters from all active useAuth hook instances
 const listeners = new Set<(user: User | null, loading: boolean, photo: string | null, name: string | null) => void>();
@@ -85,15 +86,39 @@ function initializeSharedAuth() {
         sharedUser = session?.user ?? null;
 
         if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
-            if (session?.access_token) {
-                fetch('/api/auth/login', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ access_token: session.access_token })
-                }).catch(console.error);
+            if (session?.access_token && session.access_token !== lastSyncedToken) {
+                try {
+                    const response = await fetch('/api/auth/login', {
+                        method: 'POST',
+                        credentials: 'include',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ access_token: session.access_token })
+                    });
+                    
+                    if (!response.ok) {
+                        console.error('[Auth] Failed to synchronize server session cookie', {
+                            status: response.status,
+                        });
+                    } else {
+                        lastSyncedToken = session.access_token;
+                    }
+                } catch (err) {
+                    console.error('[Auth] Error during session synchronization:', err);
+                }
             }
         } else if (event === 'SIGNED_OUT') {
-            fetch('/api/auth/logout', { method: 'POST' }).catch(console.error);
+            lastSyncedToken = null;
+            try {
+                const response = await fetch('/api/auth/logout', { 
+                    method: 'POST',
+                    credentials: 'include'
+                });
+                if (!response.ok) {
+                    console.error('[Auth] Failed to clear server session cookie', { status: response.status });
+                }
+            } catch (err) {
+                console.error('[Auth] Error during logout synchronization:', err);
+            }
         }
 
         if (sharedUser) {

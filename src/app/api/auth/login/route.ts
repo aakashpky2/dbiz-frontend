@@ -17,18 +17,7 @@ export async function POST(request: NextRequest) {
         const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
         if (!supabaseUrl || !supabaseKey) {
-            const response = NextResponse.json({ status: 'success' });
-            const expiresIn = 24 * 60 * 60;
-            response.cookies.set({
-                name: 'session',
-                value: access_token,
-                maxAge: expiresIn,
-                httpOnly: true,
-                secure: process.env.NODE_ENV === 'production',
-                path: '/',
-                sameSite: 'lax',
-            });
-            return response;
+            return NextResponse.json({ error: 'Service Unavailable: Missing configuration' }, { status: 503 });
         }
 
         const supabase = createClient(supabaseUrl, supabaseKey);
@@ -39,16 +28,36 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ error: 'Invalid token' }, { status: 401 });
         }
 
-        const expiresIn = 24 * 60 * 60; // 24 hours
+        let exp = 0;
+        try {
+            const tokenParts = access_token.split('.');
+            if (tokenParts.length === 3) {
+                const payload = JSON.parse(Buffer.from(tokenParts[1], 'base64url').toString('utf-8'));
+                exp = payload.exp;
+            }
+        } catch (e) {
+            return NextResponse.json({ error: 'Malformed token' }, { status: 401 });
+        }
+
+        if (!exp) {
+            return NextResponse.json({ error: 'Missing expiry in token' }, { status: 401 });
+        }
+
+        const now = Math.floor(Date.now() / 1000);
+        const remainingSeconds = exp - now;
+
+        if (remainingSeconds <= 0) {
+            return NextResponse.json({ error: 'Token has expired' }, { status: 401 });
+        }
+
+        const maxAge = Math.max(1, remainingSeconds);
 
         const response = NextResponse.json({ status: 'success' });
 
-        // Setting the session cookie locally means Vercel won't strip
-        // it from cross-origin API headers.
         response.cookies.set({
             name: 'session',
             value: access_token,
-            maxAge: expiresIn,
+            maxAge: maxAge,
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
             path: '/',
