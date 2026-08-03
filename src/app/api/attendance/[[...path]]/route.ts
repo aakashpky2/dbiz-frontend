@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-export async function proxyRequest(req: NextRequest, moduleName: string) {
+async function proxyRequest(req: NextRequest, moduleName: string) {
     const backendUrl = process.env.BACKEND_URL;
     if (!backendUrl) {
         return NextResponse.json({ error: 'BACKEND_URL is not set' }, { status: 500 });
