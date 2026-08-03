@@ -48,7 +48,21 @@ export async function apiFetch(url: string, options: ApiFetchOptions = {}): Prom
         plainHeaders[key] = value;
     });
 
+    const requestId = plainHeaders['X-DBIZ-Request-ID'] || plainHeaders['x-dbiz-request-id'] || crypto.randomUUID();
+    plainHeaders['X-DBIZ-Request-ID'] = requestId;
+
     fetchOptions.headers = plainHeaders;
+
+    console.log(JSON.stringify({
+      requestId,
+      inputUrl: url,
+      resolvedUrl: typeof window !== 'undefined' ? new URL(url, window.location.origin).toString() : url,
+      runtime: typeof window === 'undefined' ? 'server' : 'browser',
+      method: fetchOptions.method || 'GET',
+      credentials: fetchOptions.credentials,
+      authorizationExists: headers.has('authorization') || headers.has('Authorization')
+    }));
+
 
     // Make the initial request
     const response = await fetch(url, fetchOptions);

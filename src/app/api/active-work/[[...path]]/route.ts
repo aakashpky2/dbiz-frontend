@@ -5,7 +5,7 @@ const SAFE_REQ_HEADERS = ['accept', 'content-type', 'user-agent', 'x-requested-w
 const UNSAFE_RES_HEADERS = ['host', 'connection', 'content-length', 'transfer-encoding', 'keep-alive', 'upgrade', 'content-encoding', 'set-cookie'];
 
 async function proxyRequest(req: NextRequest, { params }: { params?: { path?: string[] } }, moduleName: string) {
-    const requestId = randomUUID();
+    const requestId = req.headers.get('X-DBIZ-Request-ID') || randomUUID();
     const url = new URL(req.url);
     const apiPath = url.pathname;
     const query = url.search;
@@ -13,19 +13,18 @@ async function proxyRequest(req: NextRequest, { params }: { params?: { path?: st
     const authHeader = req.headers.get('authorization');
     const allCookies = req.cookies.getAll().map(c => c.name);
 
-    console.log(`[Proxy Request Entry] ${requestId}`, {
-        requestId,
-        method: req.method,
-        pathname: apiPath,
-        nextUrlPathname: req.nextUrl.pathname,
-        paramsPath: params?.path,
-        cookieNames: allCookies,
-        hasSessionCookie: !!sessionCookie,
-        hasAuthHeader: !!authHeader,
-        host: req.headers.get('host'),
-        origin: req.headers.get('origin'),
-        referer: req.headers.get('referer')
-    });
+    console.log(JSON.stringify({
+      stage: 'proxy-entry',
+      requestId,
+      route: req.nextUrl.pathname,
+      method: req.method,
+      cookieNames: allCookies,
+      incomingSessionCookieExists: !!sessionCookie,
+      incomingAuthorizationExists: !!authHeader,
+      host: req.headers.get('host'),
+      origin: req.headers.get('origin'),
+      referer: req.headers.get('referer')
+    }));
 
     const backendUrl = process.env.BACKEND_URL;
     if (!backendUrl) {
@@ -58,20 +57,22 @@ async function proxyRequest(req: NextRequest, { params }: { params?: { path?: st
             headers,
             body: reqBody,
             redirect: 'manual',
-            credentials: 'omit'
+            credentials: 'omit' // Node.js fetch default, explicitly set
         };
 
         let backendHost = '';
-        try { backendHost = new URL(targetUrlString).host; } catch (e) {}
+        const targetUrl = new URL(targetUrlString);
+        try { backendHost = targetUrl.host; } catch (e) {}
 
-        console.log(`[Proxy Fetching Backend] ${requestId}`, {
-            backendHost,
-            outgoingUrl: targetUrlString,
-            outgoingCookieAttached: !!sessionCookie,
-            outgoingAuthorizationAttached: !!authHeader && !sessionCookie,
-            redirectMode: fetchOptions.redirect,
-            credentialsMode: fetchOptions.credentials
-        });
+        console.log(JSON.stringify({
+          stage: 'proxy-outgoing',
+          requestId,
+          backendHost,
+          outgoingUrl: { pathname: targetUrl.pathname, backendHost: targetUrl.hostname, queryKeys: [...targetUrl.searchParams.keys()] },
+          outgoingCookieHeaderExists: headers.has('Cookie'),
+          outgoingAuthorizationHeaderExists: headers.has('Authorization'),
+          redirectMode: fetchOptions.redirect
+        }));
 
         let response = await fetch(targetUrlString, fetchOptions);
         let redirected = false;
@@ -108,25 +109,17 @@ async function proxyRequest(req: NextRequest, { params }: { params?: { path?: st
         const hasLocationHeader = response.headers.has('location');
         const hasSetCookieHeader = response.headers.has('set-cookie');
 
-        console.log(`[Proxy Fetch Return] ${requestId}`, {
-            status: response.status,
-            statusText: response.statusText,
-            hasLocationHeader,
-            hasSetCookieHeader
-        });
-
         console.log(JSON.stringify({
-            requestId,
-            route: moduleName,
-            hasSessionCookie: !!sessionCookie,
-            cookieNames: allCookies,
-            outgoingCookieAttached: !!sessionCookie,
-            outgoingAuthorizationAttached: !!authHeader && !sessionCookie,
-            backendHost,
-            responseStatus: response.status,
-            redirected,
-            hasLocationHeader
+          stage: 'proxy-response',
+          requestId,
+          status: response.status,
+          redirected,
+          finalUrlHost: backendHost,
+          locationHeaderExists: hasLocationHeader,
+          setCookieHeaderExists: hasSetCookieHeader
         }));
+
+        responseHeaders.set('X-DBIZ-Request-ID', requestId);
 
         return new NextResponse(resBody, {
             status: response.status,
