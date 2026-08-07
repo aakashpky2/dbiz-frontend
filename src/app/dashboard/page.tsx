@@ -69,7 +69,7 @@ export default async function DashboardPage() {
   ];
 
   return (
-    <div className="flex flex-col space-y-10 pb-10">
+    <div className="flex flex-col space-y-10 pb-10 animate-in fade-in duration-300">
       <AutoPunchIn />
 
       <DashboardHero />

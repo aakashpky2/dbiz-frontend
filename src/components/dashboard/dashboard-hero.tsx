@@ -7,11 +7,19 @@ import { Badge } from '@/components/ui/badge';
 import { useAttendance } from '@/contexts/AttendanceContext';
 import { Building, Briefcase, Calendar as CalendarIcon, UserCheck } from 'lucide-react';
 import { format } from 'date-fns';
+import { useAppTransition } from '@/contexts/AppTransitionContext';
 
 export function DashboardHero() {
     const { user, loading: authLoading } = useAuth();
     const { employeeDetails, isLoading: attendanceLoading } = useAttendance();
     const isFetching = authLoading || attendanceLoading;
+    const { completeTransition } = useAppTransition();
+
+    useEffect(() => {
+        if (!isFetching) {
+            completeTransition();
+        }
+    }, [isFetching, completeTransition]);
 
     const getGreeting = () => {
         const hour = new Date().getHours();

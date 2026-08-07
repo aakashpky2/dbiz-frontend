@@ -11,6 +11,7 @@ import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/lib/supabase';
 import Image from 'next/image';
 import { useAuth } from '@/hooks/use-auth';
+import { useAppTransition } from '@/contexts/AppTransitionContext';
 
 function LoginForm() {
   const { user, loading } = useAuth();
@@ -21,6 +22,7 @@ function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { toast } = useToast();
+  const { startTransition } = useAppTransition();
 
   // Removed auto-redirect to dashboard when opening the link per user request
 
@@ -59,8 +61,14 @@ function LoginForm() {
       // Mark as a fresh active session in the current tab
       sessionStorage.setItem('is_logged_in', 'true');
 
-      toast({ title: `${greeting}! Login Successful`, description: 'Welcome back to D BIZ OFFICE.', variant: 'success' });
-      window.location.href = '/dashboard';
+      toast({ 
+        title: `${greeting}!\nLogin Successful`, 
+        description: 'Welcome back to D BIZ OFFICE.', 
+        variant: 'success',
+        duration: 60000
+      });
+      startTransition();
+      router.push('/dashboard');
     } catch (error: any) {
       console.error(error);
       let description = 'Invalid credentials. Please try again.';
@@ -175,15 +183,20 @@ function LoginForm() {
                 </div>
               </div>
 
-              <Button
-                type="submit"
-                className="w-full h-12 text-sm font-bold uppercase tracking-widest rounded-2xl shadow-xl shadow-blue-900/20 hover:shadow-blue-900/40 active:scale-[0.98] transition-all bg-white text-slate-950 hover:bg-slate-50 border-white"
+              <Button 
+                type="submit" 
+                className="w-full h-12 text-base font-bold bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg hover:shadow-primary/25 transition-all duration-300 rounded-xl"
                 disabled={isLoading}
               >
                 {isLoading ? (
-                  <div className="flex items-center gap-2"><Loader2 className="h-5 w-5 animate-spin" /> <span>Loading...</span></div>
+                  <div className="flex items-center gap-2">
+                    <Loader2 className="h-5 w-5 animate-spin" />
+                    <span>Signing In...</span>
+                  </div>
                 ) : (
-                  <div className="flex items-center gap-2"><span>Login</span> <ArrowRight className="h-5 w-5" /></div>
+                  <div className="flex items-center gap-2">
+                    <span>Login</span> <ArrowRight className="h-5 w-5" />
+                  </div>
                 )}
               </Button>
             </form>

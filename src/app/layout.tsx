@@ -57,6 +57,7 @@ export const viewport: Viewport = {
 };
 
 import QueryProvider from '@/components/providers/query-provider';
+import { AppTransitionProvider } from '@/contexts/AppTransitionContext';
 
 export default function RootLayout({
   children,
@@ -81,9 +82,11 @@ export default function RootLayout({
         </Script>
         <ThemeProvider>
           <QueryProvider>
-            <SidebarProvider defaultOpen>
-              {children}
-            </SidebarProvider>
+            <AppTransitionProvider>
+              <SidebarProvider defaultOpen>
+                {children}
+              </SidebarProvider>
+            </AppTransitionProvider>
           </QueryProvider>
         </ThemeProvider>
         <Toaster />

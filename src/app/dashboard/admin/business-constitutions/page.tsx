@@ -1343,31 +1343,29 @@ export default function BusinessTypesPage() {
   }, [primaryTypes, selectedType]);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8 pb-8">
       <DashboardPageHeader
         title={
           <div className="flex items-center gap-3">
-            Business Constitutions
-            <Badge variant="secondary" className="h-6 rounded-lg px-2 font-black text-xs bg-primary/10 text-primary border-primary/20">
+            <span className="text-3xl font-semibold tracking-tight">Business Constitutions</span>
+            <Badge variant="secondary" className="h-5 rounded-full px-2 font-medium text-xs bg-muted text-muted-foreground border-border">
               {businessTypes.length}
             </Badge>
           </div>
         }
         description="Define the blueprint for different legal entity structures."
       >
-        <Button onClick={openAddDialog} className="font-bold">
+        <Button onClick={openAddDialog} className="h-10 rounded-lg font-medium px-4">
           <PlusCircle className="mr-2 h-4 w-4" /> Add Constitution
         </Button>
       </DashboardPageHeader>
 
-
-
       <DashboardFilterBar>
-        <div className="flex-1 relative w-full">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+        <div className="flex-1 relative w-full max-w-md">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/70" />
           <Input
             placeholder="Search constitutions..."
-            className="pl-10 bg-background"
+            className="h-10 pl-9 rounded-lg bg-background border-border shadow-sm text-sm"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
           />
@@ -1403,11 +1401,11 @@ export default function BusinessTypesPage() {
             </Button>
           </div>
                 ) : (
-          <div className="flex gap-6 h-[calc(100vh-280px)]">
+          <div className="flex flex-col md:flex-row items-start gap-8 min-h-[calc(100vh-280px)]">
             {/* LEFT SIDEBAR - Primary Constitutions */}
-            <div className="w-[280px] shrink-0 border-2 rounded-3xl bg-card/30 backdrop-blur-md shadow-sm p-4 overflow-y-auto custom-scrollbar flex flex-col gap-2">
-              <div className="px-4 py-2 border-b-2 border-primary/10 mb-2">
-                <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-primary">
+            <div className="w-full md:w-[260px] shrink-0 border border-border rounded-xl bg-card shadow-sm p-3 flex flex-col gap-1">
+              <div className="px-3 py-2 mb-1">
+                <h3 className="text-sm font-semibold text-foreground">
                   Primary Categories
                 </h3>
               </div>
@@ -1416,63 +1414,55 @@ export default function BusinessTypesPage() {
                   key={type}
                   onClick={() => setSelectedType(type)}
                   className={cn(
-                    "w-full text-left px-5 py-4 rounded-2xl text-xs font-black uppercase tracking-widest transition-all duration-300 relative group overflow-hidden",
+                    "w-full text-left px-3 h-11 rounded-lg text-sm font-medium transition-colors relative flex items-center group",
                     selectedType === type
-                      ? "bg-primary text-primary-foreground shadow-lg shadow-primary/20 scale-[1.02]"
-                      : "hover:bg-primary/5 text-muted-foreground hover:text-primary hover:pl-7"
+                      ? "bg-primary/10 text-primary"
+                      : "hover:bg-muted text-muted-foreground hover:text-foreground"
                   )}
                 >
-                  <div className="relative z-10 flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    {selectedType === type && <div className="w-1 h-4 rounded-full bg-primary" />}
                     {type}
-                    {selectedType === type && <ArrowRight className="h-3 w-3" />}
                   </div>
-                  {selectedType !== type && (
-                    <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-0 bg-primary group-hover:h-1/2 transition-all duration-300" />
-                  )}
                 </button>
               ))}
             </div>
 
             {/* RIGHT CONTENT - Sub Types */}
-            <div className="flex-1 overflow-y-auto pr-2 custom-scrollbar">
+            <div className="flex-1 w-full">
               {filteredSubTypes.length === 0 ? (
-                <div className="flex flex-col items-center justify-center py-20 bg-muted/5 rounded-3xl border-2 border-dashed border-muted/50">
-                  <Inbox className="h-12 w-12 text-muted-foreground/20 mb-4" />
-                  <p className="text-sm font-black text-muted-foreground/30 uppercase tracking-[0.3em]">No sub-categories defined</p>
+                <div className="flex flex-col items-center justify-center py-20 bg-muted/30 rounded-xl border border-dashed border-border">
+                  <Inbox className="h-10 w-10 text-muted-foreground/40 mb-3" />
+                  <p className="text-sm text-muted-foreground">No constitutions defined in this category.</p>
                 </div>
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                   {filteredSubTypes.map((type) => (
-                    <Card key={type.id} className="relative group overflow-hidden border border-muted/50 hover:border-primary/50 hover:shadow-xl transition-all duration-500 rounded-2xl bg-background/50 backdrop-blur-md flex flex-col h-full">
-                      <div className="absolute top-0 right-0 p-3 opacity-0 group-hover:opacity-100 translate-y-2 group-hover:translate-y-0 transition-all duration-500 z-10">
-                        <div className="flex gap-2">
-                          <Button variant="secondary" size="icon" onClick={() => openEditDialog(type)} className="h-8 w-8 rounded-lg shadow-lg bg-background border hover:bg-primary hover:text-white transition-all duration-300">
-                            <Edit className="h-3.5 w-3.5" />
-                          </Button>
-                          <Button variant="secondary" size="icon" onClick={() => handleDeleteClick(type.id)} className="h-8 w-8 rounded-lg shadow-lg bg-background border hover:bg-destructive hover:text-white transition-all duration-300">
-                            <Trash2 className="h-3.5 w-3.5" />
-                          </Button>
-                        </div>
+                    <Card key={type.id} className="relative group overflow-hidden border border-border hover:border-primary/20 hover:shadow-md transition-all duration-200 rounded-xl bg-card flex flex-col h-full shadow-sm">
+                      <div className="absolute top-3 right-3 flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-10">
+                        <Button variant="ghost" size="icon" onClick={() => openEditDialog(type)} className="h-8 w-8 rounded-md text-muted-foreground hover:bg-muted hover:text-foreground">
+                          <Edit className="h-4 w-4" />
+                        </Button>
+                        <Button variant="ghost" size="icon" onClick={() => handleDeleteClick(type.id)} className="h-8 w-8 rounded-md text-muted-foreground hover:bg-destructive/10 hover:text-destructive">
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
                       </div>
 
-                      <CardHeader className="pb-3 pt-5 px-5 flex-grow">
+                      <CardHeader className="pb-4 pt-5 px-5 flex-grow">
                         <div className="flex items-center gap-2 mb-3">
-                          <div className="h-2 w-2 bg-primary rounded-full shadow-[0_0_8px_rgba(var(--primary),0.8)]" />
-                          <Badge variant="outline" className="bg-primary/5 text-primary border-primary/30 font-black px-3 py-1 rounded-full uppercase tracking-[0.2em] text-[10px]">
+                          <Badge variant="secondary" className="px-2.5 py-0.5 rounded-full text-xs font-normal bg-muted text-muted-foreground border-transparent">
                             {type.businessType}
                           </Badge>
                         </div>
-                        <CardTitle className="text-xl font-black group-hover:text-primary transition-colors duration-500 leading-tight tracking-tight">
+                        <CardTitle className="text-xl font-semibold tracking-tight text-foreground pr-16">
                           {type.businessSubType}
                         </CardTitle>
                       </CardHeader>
 
-                      <CardFooter className="p-0 border-t border-muted/20 bg-muted/5 group-hover:bg-primary transition-all duration-700 overflow-hidden">
-                        <Button variant="ghost" className="w-full h-12 group/btn font-black text-[9px] uppercase tracking-[0.3em] text-muted-foreground group-hover:text-primary-foreground transition-all duration-700" onClick={() => openEditDialog(type)}>
-                          <span className="flex items-center gap-2">
-                            Manage Constitution
-                            <ArrowRight className="h-4 w-4 group-hover/btn:translate-x-2 transition-transform duration-500" />
-                          </span>
+                      <CardFooter className="pt-0 pb-5 px-5 mt-auto">
+                        <Button variant="secondary" className="w-full h-9 justify-between text-sm font-medium hover:bg-primary/5 hover:text-primary transition-colors" onClick={() => openEditDialog(type)}>
+                          Manage Constitution
+                          <ArrowRight className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors" />
                         </Button>
                       </CardFooter>
                     </Card>
@@ -1490,33 +1480,32 @@ export default function BusinessTypesPage() {
         else { setIsFormDialogOpen(true); }
       }}>
         <DialogContent className="w-[95vw] max-w-5xl max-h-[90vh] flex flex-col p-0 overflow-hidden rounded-3xl border-none shadow-[0_20px_50px_-12px_rgba(0,0,0,0.5)] bg-background">
-          <DialogHeader className="px-8 py-6 bg-muted/10 border-b backdrop-blur-3xl relative overflow-hidden">
-            <div className="absolute top-0 left-0 w-full h-0.5 bg-gradient-to-r from-primary/50 via-primary to-primary/50" />
-            <div className="flex items-center gap-4 relative z-10">
-              <div className="p-3 bg-primary/10 rounded-2xl shadow-lg ring-1 ring-primary/20">
-                <Settings className="h-6 w-6 text-primary" />
+          <DialogHeader className="flex flex-row items-center justify-between gap-4 px-6 py-4 border-b border-border bg-background shrink-0 space-y-0 text-left">
+            <div className="flex items-center gap-3 min-w-0">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                <Settings className="h-5 w-5" />
               </div>
-              <div className="space-y-0.5">
-                <DialogTitle className="text-2xl font-black tracking-tight leading-none">
-                  {editingBusinessType ? `Editing "${editingBusinessType.businessType} - ${editingBusinessType.businessSubType}"` : 'Adding New Business Constitution'}
+              <div className="min-w-0">
+                <DialogTitle className="text-lg font-semibold tracking-tight text-foreground leading-tight">
+                  {editingBusinessType ? 'Edit Business Constitution' : 'Add Business Constitution'}
                 </DialogTitle>
-                <DialogDescription className="text-sm font-medium opacity-60 leading-relaxed">
-                  {editingBusinessType ? 'Update the details of this item.' : 'Enter the details for Business Constitution.'}
+                <DialogDescription className="mt-0.5 text-sm text-muted-foreground leading-5">
+                  {editingBusinessType ? 'Update constitution details and field configuration.' : 'Configure constitution details and applicable fields.'}
                 </DialogDescription>
               </div>
             </div>
           </DialogHeader>
 
-          <div className="flex-grow overflow-y-auto px-8 py-8 custom-scrollbar bg-background/30 backdrop-blur-2xl">
+          <div className="flex-grow overflow-y-auto px-6 py-5 custom-scrollbar bg-background/30 backdrop-blur-2xl">
             <FormProvider {...form}>
               <Form {...form}>
                 <form onSubmit={form.handleSubmit(handleFormSubmit)} className="space-y-16">
                   {/* Entity Core */}
                   <div className="space-y-6">
                     <div className="flex items-center justify-between border-b border-muted/50 pb-4">
-                      <div className="flex items-center gap-3">
-                        <div className="p-2 bg-primary/10 rounded-xl shadow-inner"><FileText className="h-4 w-4 text-primary" /></div>
-                        <h3 className="text-lg font-black tracking-tight">Constitution Details</h3>
+                      <div className="flex items-center gap-2.5">
+                        <div className="flex items-center justify-center h-8 w-8 rounded-lg bg-muted"><FileText className="h-4 w-4 text-foreground" /></div>
+                        <h3 className="text-base font-semibold">Constitution Details</h3>
                       </div>
                       {businessTypes.length > 0 && !editingBusinessType && (
                         <DropdownMenu>
