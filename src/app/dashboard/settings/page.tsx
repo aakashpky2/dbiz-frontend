@@ -264,9 +264,9 @@ export default function SettingsPage() {
             </div>
 
             <Dialog open={isModalOpen} onOpenChange={(open) => !open && handleCancel()}>
-                <DialogContent className="max-w-6xl h-[95vh] flex flex-col p-0 overflow-hidden rounded-2xl border-none shadow-2xl bg-background">
-                    <DialogHeader className="border-b p-6 pb-4 shrink-0 bg-slate-50/50">
-                        <DialogTitle className="text-xl font-bold">{editingProfileId ? 'Update Profile' : 'Create New Profile'}</DialogTitle>
+                <DialogContent className="max-w-6xl h-[95vh] flex flex-col p-0 overflow-hidden rounded-2xl border-none shadow-2xl bg-background [&>button]:hidden">
+                    <DialogHeader className="sr-only">
+                        <DialogTitle>{editingProfileId ? 'Update Profile' : 'Create New Profile'}</DialogTitle>
                         <DialogDescription>Comprehensive profile configuration interface.</DialogDescription>
                     </DialogHeader>
                     <div className="flex-1 overflow-y-auto px-6 py-4">
