@@ -111,16 +111,20 @@ export const useProfiles = () => {
         primary_signatories: data.primarySignatories || {}
       };
 
-      const { error } = await supabase
+      const { data: insertedData, error } = await supabase
         .from('business_profiles')
-        .insert(profileToInsert);
+        .insert(profileToInsert)
+        .select()
+        .single();
 
       if (error) throw error;
 
       toast({ title: "Success", description: "New profile created successfully." });
       queryClient.invalidateQueries({ queryKey: ['businessProfiles'] });
+      return insertedData;
     } catch (error: any) {
       toast({ title: "Error", description: error.message, variant: "destructive" });
+      return null;
     }
   };
 

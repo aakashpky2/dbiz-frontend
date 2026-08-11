@@ -428,3 +428,55 @@
 .ProseMirror h1, .rendered-content h1 { font-size: 2.25rem !important; font-weight: 800 !important; }
 .ProseMirror h2, .rendered-content h2 { font-size: 1.875rem !important; font-weight: 700 !important; }
 .ProseMirror h3, .rendered-content h3 { font-size: 1.5rem !important; font-weight: 600 !important; }
+
+/* -- VIEW MODE FORM STYLES ----------------------------------------- */
+fieldset.view-mode-fieldset[disabled] input:not([type="hidden"]):not([aria-hidden="true"]),
+fieldset.view-mode-fieldset[disabled] textarea,
+fieldset.view-mode-fieldset[disabled] select,
+fieldset.view-mode-fieldset[disabled] [data-disabled]:not(input),
+fieldset.view-mode-fieldset[disabled] button[role="combobox"],
+fieldset.view-mode-fieldset[disabled] button[role="switch"],
+fieldset.view-mode-fieldset[disabled] button[role="checkbox"] {
+    opacity: 1 !important;
+    color: hsl(var(--foreground)) !important;
+    background-color: hsl(var(--muted) / 0.3) !important;
+    border-color: hsl(var(--border) / 0.7) !important;
+    cursor: default !important;
+    pointer-events: none !important;
+}
+
+/* Custom focus states for inputs/textareas/selects */
+input:focus,
+textarea:focus,
+select:focus,
+button[role="combobox"]:focus {
+  border-color: hsl(var(--primary) / 0.5) !important;
+  box-shadow: 0 0 0 2px hsl(var(--primary) / 0.15) !important;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease !important;
+}
+
+/* Accordion slide and fade transitions */
+[data-state="open"] > .AccordionContent,
+[data-state="open"] > [data-radix-rect] {
+  animation: slideFadeIn 200ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes slideFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(3px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.modal-radial-bg {
+  background-image: radial-gradient(
+    circle at top right,
+    hsl(var(--primary) / 0.025),
+    transparent 30%
+  ) !important;
+}
+

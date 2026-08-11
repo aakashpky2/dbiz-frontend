@@ -7,6 +7,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Loader2, Palette } from 'lucide-react';
 import { apiFetch } from '@/lib/apiFetch';
 import { uploadCompanyAsset } from '@/lib/upload-company-asset';
+import { cn } from '@/lib/utils';
 
 export function CompanyBrandingForm({ businessProfileId, isGlobal = false, onSuccess }: { businessProfileId?: string | null, isGlobal?: boolean, onSuccess?: () => void }) {
     const [loading, setLoading] = useState(false);
@@ -284,15 +285,22 @@ export function CompanyBrandingForm({ businessProfileId, isGlobal = false, onSuc
     );
 }
 
-export function CompanyBrandingDialog({ businessProfileId, businessProfileName }: { businessProfileId?: string | null, businessProfileName?: string }) {
+export function CompanyBrandingDialog({ businessProfileId, businessProfileName, triggerClassName }: { businessProfileId?: string | null, businessProfileName?: string, triggerClassName?: string }) {
     const [open, setOpen] = useState(false);
     const isGlobal = !businessProfileId;
 
     return (
         <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
-                <Button variant={isGlobal ? 'default' : 'outline'} size="sm" className="gap-2">
-                    <Palette className="w-4 h-4" />
+                <Button 
+                    variant="outline" 
+                    className={cn(
+                        "gap-2 h-11 px-6 rounded-lg font-medium text-sm transition-all duration-200 ease-out hover:-translate-y-[1px] active:translate-y-0 group shadow-sm hover:shadow-md border-border",
+                        isGlobal ? "bg-secondary/50 text-secondary-foreground hover:bg-secondary" : "",
+                        triggerClassName
+                    )}
+                >
+                    <Palette className="w-4 h-4 transition-transform duration-200 group-hover:rotate-[3deg]" />
                     {isGlobal ? 'Global Branding' : 'Branding'}
                 </Button>
             </DialogTrigger>

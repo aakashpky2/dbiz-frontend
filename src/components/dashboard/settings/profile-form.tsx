@@ -1,5 +1,6 @@
 "use client";
 import { parsePhoneFromPayload, formatPhoneForPayload, sanitizePhoneInput, isValidLocalPhone, formatPhoneNumber, phoneValidation } from '@/lib/phone-utils';
+import { cn } from '@/lib/utils';
 
 import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { supabase } from '@/lib/supabase';
@@ -57,9 +58,54 @@ const isPhoneField = (f: FieldDefinitionData) =>
     f.fieldName?.toLowerCase().includes('mobile') || 
     f.fieldName?.toLowerCase().includes('phone');
 
-const createFieldValidator = (field: FieldDefinitionData): z.ZodTypeAny => {
-    const isPhone = isPhoneField(field);
+const normalizeNameForDuplicateCheck = (name: string) => {
+    return name.trim().toLowerCase().replace(/\s+/g, ' ');
+};
 
+const createFieldValidator = (field: FieldDefinitionData): z.ZodTypeAny => {
+    // 1. Checkboxes
+    if (field.inputType === 'Checkbox') {
+        if (field.options && field.options.length > 0) {
+            const arrVal = z.array(z.string());
+            if (field.requirement === 'Mandatory') {
+                return arrVal.min(1, { message: `At least one option must be selected for ${field.fieldName}.` });
+            }
+            return arrVal.default([]);
+        } else {
+            return z.boolean().default(false);
+        }
+    }
+
+    // 2. Dropdown / Radio static options restriction
+    const isMasterSelect = field.fieldName.toLowerCase() === 'country' || field.fieldName.toLowerCase() === 'designation';
+    if ((field.inputType === 'Dropdown' || field.inputType === 'Radio') && field.options && field.options.length > 0 && !isMasterSelect) {
+        const optionValidator = z.string().refine(val => !val || field.options!.includes(val), {
+            message: `Invalid selection for ${field.fieldName}.`
+        });
+        if (field.requirement === 'Mandatory') {
+            return optionValidator.refine(val => !!val && val !== 'ADD_NEW_MASTER_VALUE', { message: `${field.fieldName} is required.` });
+        }
+        return z.union([z.literal(''), z.literal(undefined), optionValidator]);
+    }
+
+    // 3. FileUpload
+    if (field.inputType === 'FileUpload') {
+        const fileMetadataSchema = z.object({
+            path: z.string().min(1, "File path is required"),
+            publicUrl: z.string().optional(),
+            name: z.string().min(1, "File name is required"),
+            mimeType: z.string().min(1, "MIME type is required"),
+            size: z.number().max(5 * 1024 * 1024, "File size exceeds the 5 MB limit")
+        });
+
+        if (field.requirement === 'Mandatory') {
+            return fileMetadataSchema;
+        }
+        return z.union([z.null(), z.undefined(), fileMetadataSchema]);
+    }
+
+    // 4. Phones
+    const isPhone = isPhoneField(field);
     if (isPhone) {
         const phoneValidator = z.string().refine(
             (val) => {
@@ -80,34 +126,62 @@ const createFieldValidator = (field: FieldDefinitionData): z.ZodTypeAny => {
             }, { message: `${field.fieldName}: Phone number must be exactly 10 digits.` });
     }
 
-    let validator: z.ZodString | z.ZodEffects<z.ZodString, string, string> = z.string();
+    // 5. String fields (Text, Textarea, Email, PAN, GSTIN, Number)
+    let validator: z.ZodTypeAny = z.string();
 
-    if (field.maxLength && field.maxLength > 0) {
-        validator = validator.max(field.maxLength, { message: `${field.fieldName} cannot exceed ${field.maxLength} characters.` });
+    if (field.fieldType === 'PAN') {
+        validator = z.preprocess(
+            (val) => (typeof val === 'string' ? val.trim().toUpperCase() : val),
+            z.string().regex(PAN_REGEX, { message: `Invalid PAN format for ${field.fieldName}.` })
+        );
+    } else if (field.fieldType === 'GSTIN') {
+        validator = z.preprocess(
+            (val) => (typeof val === 'string' ? val.trim().toUpperCase() : val),
+            z.string().regex(GSTIN_REGEX, { message: `Invalid GSTIN format for ${field.fieldName}.` })
+        );
+    } else if (field.fieldType === 'Email') {
+        validator = z.preprocess(
+            (val) => (typeof val === 'string' ? val.trim() : val),
+            z.string().email({ message: `Invalid Email format for ${field.fieldName}.` })
+                .max(100, "Email cannot exceed 100 characters.")
+                .regex(STRICT_EMAIL_REGEX, { message: `${field.fieldName} must be a valid email (e.g. user@example.com).` })
+        );
+    } else if (field.fieldType === 'Number') {
+        validator = z.string().regex(/^\d*$/, { message: `${field.fieldName} must only contain numbers.` });
+    } else {
+        validator = z.preprocess(
+            (val) => (typeof val === 'string' ? val.trim() : val),
+            z.string()
+        );
     }
 
-    switch (field.fieldType) {
-        case 'Email': validator = validator.email({ message: `Invalid Email format for ${field.fieldName}.` }).max(100, "Email cannot exceed 100 characters.").regex(STRICT_EMAIL_REGEX, { message: `${field.fieldName} must be a valid email (e.g. user@example.com).` }); break;
-        case 'PAN': validator = validator.regex(PAN_REGEX, { message: `Invalid PAN format for ${field.fieldName}.` }); break;
-        case 'GSTIN': validator = validator.regex(GSTIN_REGEX, { message: `Invalid GSTIN format for ${field.fieldName}.` }); break;
-        case 'Number': validator = validator.regex(/^\d*$/, { message: `${field.fieldName} must only contain numbers.` }); break;
+    if (field.maxLength && field.maxLength > 0) {
+        validator = (validator as any).refine((val: string) => !val || val.length <= field.maxLength!, {
+            message: `${field.fieldName} cannot exceed ${field.maxLength} characters.`
+        });
     }
 
     if (field.requirement !== 'Mandatory') {
         return z.union([z.literal(''), z.literal(undefined), validator]);
     }
-    return validator.min(1, { message: `${field.fieldName} is required.` });
+    return (validator as any).refine((val: string) => !!val && val.length > 0, {
+        message: `${field.fieldName} is required.`
+    });
 };
 
 const generateSchema = (constitution: BusinessTypeSetup | null | undefined) => {
     const memberSchema = z.object({
-        _id: z.string().default(''), // stable id
-        details: z.any(), // Details will be validated inside the role object
+        _id: z.string().default(''), 
+        details: z.any(), 
         isSaved: z.boolean().optional(),
     });
 
     const baseSchema = {
-        profileName: z.string().min(1, "Profile name is required.").max(100, "Profile name cannot exceed 100 characters."),
+        profileName: z.string()
+            .trim()
+            .min(1, "Profile name is required.")
+            .max(100, "Profile name cannot exceed 100 characters.")
+            .refine(val => val.length > 0, { message: "Profile name is required." }),
         constitutionId: z.string().min(1, "Please select a constitution."),
         isDefault: z.boolean().optional(),
         signatories: z.array(z.object({
@@ -125,9 +199,6 @@ const generateSchema = (constitution: BusinessTypeSetup | null | undefined) => {
             ...baseSchema,
             fields: z.any(),
             roles: z.any(),
-        }).superRefine((data, ctx) => {
-            // Signatories are OPTIONAL during save
-            // Validation handled later during final submission stage
         });
     }
 
@@ -136,8 +207,11 @@ const generateSchema = (constitution: BusinessTypeSetup | null | undefined) => {
     };
     (constitution.requiredSections || []).forEach(section => {
         (section.fields || []).forEach(field => {
-            if (field.fieldKey === 'gstin') {
-                topLevelFieldsShape[field.fieldKey] = z.string().optional(); // Validation handled in superRefine
+            if (field.requirement === 'If Available') {
+                topLevelFieldsShape[`${field.fieldKey}_isAvailable`] = z.boolean().optional();
+                topLevelFieldsShape[field.fieldKey] = createFieldValidator({ ...field, requirement: 'Optional' });
+            } else if (field.fieldKey === 'gstin') {
+                topLevelFieldsShape[field.fieldKey] = z.string().optional(); 
             } else {
                 topLevelFieldsShape[field.fieldKey] = createFieldValidator(field);
             }
@@ -150,7 +224,12 @@ const generateSchema = (constitution: BusinessTypeSetup | null | undefined) => {
 
         (role.requiredDetails || []).forEach((section: any) => {
             (section.fields || []).forEach((field: any) => {
-                memberDetailsShape[field.fieldKey] = createFieldValidator(field);
+                if (field.requirement === 'If Available') {
+                    memberDetailsShape[`${field.fieldKey}_isAvailable`] = z.boolean().optional();
+                    memberDetailsShape[field.fieldKey] = createFieldValidator({ ...field, requirement: 'Optional' });
+                } else {
+                    memberDetailsShape[field.fieldKey] = createFieldValidator(field);
+                }
             });
         });
 
@@ -168,34 +247,61 @@ const generateSchema = (constitution: BusinessTypeSetup | null | undefined) => {
                         ctx.addIssue({ ...issue, path: ['details', ...issue.path] });
                     });
                 }
+
+                // Check If Available fields for the member
+                (role.requiredDetails || []).forEach((section: any) => {
+                    (section.fields || []).forEach((field: any) => {
+                        if (field.requirement === 'If Available') {
+                            const details = member.details || {};
+                            const isAvailable = details[`${field.fieldKey}_isAvailable`] === true;
+                            const val = details[field.fieldKey];
+                            if (isAvailable) {
+                                const mandatoryValidator = createFieldValidator({ ...field, requirement: 'Mandatory' });
+                                const res = mandatoryValidator.safeParse(val);
+                                if (!res.success) {
+                                    res.error.issues.forEach(issue => {
+                                        ctx.addIssue({
+                                            ...issue,
+                                            path: ['details', field.fieldKey, ...issue.path]
+                                        });
+                                    });
+                                }
+                            }
+                        }
+                    });
+                });
             }
         });
 
         let membersArrayValidator: any = z.array(validatedMemberSchema);
-        if (role.maxMembers > 0) membersArrayValidator = membersArrayValidator.max(role.maxMembers, `No more than ${role.maxMembers} members allowed for the ${role.roleName} role.`);
+        if (role.maxMembers > 0) {
+            membersArrayValidator = membersArrayValidator.max(role.maxMembers, `No more than ${role.maxMembers} members allowed for the ${role.roleName} role.`);
+        }
 
+        // Duplicate names check within role
         membersArrayValidator = membersArrayValidator.refine(
             (members = []) => {
-                const names = members.map((m: { details?: { full_name?: string } }) => m.details?.full_name?.trim().toLowerCase()).filter(Boolean);
+                const names = members.map((m: any) => {
+                    const d = m.details || {};
+                    const rawName = d.full_name || d.name || d.director_name || d.partner_name || '';
+                    return normalizeNameForDuplicateCheck(rawName);
+                }).filter(Boolean);
                 const uniqueNames = new Set(names);
                 return uniqueNames.size === names.length;
             },
             { message: "Duplicate member names are not allowed in the same role." }
         );
 
+        // Block Profile Save if any member is unsaved
+        membersArrayValidator = membersArrayValidator.refine(
+            (members = []) => {
+                return !members.some((m: any) => m.isSaved === false);
+            },
+            { message: `Please save or remove the unfinished member in ${role.roleName}.` }
+        );
+
         rolesShape[role.roleKey] = z.object({
-            members: z.array(z.any()).optional().superRefine((members: any[] | undefined, refineContext: z.RefinementCtx) => {
-                if (members && members.length > 0) {
-                    members.forEach((member, index) => {
-                        const memberValidationResult = validatedMemberSchema.safeParse(member);
-                        if (!memberValidationResult.success) {
-                            memberValidationResult.error.errors.forEach(err => {
-                                refineContext.addIssue({ ...err, path: [index, ...err.path] });
-                            });
-                        }
-                    });
-                }
-            })
+            members: membersArrayValidator
         }).optional();
     });
 
@@ -217,14 +323,95 @@ const generateSchema = (constitution: BusinessTypeSetup | null | undefined) => {
                     });
                 }
             }
+
+            // Check If Available fields
+            (constitution.requiredSections || []).forEach(section => {
+                (section.fields || []).forEach(field => {
+                    if (field.requirement === 'If Available') {
+                        const isAvailable = fields[`${field.fieldKey}_isAvailable` as keyof typeof fields] === true;
+                        const val = fields[field.fieldKey as keyof typeof fields];
+                        if (isAvailable) {
+                            const mandatoryValidator = createFieldValidator({ ...field, requirement: 'Mandatory' });
+                            const res = mandatoryValidator.safeParse(val);
+                            if (!res.success) {
+                                res.error.issues.forEach(issue => {
+                                    ctx.addIssue({
+                                        ...issue,
+                                        path: [field.fieldKey, ...issue.path]
+                                    });
+                                });
+                            }
+                        }
+                    }
+                });
+            });
         }),
         roles: z.object(rolesShape).optional()
     }).superRefine((data, ctx) => {
-        // Signatories are OPTIONAL during save
-        // Validation handled later during final submission stage
+        const signatories = data.signatories || [];
+        const primarySignatories = data.primarySignatories || {};
+        const roles = data.roles || {};
 
-        // Global Stakeholder Requirement: show as warning only — do NOT block save
-        // (stakeholders can be added later; profile save must succeed regardless)
+        const validMembersMap: Record<string, Set<string>> = {};
+        Object.entries(roles).forEach(([roleKey, roleVal]: [string, any]) => {
+            const members = roleVal?.members || [];
+            validMembersMap[roleKey] = new Set(members.map((m: any) => m._id).filter(Boolean));
+        });
+
+        const seenSignatories = new Set<string>();
+        signatories.forEach((sig, idx) => {
+            if (!sig.roleKey || !sig.memberId) {
+                ctx.addIssue({
+                    code: z.ZodIssueCode.custom,
+                    path: ['signatories', idx],
+                    message: 'Role and Member selection are required for all signatories.'
+                });
+                return;
+            }
+
+            const sigKey = `${sig.roleKey}-${sig.memberId}`;
+            if (seenSignatories.has(sigKey)) {
+                ctx.addIssue({
+                    code: z.ZodIssueCode.custom,
+                    path: ['signatories', idx],
+                    message: 'Duplicate signatory entries are not allowed.'
+                });
+            } else {
+                seenSignatories.add(sigKey);
+            }
+
+            const validIds = validMembersMap[sig.roleKey];
+            if (!validIds || !validIds.has(sig.memberId)) {
+                ctx.addIssue({
+                    code: z.ZodIssueCode.custom,
+                    path: ['signatories', idx],
+                    message: `Signatory references a member that does not exist in the role.`
+                });
+            }
+        });
+
+        Object.entries(primarySignatories).forEach(([roleKey, memberId]) => {
+            if (!memberId) return;
+
+            const validIds = validMembersMap[roleKey];
+            if (!validIds || !validIds.has(memberId)) {
+                ctx.addIssue({
+                    code: z.ZodIssueCode.custom,
+                    path: ['primarySignatories', roleKey],
+                    message: 'Primary signatory references a member that does not exist.'
+                });
+                return;
+            }
+
+            const isSigSelected = signatories.some(sig => sig.roleKey === roleKey && sig.memberId === memberId);
+            if (!isSigSelected) {
+                ctx.addIssue({
+                    code: z.ZodIssueCode.custom,
+                    path: ['primarySignatories', roleKey],
+                    message: 'Primary signatory must also be selected as a signatory.'
+                });
+            }
+        });
     });
 };
 
@@ -473,7 +660,9 @@ const CreatableMasterSelect = ({
  *   clears field value when Switch is turned OFF
  */
 const SmartField = ({ field, name }: { field: FieldDefinitionData, name: string }) => {
-    const { control, setValue, watch } = useFormContext<Profile>();
+    const methods = useFormContext<Profile>();
+    const { control, setValue, watch, setError, clearErrors } = methods;
+    const { toast } = useToast();
 
     const isIfAvailable = field.requirement === 'If Available';
     // Unique toggle key: sibling of the actual field path
@@ -552,6 +741,56 @@ const SmartField = ({ field, name }: { field: FieldDefinitionData, name: string 
                     </RadioGroup>
                 );
             case 'FileUpload':
+                const fileVal = formField.value;
+                const hasFile = fileVal && (fileVal.name || fileVal.path);
+
+                if (hasFile) {
+                    const formattedSize = fileVal.size ? `${(fileVal.size / (1024 * 1024)).toFixed(2)} MB` : '';
+                    return (
+                        <div className="flex items-center justify-between border rounded-md p-4 bg-slate-50/50">
+                            <div className="flex items-center gap-3 overflow-hidden">
+                                <CheckCircle className="h-5 w-5 text-emerald-500 flex-shrink-0" />
+                                <div className="text-left overflow-hidden">
+                                    <p className="text-xs font-semibold text-gray-700 truncate">{fileVal.name}</p>
+                                    {formattedSize && <p className="text-[10px] text-gray-500">{formattedSize}</p>}
+                                </div>
+                            </div>
+                            <div className="flex items-center gap-2">
+                                {fileVal.path && (
+                                    <Button
+                                        type="button"
+                                        variant="ghost"
+                                        size="sm"
+                                        className="h-8 text-blue-600 hover:text-blue-700 text-xs font-semibold gap-1"
+                                        onClick={async () => {
+                                            try {
+                                                const { getProfileDocumentUrl } = await import('@/lib/upload-profile-document');
+                                                const url = await getProfileDocumentUrl(fileVal.path);
+                                                window.open(url, '_blank');
+                                            } catch (err: any) {
+                                                toast({ title: "Failed to download", description: err.message, variant: "destructive" });
+                                            }
+                                        }}
+                                    >
+                                        Download
+                                    </Button>
+                                )}
+                                <Button
+                                    type="button"
+                                    variant="ghost"
+                                    size="sm"
+                                    className="h-8 text-red-600 hover:text-red-700 hover:bg-red-50"
+                                    onClick={() => {
+                                        formField.onChange(null);
+                                    }}
+                                >
+                                    <Trash2 className="h-4 w-4" />
+                                </Button>
+                            </div>
+                        </div>
+                    );
+                }
+
                 return (
                     <div className="group relative border border-dashed rounded-md p-6 bg-gray-50/50 hover:bg-blue-50/30 hover:border-blue-300 transition-all flex flex-col items-center justify-center gap-2">
                         <div className="p-2.5 bg-white border rounded-full text-gray-400 group-hover:text-blue-600 group-hover:bg-blue-50 transition-colors">
@@ -561,9 +800,34 @@ const SmartField = ({ field, name }: { field: FieldDefinitionData, name: string 
                             <p className="text-xs font-semibold text-gray-700">Click to upload or drag and drop</p>
                             <p className="text-[10px] text-gray-500 mt-0.5">PDF, PNG, JPG (max 5MB)</p>
                         </div>
-                        <Input type="file" className="absolute inset-0 opacity-0 cursor-pointer" onChange={(e) => {
-                            console.log("File selected:", e.target.files?.[0]);
-                        }} />
+                        <Input
+                            type="file"
+                            accept=".pdf,image/png,image/jpeg"
+                            className="absolute inset-0 opacity-0 cursor-pointer"
+                            onChange={async (e) => {
+                                const selectedFile = e.target.files?.[0];
+                                if (!selectedFile) return;
+
+                                const { validateProfileFile } = await import('@/lib/upload-profile-document');
+                                const check = validateProfileFile(selectedFile);
+                                if (!check.isValid) {
+                                    methods.setError(name as any, {
+                                        type: "manual",
+                                        message: check.error
+                                    });
+                                    return;
+                                }
+
+                                methods.clearErrors(name as any);
+                                formField.onChange({
+                                    file: selectedFile,
+                                    name: selectedFile.name,
+                                    mimeType: selectedFile.type,
+                                    size: selectedFile.size,
+                                    isPendingUpload: true
+                                });
+                            }}
+                        />
                     </div>
                 );
             default:
@@ -634,11 +898,11 @@ const SmartField = ({ field, name }: { field: FieldDefinitionData, name: string 
                     name={name as any}
                     render={({ field: inputField }) => (
                         <FormItem>
-                            <FormLabel className="text-sm font-medium text-gray-700">
+                            <FormLabel className="text-xs font-black uppercase tracking-widest text-slate-700 dark:text-slate-300">
                                 {field.fieldName}
-                                {field.requirement === 'Mandatory' && <span className="text-red-500 ml-0.5">*</span>}
+                                {field.requirement === 'Mandatory' && <span className="text-red-500 ml-1 font-bold">*</span>}
                                 {field.requirement === 'Optional' && (
-                                    <span className="ml-1.5 text-[10px] font-normal text-gray-400 normal-case">(optional)</span>
+                                    <span className="ml-1.5 text-[9px] font-bold text-slate-400 normal-case tracking-normal">(Optional)</span>
                                 )}
                             </FormLabel>
                             <FormControl>
@@ -995,16 +1259,35 @@ const InnerForm: React.FC<InnerFormProps> = ({
 
     const { control, handleSubmit, trigger, getValues, setValue, watch, reset, formState: { errors } } = methods;
 
-    // Effect to rebuild dynamic fields/roles when constitution changes, while PRESERVING profileName
+    // Effect to rebuild dynamic fields/roles when constitution changes, while PRESERVING profileName and isDefault
     useEffect(() => {
         const current = getValues();
         if (current.constitutionId === selectedConstitutionId) return; // No real change
 
-        reset({
-            ...current,   // preserve all existing values
-            constitutionId: selectedConstitutionId
-        });
-    }, [selectedConstitutionId, freshDefaults, getValues, reset, existingProfile]);
+        const nextDefaults = { ...freshDefaults };
+        nextDefaults.profileName = current.profileName || '';
+        nextDefaults.isDefault = current.isDefault || false;
+
+        // Preserve same-key compatible fields across constitutions if applicable
+        if (current.fields && nextDefaults.fields) {
+            const preservedFields: Record<string, any> = { ...nextDefaults.fields };
+            selectedConstitution?.requiredSections?.forEach(section => {
+                section.fields?.forEach(field => {
+                    const currentVal = current.fields[field.fieldKey];
+                    if (currentVal !== undefined) {
+                        preservedFields[field.fieldKey] = currentVal;
+                        const availKey = `${field.fieldKey}_isAvailable`;
+                        if (current.fields[availKey] !== undefined) {
+                            preservedFields[availKey] = current.fields[availKey];
+                        }
+                    }
+                });
+            });
+            nextDefaults.fields = preservedFields;
+        }
+
+        reset(nextDefaults);
+    }, [selectedConstitutionId, freshDefaults, reset]);
 
     const [showDefaultConfirm, setShowDefaultConfirm] = useState(false);
 
@@ -1057,11 +1340,198 @@ const InnerForm: React.FC<InnerFormProps> = ({
         // profileName is intentionally NOT touched here
     };
 
+    const normalizeProfilePayload = (data: Profile, constitution: BusinessTypeSetup | null | undefined): Omit<Profile, 'id'> & { id?: string } => {
+        const trimmedProfileName = data.profileName?.trim() || '';
+
+        const normalizedFields: Record<string, any> = {};
+        if (constitution?.requiredSections) {
+            constitution.requiredSections.forEach(section => {
+                section.fields?.forEach(field => {
+                    const key = field.fieldKey;
+                    const isAvailKey = `${key}_isAvailable`;
+                    const isAvailable = data.fields?.[isAvailKey] !== false;
+
+                    if (field.requirement === 'If Available') {
+                        normalizedFields[isAvailKey] = isAvailable;
+                        if (!isAvailable) {
+                            normalizedFields[key] = field.inputType === 'Checkbox' && field.options?.length ? [] : '';
+                            return;
+                        }
+                    }
+
+                    let val = data.fields?.[key];
+
+                    // Perform specific type normalization
+                    if (typeof val === 'string') {
+                        val = val.trim();
+                        if (field.fieldType === 'PAN' || field.fieldType === 'GSTIN') {
+                            val = val.toUpperCase();
+                        } else if (field.fieldType === 'Number') {
+                            val = val.replace(/\D/g, '');
+                        }
+                    }
+
+                    normalizedFields[key] = val !== undefined ? val : '';
+                });
+            });
+
+            // Handle GSTIN specific conditional logic
+            const gstApplicable = data.fields?.gst_applicable === true;
+            normalizedFields.gst_applicable = gstApplicable;
+            if (gstApplicable) {
+                normalizedFields.gstin = (data.fields?.gstin || '').trim().toUpperCase();
+            } else {
+                normalizedFields.gstin = '';
+            }
+        }
+
+        const normalizedRoles: Record<string, any> = {};
+        if (constitution?.roles) {
+            constitution.roles.forEach(role => {
+                const rawMembers = data.roles?.[role.roleKey]?.members || [];
+                const cleanMembers = rawMembers.map((member: any, index: number) => {
+                    const normalized = normalizeMemberForSave(member, role.roleName, index);
+                    
+                    // Clean the member details string fields
+                    const cleanedDetails: Record<string, any> = { ...(normalized.details || {}) };
+                    role.requiredDetails.forEach((section: any) => {
+                        section.fields?.forEach((field: any) => {
+                            const key = field.fieldKey;
+                            const isAvailKey = `${key}_isAvailable`;
+                            const isAvailable = cleanedDetails[isAvailKey] !== false;
+
+                            if (field.requirement === 'If Available') {
+                                cleanedDetails[isAvailKey] = isAvailable;
+                                if (!isAvailable) {
+                                    cleanedDetails[key] = field.inputType === 'Checkbox' && field.options?.length ? [] : '';
+                                    return;
+                                }
+                            }
+
+                            let val = cleanedDetails[key];
+                            if (typeof val === 'string') {
+                                val = val.trim();
+                                if (field.fieldType === 'PAN' || field.fieldType === 'GSTIN') {
+                                    val = val.toUpperCase();
+                                } else if (field.fieldType === 'Number') {
+                                    val = val.replace(/\D/g, '');
+                                }
+                            }
+                            cleanedDetails[key] = val !== undefined ? val : '';
+                        });
+                    });
+
+                    if (role.designations?.length) {
+                        cleanedDetails.designation = (cleanedDetails.designation || '').trim();
+                    }
+
+                    // UI only flags like isSaved should be excluded
+                    const { isSaved, ...persistedMember } = normalized;
+                    return {
+                        ...persistedMember,
+                        details: cleanedDetails
+                    };
+                });
+
+                normalizedRoles[role.roleKey] = { members: cleanMembers };
+            });
+        }
+
+        // Signatories reference validation
+        const validMemberIdsByRole: Record<string, Set<string>> = {};
+        Object.entries(normalizedRoles).forEach(([roleKey, roleVal]: [string, any]) => {
+            validMemberIdsByRole[roleKey] = new Set((roleVal?.members || []).map((m: any) => m._id).filter(Boolean));
+        });
+
+        const cleanSignatories = (data.signatories || []).filter(sig => {
+            if (!sig.roleKey || !sig.memberId) return false;
+            const validIds = validMemberIdsByRole[sig.roleKey];
+            return validIds && validIds.has(sig.memberId);
+        });
+
+        const seenSignatories = new Set<string>();
+        const uniqueSignatories = cleanSignatories.filter(sig => {
+            const key = `${sig.roleKey}-${sig.memberId}`;
+            if (seenSignatories.has(key)) return false;
+            seenSignatories.add(key);
+            return true;
+        });
+
+        const cleanPrimarySignatories: Record<string, string> = {};
+        if (data.primarySignatories) {
+            Object.entries(data.primarySignatories).forEach(([roleKey, memberId]) => {
+                if (!memberId) return;
+                const validIds = validMemberIdsByRole[roleKey];
+                const isSigSelected = uniqueSignatories.some(sig => sig.roleKey === roleKey && sig.memberId === memberId);
+                if (validIds && validIds.has(memberId) && isSigSelected) {
+                    cleanPrimarySignatories[roleKey] = memberId;
+                }
+            });
+        }
+
+        return {
+            profileName: trimmedProfileName,
+            constitutionId: data.constitutionId,
+            isDefault: data.isDefault || false,
+            fields: normalizedFields,
+            roles: normalizedRoles,
+            signatories: uniqueSignatories,
+            primarySignatories: cleanPrimarySignatories
+        };
+    };
+
+    const completionStats = useMemo(() => {
+        if (!selectedConstitution) return null;
+        
+        let totalRequired = 2; // profileName + constitutionId
+        let filledRequired = 0;
+        
+        const current = watchedValues as any || freshDefaults as any;
+        
+        if (current.profileName && current.profileName.trim().length > 0) filledRequired++;
+        if (current.constitutionId) filledRequired++;
+        
+        selectedConstitution.requiredSections?.forEach(section => {
+            section.fields?.forEach(field => {
+                if (field.requirement === 'Mandatory') {
+                    totalRequired++;
+                    if (current.fields?.[field.fieldKey] !== undefined && current.fields[field.fieldKey] !== '') {
+                        filledRequired++;
+                    }
+                }
+            });
+        });
+        
+        selectedConstitution.roles?.forEach(role => {
+            const members = current.roles?.[role.roleKey]?.members || [];
+            members.forEach((member: any) => {
+                role.requiredDetails?.forEach((section: any) => {
+                    section.fields?.forEach((field: any) => {
+                        if (field.requirement === 'Mandatory') {
+                            totalRequired++;
+                            if (member?.details?.[field.fieldKey] !== undefined && member.details[field.fieldKey] !== '') {
+                                filledRequired++;
+                            }
+                        }
+                    });
+                });
+                if (role.designations?.length) {
+                    totalRequired++;
+                    if (member?.details?.designation) {
+                        filledRequired++;
+                    }
+                }
+            });
+        });
+
+        const percentage = totalRequired > 0 ? Math.round((filledRequired / totalRequired) * 100) : 0;
+        return { totalRequired, filledRequired, percentage };
+    }, [selectedConstitution, watchedValues, freshDefaults]);
+
     const allPendingIssues = useMemo(() => {
-        const completenessIssues = listPendingMandatoryIssues(getValues() as Profile, selectedConstitution);
+        const completenessIssues = listPendingMandatoryIssues(watchedValues as any || freshDefaults as any, selectedConstitution);
         const validationErrorMessages = getErrorMessages(errors).map(msg => ({ message: msg, type: 'error' as const }));
 
-        // Simple deduplication
         const messageSet = new Set<string>();
         const combined: Issue[] = [];
         [...validationErrorMessages, ...completenessIssues].forEach(issue => {
@@ -1072,107 +1542,179 @@ const InnerForm: React.FC<InnerFormProps> = ({
         });
 
         return combined;
-    }, [errors, selectedConstitution, getValues]);
+    }, [errors, selectedConstitution, watchedValues, freshDefaults]);
 
     const criticalErrors = useMemo(() => allPendingIssues.filter(i => i.type === 'error'), [allPendingIssues]);
     const warnings = useMemo(() => allPendingIssues.filter(i => i.type === 'warning'), [allPendingIssues]);
 
-    const isSaveDisabled = isSaving;
+    const [isSavingLocal, setIsSavingLocal] = useState(false);
+    const isSaveDisabled = isSaving || isSavingLocal;
 
-    const onSubmit = async (data: Profile) => {
-        const isValid = await trigger();
+    const onValidSubmit = async (data: Profile) => {
+        if (isSaveDisabled) return;
+        setIsSavingLocal(true);
 
-        console.log("===============================");
-        console.log("SUBMIT TRIGGERED");
-        console.log("FORM VALID:", isValid);
-        console.log("FORM DATA:", data);
-        console.log("FORM ERRORS:", errors);
-        console.log("===============================");
-
-        if (!isValid) {
-            // Check if any CRITICAL mandatory field has an error — block save if so
-            const currentErrors = methods.formState.errors;
-            const hasCriticalError = !!(
-                currentErrors.profileName ||
-                currentErrors.constitutionId ||
-                (currentErrors.fields && Object.keys(currentErrors.fields).length > 0)
-            );
-
-            if (hasCriticalError) {
-                toast({
-                    title: "Required Fields Missing",
-                    description: "Please fill in all required fields (Profile Name, Email, Mobile, etc.) before saving.",
-                    variant: "destructive"
-                });
-                return; // BLOCK save for critical fields
-            }
-
-            // Non-critical (roles, signatories) — allow partial save with warning
-            toast({
-                title: "Partially Configured",
-                description: "Profile saved. Roles and signatories can be completed later.",
-                variant: "default"
-            });
-        }
-
-        console.log("SENDING DATA TO BACKEND:", data);
         try {
-            if (existingProfile) {
-                console.log("UPDATING EXISTING PROFILE:", existingProfile.id);
-                console.log("UPDATING EXISTING PROFILE:", existingProfile.id);
-                // 0. Normalize all members in all roles to ensure name/displayName/full_name consistency
-                if (data.roles) {
-                    Object.entries(data.roles).forEach(([roleKey, roleValue]: [string, { members?: any[] } | any]) => {
-                        if (roleValue?.members && Array.isArray(roleValue.members)) {
-                            const roleDef = selectedConstitution?.roles?.find(r => r.roleKey === roleKey);
-                            roleValue.members = roleValue.members.map((member: any, index: number) => 
-                                normalizeMemberForSave(member, roleDef?.roleName || roleKey, index)
-                            );
-                        }
-                    });
-                }
-                await updateProfile(existingProfile.id, data);
-                if (data.isDefault) {
-                    console.log("SETTING AS DEFAULT PROFILE");
-                    await setDefaultProfile(existingProfile.id);
-                }
-                console.log("UPDATE SUCCESSFUL");
-            } else {
-                const isFirstProfile = profiles.length === 0;
-                console.log("ADDING NEW PROFILE. isFirstProfile:", isFirstProfile);
-                if (isFirstProfile || data.isDefault) {
-                    data.isDefault = true;
-                }
-                // 0. Normalize all members in all roles to ensure name/displayName/full_name consistency
-                if (data.roles) {
-                    Object.entries(data.roles).forEach(([roleKey, roleValue]: [string, { members?: any[] } | any]) => {
-                        if (roleValue?.members && Array.isArray(roleValue.members)) {
-                            const roleDef = selectedConstitution?.roles?.find(r => r.roleKey === roleKey);
-                            roleValue.members = roleValue.members.map((member: any, index: number) => 
-                                normalizeMemberForSave(member, roleDef?.roleName || roleKey, index)
-                            );
-                        }
-                    });
-                }
+            let profileId = existingProfile?.id;
+            let isNew = false;
+            let initialPayload = normalizeProfilePayload(data, selectedConstitution);
 
-                await addProfile(data, isFirstProfile);
-                console.log("ADD SUCCESSFUL");
+            if (!profileId) {
+                isNew = true;
+                const created = await addProfile(initialPayload, profiles.length === 0);
+                if (!created) {
+                    toast({ title: "Save Error", description: "Failed to create profile record.", variant: "destructive" });
+                    setIsSavingLocal(false);
+                    return;
+                }
+                profileId = created.id;
             }
+
+            if (!profileId) {
+                setIsSavingLocal(false);
+                return;
+            }
+
+            // Now, upload pending files using the created/existing profileId
+            const fieldsCopy = { ...initialPayload.fields };
+            const { uploadProfileDocument } = await import('@/lib/upload-profile-document');
+            let hasUploadedNewFiles = false;
+
+            // Search top-level fields
+            for (const [key, value] of Object.entries(fieldsCopy)) {
+                if (value && typeof value === 'object' && (value as any).isPendingUpload && (value as any).file) {
+                    const fileObj = (value as any).file as File;
+                    try {
+                        const meta = await uploadProfileDocument(fileObj, profileId, key);
+                        fieldsCopy[key] = meta;
+                        hasUploadedNewFiles = true;
+                    } catch (err: any) {
+                        toast({ title: "Upload Failed", description: err.message, variant: "destructive" });
+                        setIsSavingLocal(false);
+                        return;
+                    }
+                }
+            }
+
+            // Search roles member details
+            const rolesCopy = { ...initialPayload.roles };
+            for (const [roleKey, roleVal] of Object.entries(rolesCopy)) {
+                const members = (roleVal as any)?.members || [];
+                for (let i = 0; i < members.length; i++) {
+                    const member = members[i];
+                    const details = member.details || {};
+                    for (const [key, value] of Object.entries(details)) {
+                        if (value && typeof value === 'object' && (value as any).isPendingUpload && (value as any).file) {
+                            const fileObj = (value as any).file as File;
+                            try {
+                                const meta = await uploadProfileDocument(fileObj, profileId, `${roleKey}_${i}_${key}`);
+                                details[key] = meta;
+                                hasUploadedNewFiles = true;
+                            } catch (err: any) {
+                                toast({ title: "Upload Failed", description: err.message, variant: "destructive" });
+                                setIsSavingLocal(false);
+                                return;
+                            }
+                        }
+                    }
+                }
+            }
+
+            const finalPayload = {
+                ...initialPayload,
+                fields: fieldsCopy,
+                roles: rolesCopy
+            };
+
+            await updateProfile(profileId, finalPayload);
+            if (finalPayload.isDefault) {
+                await setDefaultProfile(profileId);
+            }
+
+            toast({ title: "Success", description: existingProfile ? "Profile updated successfully." : "Profile created successfully." });
+
             if (onSuccess) {
-                console.log("CALLING onSuccess()");
                 onSuccess();
             } else {
-                console.log("CALLING onCancel() (default fallback)");
                 onCancel();
             }
         } catch (e: any) {
-            console.error("!!! SAVE FAILED WITH ERROR !!!");
-            console.error(e);
-            console.error("Error Message:", e?.message);
-            if (e?.response) {
-                console.error("Error Response Data:", e.response.data);
+            console.error("!!! SAVE FAILED WITH ERROR !!!", e);
+            toast({ title: "Save Error", description: e?.message || "Could not save profile.", variant: "destructive" });
+        } finally {
+            setIsSavingLocal(false);
+        }
+    };
+
+    const onInvalidSubmit = (formErrors: any) => {
+        console.log("FORM INVALID SUBMIT ERRORS:", formErrors);
+        toast({
+            title: "Validation Failed",
+            description: "Please fix the highlighted errors before saving.",
+            variant: "destructive"
+        });
+
+        setTopLevelTab('details');
+
+        const firstErrorKey = Object.keys(formErrors)[0];
+        if (!firstErrorKey) return;
+
+        if (firstErrorKey === 'profileName') {
+            const el = document.getElementsByName('profileName')[0];
+            el?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            el?.focus();
+            return;
+        }
+
+        if (firstErrorKey === 'fields' && formErrors.fields) {
+            const firstFieldKey = Object.keys(formErrors.fields)[0];
+            let targetTabKey = '';
+            (selectedConstitution?.requiredSections || []).forEach(section => {
+                const hasField = section.fields?.some(f => f.fieldKey === firstFieldKey);
+                if (hasField) {
+                    const key = section.sectionKey.toLowerCase();
+                    if (section.fields?.some((f: any) => f.category === 'core' || f.group === 'core') || key.includes('core')) {
+                        targetTabKey = 'core';
+                    } else if (key.includes('address')) {
+                        targetTabKey = 'address';
+                    } else if (key.includes('contact')) {
+                        targetTabKey = 'contact';
+                    } else if (key.includes('business')) {
+                        targetTabKey = 'business';
+                    } else {
+                        targetTabKey = 'general';
+                    }
+                }
+            });
+
+            if (targetTabKey) {
+                setCurrentTab(targetTabKey);
             }
-            toast({ title: "Save Error", description: "Could not save profile.", variant: "destructive" });
+
+            setTimeout(() => {
+                const el = document.getElementsByName(`fields.${firstFieldKey}`)[0] || document.getElementById(`fields.${firstFieldKey}`);
+                if (el) {
+                    el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    el.focus();
+                }
+            }, 100);
+        } else if (firstErrorKey === 'roles' && formErrors.roles) {
+            setCurrentTab('roles');
+            setTimeout(() => {
+                const firstRoleKey = Object.keys(formErrors.roles)[0];
+                const el = document.getElementById(`role-section-${firstRoleKey}`);
+                if (el) {
+                    el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+            }, 100);
+        } else if (firstErrorKey === 'signatories') {
+            setCurrentTab('roles');
+            setTimeout(() => {
+                const el = document.getElementById('select-all-signatories');
+                if (el) {
+                    el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+            }, 100);
         }
     };
 
@@ -1252,7 +1794,7 @@ const InnerForm: React.FC<InnerFormProps> = ({
         }
 
         return mainTabs;
-    }, [formatLabel]);
+    }, [formatLabel, selectedConstitution]);
 
 
     const groupedData = useMemo(() => {
@@ -1298,44 +1840,82 @@ const InnerForm: React.FC<InnerFormProps> = ({
 
     return (
         <FormProvider {...methods}>
-            <form onSubmit={handleSubmit(onSubmit, () => onSubmit(getValues() as Profile))} className="h-[90vh] flex flex-col bg-background relative overflow-hidden">
-                <fieldset disabled={formMode === 'view'} className="contents">
+            <form onSubmit={handleSubmit(onValidSubmit, onInvalidSubmit)} className="h-[90vh] flex flex-col bg-background relative overflow-hidden">
                 {/* Sticky Header */}
-                <div className="bg-white sticky top-0 z-40 border-b px-6 py-4 flex items-center justify-between border-slate-200 shadow-sm backdrop-blur-md">
+                <div 
+                    className="sticky top-0 z-40 border-b px-6 py-4 flex items-center justify-between shadow-sm backdrop-blur-md"
+                    style={{
+                        background: 'linear-gradient(110deg, hsl(var(--primary) / 0.045), hsl(var(--background)) 45%, hsl(var(--background)))'
+                    }}
+                >
                     <div className="flex flex-col">
                         <div className="flex items-center gap-2 mb-0.5">
-                            {existingProfile && <Badge variant="secondary" className="h-4 px-1.5 text-[9px] font-bold bg-slate-900 text-white border-transparent uppercase tracking-wider">Draft</Badge>}
+                            {formMode === 'view' ? (
+                                <Badge variant="secondary" className="h-5 px-2 text-[10px] font-bold bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 border-transparent uppercase tracking-widest">
+                                    View Mode
+                                </Badge>
+                            ) : (
+                                <Badge variant="secondary" className="h-5 px-2 text-[10px] font-bold bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 border-transparent uppercase tracking-widest">
+                                    {existingProfile ? 'Edit Profile' : 'New Profile'}
+                                </Badge>
+                            )}
                         </div>
-                        <h2 className="text-xl font-black text-slate-900 leading-tight uppercase tracking-tight">
-                            {existingProfile ? 'Update Profile' : 'New Profile'}
+                        <h2 className="text-lg font-black text-slate-900 dark:text-foreground leading-tight uppercase tracking-tight">
+                            {formMode === 'view' ? existingProfile?.profileName : (existingProfile ? existingProfile.profileName : 'Create Business Profile')}
                         </h2>
-                        <p className="text-xs font-medium text-slate-500 uppercase tracking-widest">
-                            {selectedConstitution?.name || 'Standard Setup'}
-                        </p>
+                        {formMode !== 'view' && (
+                            <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-widest mt-0.5">
+                                {existingProfile ? (
+                                    <span>{selectedConstitution?.businessType || 'Business'} &middot; {selectedConstitution?.businessSubType || 'Profile'}</span>
+                                ) : (
+                                    <span>Configure your organization's identity and business details</span>
+                                )}
+                            </p>
+                        )}
                     </div>
-                    <Button
-                        type="button"
-                        variant="ghost"
-                        size="icon"
-                        onClick={onCancel}
-                        className="h-10 w-10 text-slate-500 hover:text-slate-900 hover:bg-slate-50 border border-slate-200 shadow-sm rounded-lg transition-all"
-                    >
-                        <ArrowLeft className="h-5 w-5" />
-                    </Button>
+                    <div className="flex items-center gap-6">
+                        {completionStats && formMode !== 'view' && (
+                            <div className="flex items-center gap-3 text-right">
+                                <div className="flex flex-col items-end gap-0.5">
+                                    <span className="text-[10px] font-black uppercase tracking-widest text-slate-500">
+                                        Setup {completionStats.percentage}%
+                                    </span>
+                                    <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider">
+                                        {completionStats.filledRequired} of {completionStats.totalRequired} required
+                                    </span>
+                                </div>
+                                <div className="w-16 h-1.5 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden border border-slate-200/50">
+                                    <div 
+                                        className="h-full bg-blue-600 rounded-full transition-all duration-300"
+                                        style={{ width: `${completionStats.percentage}%` }}
+                                    />
+                                </div>
+                            </div>
+                        )}
+                        <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            onClick={onCancel}
+                            className="h-10 w-10 text-slate-500 hover:text-foreground hover:bg-muted border border-border shadow-sm rounded-lg transition-colors duration-150"
+                        >
+                            <ArrowLeft className="h-5 w-5" />
+                        </Button>
+                    </div>
                 </div>
 
-                <div className="bg-white px-6 border-b border-slate-200 sticky z-30" style={{ top: '73px' }}>
+                <div className="bg-background px-6 py-2 border-b border-border sticky z-30" style={{ top: '76px' }}>
                     <Tabs value={topLevelTab} onValueChange={(val: any) => setTopLevelTab(val)} className="w-full">
-                        <TabsList className="bg-transparent h-12 w-full justify-start rounded-none border-b-0 p-0 gap-6">
+                        <TabsList className="bg-slate-100 dark:bg-slate-900/60 p-1 rounded-xl flex justify-start gap-1 h-11 w-fit border border-slate-200/60 dark:border-slate-800/80 shadow-inner">
                             <TabsTrigger 
                                 value="details" 
-                                className="rounded-none border-b-2 border-transparent data-[state=active]:border-blue-600 data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-blue-700 font-semibold text-sm h-full px-1"
+                                className="rounded-lg h-9 px-6 text-xs font-black uppercase tracking-widest data-[state=active]:bg-white dark:data-[state=active]:bg-slate-800 data-[state=active]:text-blue-700 data-[state=active]:shadow-sm transition-all border border-transparent data-[state=active]:border-slate-200/50"
                             >
                                 Profile Details
                             </TabsTrigger>
                             <TabsTrigger 
                                 value="branding" 
-                                className="rounded-none border-b-2 border-transparent data-[state=active]:border-blue-600 data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-blue-700 font-semibold text-sm h-full px-1"
+                                className="rounded-lg h-9 px-6 text-xs font-black uppercase tracking-widest data-[state=active]:bg-white dark:data-[state=active]:bg-slate-800 data-[state=active]:text-blue-700 data-[state=active]:shadow-sm transition-all border border-transparent data-[state=active]:border-slate-200/50"
                             >
                                 Branding
                             </TabsTrigger>
@@ -1345,21 +1925,27 @@ const InnerForm: React.FC<InnerFormProps> = ({
 
                 {topLevelTab === 'details' && (
                     <>
-                        <div className="flex-1 overflow-y-auto px-6 py-8 space-y-10">
+                        <div className="flex-1 overflow-y-auto px-6 py-8 space-y-10 modal-radial-bg animate-in fade-in slide-in-from-bottom-1 duration-200">
                     <OrphanedDataHandler constitution={selectedConstitution} />
 
                     {/* Section 1: Core Selection */}
                     <div className="space-y-6">
-                        <div className="border-b pb-4 border-slate-200">
-                            <h3 className="text-base font-black text-slate-900 uppercase tracking-widest">01. Basic Details</h3>
-                            <p className="text-xs text-slate-500 font-medium mt-1 uppercase tracking-wider">Provide the primary organizational parameters.</p>
+                        <div className="flex items-center gap-3 border-b pb-4 border-slate-200/60">
+                            <div className="h-8 w-10 bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-400 font-black rounded-lg flex items-center justify-center text-xs tracking-wider border border-blue-100/50">
+                                01
+                            </div>
+                            <div>
+                                <h3 className="text-sm font-black text-slate-900 dark:text-foreground uppercase tracking-widest">Basic Details</h3>
+                                <p className="text-[10px] text-slate-500 font-medium uppercase tracking-wider">Provide the primary organizational parameters.</p>
+                            </div>
                         </div>
 
-                        <Card className="rounded-lg border bg-white shadow-sm overflow-hidden">
+                        <Card className="rounded-xl border border-border/70 bg-gradient-to-br from-primary/[0.015] via-card to-card hover:border-primary/15 transition-all duration-300 shadow-sm overflow-hidden">
                             <CardContent className="p-6 grid md:grid-cols-2 gap-8">
+                                <fieldset disabled={formMode === 'view'} className={cn("contents", formMode === 'view' && "view-mode-fieldset")}>
                                 <FormField control={control} name="profileName" render={({ field }) => (
                                     <FormItem>
-                                        <FormLabel className="text-xs font-black text-slate-700 uppercase tracking-widest">Profile Name</FormLabel>
+                                        <FormLabel className="text-xs font-black text-slate-700 dark:text-slate-300 uppercase tracking-widest">Profile Name <span className="text-red-500 font-bold ml-1">*</span></FormLabel>
                                         <FormControl><Input placeholder="e.g. Main Branch Office" {...field} value={field.value || ''} className="h-10 border-slate-300 focus-visible:ring-slate-900 rounded-lg shadow-sm" /></FormControl>
                                         <FormMessage className="text-[10px] font-medium text-slate-400 uppercase mt-1" />
                                     </FormItem>
@@ -1367,8 +1953,9 @@ const InnerForm: React.FC<InnerFormProps> = ({
                                 <div className="grid grid-cols-2 gap-4">
                                     <FormField control={control} name="primaryConstitution" render={({ field }) => (
                                         <FormItem>
-                                            <FormLabel className="text-xs font-black text-slate-700 uppercase tracking-widest">Primary Constitution</FormLabel>
+                                            <FormLabel className="text-xs font-black text-slate-700 dark:text-slate-300 uppercase tracking-widest">Primary Constitution <span className="text-red-500 font-bold ml-1">*</span></FormLabel>
                                             <Select
+                                                disabled={formMode === 'view'}
                                                 value={field.value}
                                                 onValueChange={(val) => {
                                                     field.onChange(val);
@@ -1385,9 +1972,9 @@ const InnerForm: React.FC<InnerFormProps> = ({
 
                                     <FormField control={control} name="constitutionId" render={({ field }) => (
                                         <FormItem>
-                                            <FormLabel className="text-xs font-black text-slate-700 uppercase tracking-widest">Sub Type</FormLabel>
+                                            <FormLabel className="text-xs font-black text-slate-700 dark:text-slate-300 uppercase tracking-widest">Sub Type <span className="text-red-500 font-bold ml-1">*</span></FormLabel>
                                             <Select
-                                                disabled={!watchPrimary || availableSubTypes.length === 0}
+                                                disabled={formMode === 'view' || !watchPrimary || availableSubTypes.length === 0}
                                                 onValueChange={(val) => {
                                                     field.onChange(val);
                                                     onConstitutionChange(val);
@@ -1424,6 +2011,7 @@ const InnerForm: React.FC<InnerFormProps> = ({
                                             </div>
                                             <FormControl>
                                                 <Switch
+                                                    disabled={formMode === 'view'}
                                                     checked={field.value || false}
                                                     onCheckedChange={handleDefaultToggle}
                                                     className="data-[state=checked]:bg-slate-900 scale-90"
@@ -1432,8 +2020,7 @@ const InnerForm: React.FC<InnerFormProps> = ({
                                         </FormItem>
                                     )}
                                 />
-
-
+                                </fieldset>
                             </CardContent>
                         </Card>
                     </div>
@@ -1441,21 +2028,26 @@ const InnerForm: React.FC<InnerFormProps> = ({
                     {/* Section 2: Dynamic configuration */}
                     {Object.keys(groupedData).length > 0 && (
                         <div className="space-y-8">
-                            <div className="border-b pb-4 border-slate-200">
-                                <h3 className="text-base font-black text-slate-900 uppercase tracking-widest">02. Additional Details</h3>
-                                <p className="text-xs text-slate-500 font-medium mt-1 uppercase tracking-wider">Specialized parameters based on the framework.</p>
+                            <div className="flex items-center gap-3 border-b pb-4 border-slate-200/60">
+                                <div className="h-8 w-10 bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-400 font-black rounded-lg flex items-center justify-center text-xs tracking-wider border border-blue-100/50">
+                                    02
+                                </div>
+                                <div>
+                                    <h3 className="text-sm font-black text-slate-900 dark:text-foreground uppercase tracking-widest">Additional Details</h3>
+                                    <p className="text-[10px] text-slate-500 font-medium uppercase tracking-wider">Specialized parameters based on the framework.</p>
+                                </div>
                             </div>
 
                             <Tabs value={currentTab || ''} onValueChange={setCurrentTab} className="w-full">
-                                <div className="z-20 bg-white pb-8">
-                                    <TabsList className="bg-slate-100 p-1 rounded-xl flex flex-wrap justify-start gap-1 h-auto border border-slate-200 shadow-inner">
+                                <div className="z-20 bg-background pb-8">
+                                    <TabsList className="bg-slate-100 dark:bg-slate-900/60 p-1 rounded-xl flex flex-wrap justify-start gap-1 h-auto border border-slate-200/60 dark:border-slate-800/80 shadow-inner">
                                         {Object.entries(groupedData)
                                             .sort(([, a], [, b]) => a.order - b.order)
                                             .map(([key, tab]) => (
                                                 <TabsTrigger
                                                     key={key}
                                                     value={key}
-                                                    className="rounded-lg h-10 px-6 text-xs font-black uppercase tracking-widest data-[state=active]:bg-white data-[state=active]:text-slate-900 data-[state=active]:shadow-sm transition-all border border-transparent data-[state=active]:border-slate-200"
+                                                    className="rounded-lg h-10 px-6 text-xs font-black uppercase tracking-widest data-[state=active]:bg-white dark:data-[state=active]:bg-slate-800 data-[state=active]:text-blue-700 data-[state=active]:shadow-sm transition-all border border-transparent data-[state=active]:border-slate-200/50"
                                                 >
                                                     {tab.label}
                                                 </TabsTrigger>
@@ -1475,10 +2067,12 @@ const InnerForm: React.FC<InnerFormProps> = ({
                                                             </div>
                                                         )}
                                                         {subTab.roleData ? (
+                                                            <fieldset disabled={formMode === 'view'} className={cn("contents", formMode === 'view' && "view-mode-fieldset")}>
                                                             <RoleSection
                                                                 role={subTab.roleData}
                                                                 allRoles={selectedConstitution?.roles || []}
                                                             />
+                                                            </fieldset>
                                                         ) : (
                                                             (() => {
                                                                 const requiresStakeholder = subTab.sections?.some((s: SectionData) => SECTION_REQUIREMENTS[s.sectionKey]?.requiresStakeholder);
@@ -1489,7 +2083,9 @@ const InnerForm: React.FC<InnerFormProps> = ({
                                                                 }
 
                                                                 return (
+                                                                    <fieldset disabled={formMode === 'view'} className={cn("contents", formMode === 'view' && "view-mode-fieldset")}>
                                                                     <RHFSectionRenderer sections={subTab.sections} />
+                                                                    </fieldset>
                                                                 );
                                                             })()
                                                         )}
@@ -1505,23 +2101,27 @@ const InnerForm: React.FC<InnerFormProps> = ({
                                                     return <StakeholderWarning />;
                                                 }
 
-                                                return (
-                                                    <RHFSectionRenderer sections={tabData.sections} />
-                                                );
+                                                    return (
+                                                        <fieldset disabled={formMode === 'view'} className={cn("contents", formMode === 'view' && "view-mode-fieldset")}>
+                                                        <RHFSectionRenderer sections={tabData.sections} />
+                                                        </fieldset>
+                                                    );
                                             })()
                                         )}
                                         {tabKey === 'roles' && selectedConstitution?.roles && selectedConstitution.roles.length > 0 && (
-                                            <div className="space-y-6 pt-12 mt-12 border-t border-slate-200">
-                                                <div className="flex items-center gap-3 pb-6">
-                                                    <div className="h-8 w-8 rounded-xl bg-slate-900 flex items-center justify-center shadow-lg">
-                                                        <Shield className="h-4 w-4 text-white" />
+                                            <div className="space-y-6 pt-12 mt-12 border-t border-slate-200/60">
+                                                <div className="flex items-center gap-3 pb-6 border-b border-slate-100 dark:border-slate-800">
+                                                    <div className="h-8 w-10 bg-slate-900 text-white font-black rounded-lg flex items-center justify-center text-xs border border-slate-800">
+                                                        <Shield className="h-3.5 w-3.5" />
                                                     </div>
                                                     <div>
-                                                        <h3 className="text-base font-black text-slate-900 uppercase tracking-widest">Authority Delegation</h3>
-                                                        <p className="text-[10px] font-medium text-slate-500 uppercase tracking-tight">Assign authorized signatories and designate primary representatives.</p>
+                                                        <h3 className="text-sm font-black text-slate-900 dark:text-foreground uppercase tracking-widest">Authority Delegation</h3>
+                                                        <p className="text-[10px] text-slate-500 font-medium uppercase tracking-wider">Assign authorized signatories and designate primary representatives.</p>
                                                     </div>
                                                 </div>
+                                                <fieldset disabled={formMode === 'view'} className={cn("contents", formMode === 'view' && "view-mode-fieldset")}>
                                                 <GeneralSection allRoles={selectedConstitution?.roles || []} />
+                                                </fieldset>
                                             </div>
                                         )}
                                     </TabsContent>
@@ -1535,12 +2135,16 @@ const InnerForm: React.FC<InnerFormProps> = ({
                         </div>
                         
                         {/* Sticky Footer */}
-                        <div className="bg-slate-50 sticky bottom-0 z-30 border-t px-6 py-4 flex items-center justify-end gap-3 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
-                            <Button type="button" variant="ghost" onClick={onCancel} className="h-11 px-6 rounded-xl text-xs font-black uppercase tracking-widest text-slate-500 hover:bg-red-300 hover:text-slate-900 transition-all">
+                        <div className="bg-background/95 backdrop-blur-sm sticky bottom-0 z-30 border-t border-border/80 px-6 py-4 flex items-center justify-end gap-3 shadow-[0_-4px_12px_rgba(0,0,0,0.03)] dark:shadow-[0_-4px_12px_rgba(0,0,0,0.2)]">
+                            <Button type="button" variant="ghost" onClick={onCancel} className="h-11 px-6 rounded-xl text-xs font-black uppercase tracking-widest text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-950 transition-all">
                                 {formMode === 'view' ? 'Close' : 'Discard Changes'}
                             </Button>
                             {formMode !== 'view' && (
-                                <Button type="submit" disabled={isSaving} className="h-11 px-8 rounded-xl bg-blue-700 hover:bg-blue text-white text-xs font-black uppercase tracking-widest shadow-lg transition-all active:scale-95 disabled:bg-slate-400">
+                                <Button 
+                                    type="submit" 
+                                    disabled={isSaving} 
+                                    className="h-11 px-8 rounded-xl bg-blue-700 hover:bg-blue-800 text-white text-xs font-black uppercase tracking-widest shadow-lg transition-all duration-150 active:scale-95 disabled:bg-slate-400 hover:-translate-y-0.5 active:translate-y-0"
+                                >
                                     {isSaving ? (
                                         <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Processing...</>
                                     ) : (
@@ -1556,7 +2160,9 @@ const InnerForm: React.FC<InnerFormProps> = ({
                     <div className="flex-1 overflow-y-auto bg-slate-50 relative p-6">
                         <div className="max-w-3xl mx-auto bg-white border border-slate-200 rounded-xl shadow-sm p-6">
                             {existingProfile ? (
+                                <fieldset disabled={formMode === 'view'} className={cn("contents", formMode === 'view' && "view-mode-fieldset")}>
                                 <CompanyBrandingForm businessProfileId={existingProfile.id} isGlobal={false} />
+                                </fieldset>
                             ) : (
                                 <div className="text-center py-12">
                                     <Palette className="h-12 w-12 text-slate-300 mx-auto mb-4" />
@@ -1588,7 +2194,6 @@ const InnerForm: React.FC<InnerFormProps> = ({
                         </AlertDialogFooter>
                     </AlertDialogContent>
                 </AlertDialog>
-                </fieldset>
             </form>
         </FormProvider>
     );
@@ -1741,6 +2346,7 @@ const RoleSection: React.FC<{ role: Role, allRoles: Role[] }> = ({ role, allRole
                 </div>
             </CardHeader>
             <CardContent className="p-6 space-y-6">
+
                 {fields.length > 0 ? (
                     <div className="space-y-4">
                         {fields.map((member, index) => {
@@ -1912,6 +2518,7 @@ const RoleSection: React.FC<{ role: Role, allRoles: Role[] }> = ({ role, allRole
                     name={`roles.${role.roleKey}.members`}
                     render={({ fieldState }) => fieldState.error ? <FormMessage className="mt-2">{fieldState.error.message}</FormMessage> : <></>}
                 />
+
             </CardContent>
         </Card>
     );
@@ -2165,6 +2772,7 @@ const GeneralSection: React.FC<{ allRoles: Role[] }> = ({ allRoles }) => {
 
 
                                     <AccordionContent className="bg-slate-50/20">
+
                                         <div className="mx-6 my-4 p-5 rounded-lg border border-slate-100 bg-white shadow-xs">
                                             <div className="flex items-center gap-2 mb-4">
                                                 <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-tight">Additional Details</p>
@@ -2187,6 +2795,7 @@ const GeneralSection: React.FC<{ allRoles: Role[] }> = ({ allRoles }) => {
                                                 )}
                                             </div>
                                         </div>
+
                                     </AccordionContent>
                                 </AccordionItem>
                             );
