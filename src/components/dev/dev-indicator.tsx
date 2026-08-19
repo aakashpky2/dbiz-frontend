@@ -1,9 +1,9 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import { usePathname, useSearchParams } from 'next/navigation';
 
-export function DevIndicator() {
+function DevIndicatorInner() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const [isSpinning, setIsSpinning] = useState(false);
@@ -16,7 +16,7 @@ export function DevIndicator() {
 
     return () => clearTimeout(timeout);
   }, [pathname, searchParams]);
-  // Only render in development
+
   if (process.env.NODE_ENV !== 'development') {
     return null;
   }
@@ -60,5 +60,17 @@ export function DevIndicator() {
         </span>
       </div>
     </div>
+  );
+}
+
+export function DevIndicator() {
+  if (process.env.NODE_ENV !== 'development') {
+    return null;
+  }
+
+  return (
+    <Suspense fallback={null}>
+      <DevIndicatorInner />
+    </Suspense>
   );
 }

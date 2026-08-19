@@ -18,6 +18,7 @@ import { PageHero } from '@/components/dashboard/page-hero';
 import { useToast } from '@/hooks/use-toast';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
+import { PageSkeleton } from '@/components/ui/page-skeleton';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { useProfiles } from '@/hooks/use-profiles';
@@ -89,7 +90,7 @@ interface Proposal {
 // ─────────────────────────────────────────────────────────────────────────────
 // Main Page
 // ─────────────────────────────────────────────────────────────────────────────
-export default function ProposalsPage() {
+function ProposalsPageContent() {
     const [isDialogOpen, setIsDialogOpen] = useState(false);
     const [dialogResetKey, setDialogResetKey] = useState(0);
     const [employees, setEmployees] = useState<{ id: string; name: string }[]>([]);
@@ -705,5 +706,13 @@ export default function ProposalsPage() {
                 preselectedProposalId={proposalToConvertId}
             />
         </>
+    );
+}
+
+export default function ProposalsPage() {
+    return (
+        <React.Suspense fallback={<PageSkeleton />}>
+            <ProposalsPageContent />
+        </React.Suspense>
     );
 }

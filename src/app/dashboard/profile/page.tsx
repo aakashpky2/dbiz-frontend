@@ -16,7 +16,7 @@ import { DynamicSectionRenderer } from '@/components/dashboard/dynamic-section-r
 import { useQueryClient } from '@tanstack/react-query';
 import { API_ENDPOINTS } from '@/lib/api-config';
 
-export default function ProfilePage() {
+function ProfilePageContent() {
     const { user } = useAuth();
     const { toast } = useToast();
     const queryClient = useQueryClient();
@@ -670,5 +670,13 @@ export default function ProfilePage() {
                 </div>
             </div>
         </div>
+    );
+}
+
+export default function ProfilePage() {
+    return (
+        <React.Suspense fallback={<PageSkeleton />}>
+            <ProfilePageContent />
+        </React.Suspense>
     );
 }
