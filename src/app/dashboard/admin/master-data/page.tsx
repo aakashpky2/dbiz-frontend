@@ -20,6 +20,7 @@ import Link from 'next/link';
 import { MasterValueDialog } from '@/components/dashboard/master-data/MasterValueDialog';
 import { globalCache } from '@/lib/cache-utils';
 import { PageSkeleton } from '@/components/ui/page-skeleton';
+import { PageHero } from '@/components/dashboard/page-hero';
 
 export interface MasterCategory {
     id: string;
@@ -374,21 +375,26 @@ export default function MasterDataPage() {
     }
 
     return (
-        <div className="space-y-6">
-            <div className="flex items-center gap-4">
-                <Button variant="ghost" size="icon" asChild>
-                    <Link href="/dashboard/admin"><ArrowLeft className="h-5 w-5" /></Link>
-                </Button>
-                <div>
-                    <h1 className="text-3xl font-bold tracking-tight">Master Data Management</h1>
-                    <p className="text-muted-foreground text-sm">Set up Master Data for Efficient System Management</p>
-                </div>
-            </div>
+        <div className="space-y-6 motion-safe:animate-in motion-safe:fade-in motion-safe:translate-y-1 duration-300">
+            <PageHero
+                pattern="pattern-6" 
+                icon={Database}
+                badge="MASTER CONFIGURATION"
+                title={
+                    <div className="flex items-center gap-2">
+                        <Button variant="ghost" size="icon" className="h-6 w-6 -ml-2 text-muted-foreground hover:text-foreground" asChild>
+                            <Link href="/dashboard/admin"><ArrowLeft className="h-4 w-4" /></Link>
+                        </Button>
+                        Master Data Management
+                    </div>
+                }
+                description="Manage system-wide configuration and reference data."
+            />
 
             <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-                <Card className="md:col-span-1 shadow-sm">
-                    <CardHeader className="pb-3 border-b">
-                        <CardTitle className="text-sm uppercase tracking-wider text-muted-foreground flex items-center gap-2">
+                <Card className="md:col-span-1 border border-border/70 rounded-xl bg-card shadow-sm">
+                    <CardHeader className="p-5 pb-4 border-b border-border/50">
+                        <CardTitle className="text-sm uppercase tracking-wide font-semibold text-muted-foreground flex items-center gap-2">
                             <LibraryBig className="h-4 w-4" /> Categories
                         </CardTitle>
                     </CardHeader>
@@ -397,7 +403,7 @@ export default function MasterDataPage() {
                             <div className="space-y-4">
                                 {/* GENERAL GROUP */}
                                 {categories.filter(c => !c.name.startsWith('Proposal / ') && !['Team Roles', 'Team Availability Status', 'Team Assignment Type', 'Team Backup Priority'].includes(c.name)).length > 0 && (
-                                    <div className="space-y-1.5 pt-2">
+                                    <div className="space-y-1.5 pt-4">
                                         <div className="px-4 flex items-center gap-2 mb-1">
                                             <div className="h-px bg-slate-100 flex-1" />
                                             <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">General</p>
@@ -410,17 +416,19 @@ export default function MasterDataPage() {
                                             ).map(cat => (
                                                 <Button
                                                     key={cat.id}
-                                                    variant={selectedCategoryId === cat.id ? "secondary" : "ghost"}
+                                                    variant="ghost"
                                                     className={cn(
-                                                        "w-full justify-start font-bold h-9 px-4 transition-all text-[11px] uppercase tracking-wide",
-                                                        selectedCategoryId === cat.id ? "bg-slate-100 text-slate-800 hover:bg-slate-200/50 hover:text-slate-900" : "text-slate-500 hover:bg-slate-50"
+                                                        "w-full justify-start h-10 px-4 text-[13px] transition-all duration-150 ease-out",
+                                                        selectedCategoryId === cat.id 
+                                                            ? "bg-primary/[0.08] text-primary font-semibold border-l-[3px] border-primary rounded-none rounded-r-lg" 
+                                                            : "text-muted-foreground hover:bg-muted/40 hover:text-foreground hover:translate-x-[2px] rounded-lg"
                                                     )}
                                                     onClick={() => {
                                                         if (selectedCategoryId !== cat.id) setSelectedCategoryId(cat.id);
                                                     }}
                                                 >
                                                     {cat.name}
-                                                    {selectedCategoryId === cat.id && <Check className="ml-auto h-3 w-3 text-slate-800" />}
+                                                    {selectedCategoryId === cat.id && <Check className="ml-auto h-3 w-3 text-primary" />}
                                                 </Button>
                                             ))}
                                         </div>
@@ -429,7 +437,7 @@ export default function MasterDataPage() {
 
                                 {/* TEAM MANAGEMENT GROUP */}
                                 {categories.some(c => ['Team Roles', 'Team Availability Status', 'Team Assignment Type', 'Team Backup Priority'].includes(c.name)) && (
-                                    <div className="space-y-1.5 pt-2">
+                                    <div className="space-y-1.5 pt-4">
                                         <div className="px-4 flex items-center gap-2 mb-1">
                                             <div className="h-px bg-slate-100 flex-1" />
                                             <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Team Management</p>
@@ -439,17 +447,19 @@ export default function MasterDataPage() {
                                             {categories.filter(c => ['Team Roles', 'Team Availability Status', 'Team Assignment Type', 'Team Backup Priority'].includes(c.name)).map(cat => (
                                                 <Button
                                                     key={cat.id}
-                                                    variant={selectedCategoryId === cat.id ? "secondary" : "ghost"}
+                                                    variant="ghost"
                                                     className={cn(
-                                                        "w-full justify-start font-bold h-9 px-4 transition-all text-[11px] uppercase tracking-wide",
-                                                        selectedCategoryId === cat.id ? "bg-indigo-50 text-indigo-700 hover:bg-indigo-100/50 hover:text-indigo-800" : "text-slate-500 hover:bg-slate-50"
+                                                        "w-full justify-start h-10 px-4 text-[13px] transition-all duration-150 ease-out",
+                                                        selectedCategoryId === cat.id 
+                                                            ? "bg-primary/[0.08] text-primary font-semibold border-l-[3px] border-primary rounded-none rounded-r-lg" 
+                                                            : "text-muted-foreground hover:bg-muted/40 hover:text-foreground hover:translate-x-[2px] rounded-lg"
                                                     )}
                                                     onClick={() => {
                                                         if (selectedCategoryId !== cat.id) setSelectedCategoryId(cat.id);
                                                     }}
                                                 >
                                                     {cat.name.replace('Team ', '')}
-                                                    {selectedCategoryId === cat.id && <Check className="ml-auto h-3 w-3 text-indigo-600" />}
+                                                    {selectedCategoryId === cat.id && <Check className="ml-auto h-3 w-3 text-primary" />}
                                                 </Button>
                                             ))}
                                         </div>
@@ -458,7 +468,7 @@ export default function MasterDataPage() {
 
                                 {/* PROPOSAL GROUP */}
                                 {categories.some(c => c.name.startsWith('Proposal / ')) && (
-                                    <div className="space-y-1.5 pt-2">
+                                    <div className="space-y-1.5 pt-4">
                                         <div className="px-4 flex items-center gap-2 mb-1">
                                             <div className="h-px bg-slate-100 flex-1" />
                                             <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Proposal</p>
@@ -468,17 +478,19 @@ export default function MasterDataPage() {
                                             {categories.filter(c => c.name.startsWith('Proposal / ')).map(cat => (
                                                 <Button
                                                     key={cat.id}
-                                                    variant={selectedCategoryId === cat.id ? "secondary" : "ghost"}
+                                                    variant="ghost"
                                                     className={cn(
-                                                        "w-full justify-start font-bold h-9 px-4 transition-all text-[11px] uppercase tracking-wide",
-                                                        selectedCategoryId === cat.id ? "bg-blue-50 text-blue-700 hover:bg-blue-100/50 hover:text-blue-800" : "text-slate-500 hover:bg-slate-50"
+                                                        "w-full justify-start h-10 px-4 text-[13px] transition-all duration-150 ease-out",
+                                                        selectedCategoryId === cat.id 
+                                                            ? "bg-primary/[0.08] text-primary font-semibold border-l-[3px] border-primary rounded-none rounded-r-lg" 
+                                                            : "text-muted-foreground hover:bg-muted/40 hover:text-foreground hover:translate-x-[2px] rounded-lg"
                                                     )}
                                                     onClick={() => {
                                                         if (selectedCategoryId !== cat.id) setSelectedCategoryId(cat.id);
                                                     }}
                                                 >
                                                     {cat.name.split(' / ')[1]}
-                                                    {selectedCategoryId === cat.id && <Check className="ml-auto h-3 w-3 text-blue-600" />}
+                                                    {selectedCategoryId === cat.id && <Check className="ml-auto h-3 w-3 text-primary" />}
                                                 </Button>
                                             ))}
                                         </div>
@@ -486,10 +498,15 @@ export default function MasterDataPage() {
                                 )}
 
                                 {!categories.find(c => c.name.toLowerCase() === 'template tables') && (
-                                    <div className="pt-2">
+                                    <div className="pt-4">
                                         <Button
-                                            variant={selectedCategoryId === 'system_discovery' ? "secondary" : "ghost"}
-                                            className="w-full justify-start font-bold h-10 px-4 text-blue-600 hover:text-blue-700 hover:bg-blue-50/50 transition-all"
+                                            variant="ghost"
+                                            className={cn(
+                                                "w-full justify-start h-10 px-4 text-[13px] transition-all duration-150 ease-out",
+                                                selectedCategoryId === 'system_discovery'
+                                                    ? "bg-primary/[0.08] text-primary font-semibold border-l-[3px] border-primary rounded-none rounded-r-lg" 
+                                                    : "text-muted-foreground hover:bg-muted/40 hover:text-foreground hover:translate-x-[2px] rounded-lg"
+                                            )}
                                             onClick={() => {
                                                 if (selectedCategoryId !== 'system_discovery') setSelectedCategoryId('system_discovery');
                                             }}
@@ -504,13 +521,13 @@ export default function MasterDataPage() {
                     </CardContent>
                 </Card>
 
-                <Card className="md:col-span-3 shadow-md border-primary/10 overflow-hidden">
-                    <CardHeader className="bg-muted/30 border-b flex flex-row items-center justify-between">
-                        <div>
-                            <CardTitle className="text-xl">
+                <Card key={selectedCategoryId} className="md:col-span-3 border border-border/70 rounded-xl bg-card shadow-sm overflow-hidden motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-bottom-1 duration-200">
+                    <CardHeader className="bg-card border-b border-border/70 p-5 flex flex-row items-center justify-between">
+                        <div className="space-y-1">
+                            <CardTitle className="text-lg font-semibold text-foreground">
                                 {currentCategory?.name || 'Select Category'}
                             </CardTitle>
-                            <CardDescription>
+                            <CardDescription className="text-sm text-muted-foreground">
                                 {isTableDiscoveryTab
                                     ? 'Authorize system tables to be linked with dynamic template configurations.'
                                     : (currentCategory?.description || 'Manage values for the selected category.')}
@@ -521,15 +538,19 @@ export default function MasterDataPage() {
                                 onClick={handleSaveTables}
                                 disabled={!selectedCategoryId || !hasChanges || saving}
                                 className={cn(
-                                    "shadow-lg",
-                                    hasChanges ? "bg-blue-600 hover:bg-blue-700" : "bg-blue-600"
+                                    "h-10 px-4 rounded-lg shadow-sm transition-colors duration-150",
+                                    hasChanges ? "bg-blue-600 hover:bg-blue-700 text-white" : "bg-blue-600/80 text-white"
                                 )}
                             >
                                 {saving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <CheckCircle2 className="mr-2 h-4 w-4" />}
                                 Save Table Configuration
                             </Button>
                         ) : (
-                            <Button onClick={handleAddValue} disabled={!selectedCategoryId} className="shadow-lg">
+                            <Button 
+                                onClick={handleAddValue} 
+                                disabled={!selectedCategoryId} 
+                                className="h-10 px-4 rounded-lg bg-primary hover:bg-primary/90 text-primary-foreground shadow-sm transition-colors duration-150"
+                            >
                                 <Plus className="mr-2 h-4 w-4" /> Add Value
                             </Button>
                         )}
@@ -590,29 +611,33 @@ export default function MasterDataPage() {
                         ) : (
                             <Table>
                                 <TableHeader>
-                                    <TableRow className="bg-muted/20">
-                                        <TableHead className="w-[100px]">Display Order</TableHead>
-                                        <TableHead>{isCountryCodesCategory ? "Country Name" : "Field Name"}</TableHead>
-                                        {isCountryCodesCategory && <TableHead>Dial Code</TableHead>}
+                                    <TableRow className="bg-muted/30 border-b border-border/50 hover:bg-transparent">
+                                        <TableHead className="w-[100px] text-xs font-semibold text-muted-foreground uppercase tracking-wider">Display Order</TableHead>
+                                        <TableHead className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">{isCountryCodesCategory ? "Country Name" : "Field Name"}</TableHead>
+                                        {isCountryCodesCategory && <TableHead className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Dial Code</TableHead>}
                                         {isConstitutionCategory ? (
-                                            <TableHead>Level</TableHead>
+                                            <TableHead className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Level</TableHead>
                                         ) : (isCountryCodesCategory || currentCategory?.name?.toLowerCase() === 'countries') ? null : (
-                                            <TableHead>Description</TableHead>
+                                            <TableHead className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Description</TableHead>
                                         )}
-                                        <TableHead className="text-right">Actions</TableHead>
+                                        <TableHead className="text-right text-xs font-semibold text-muted-foreground uppercase tracking-wider">Actions</TableHead>
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
                                     {values.length === 0 ? (
                                         <TableRow>
-                                            <TableCell colSpan={4} className="h-40 text-center text-muted-foreground italic">
-                                                No values found for this category. Click "Add Value" to create one.
+                                            <TableCell colSpan={5} className="h-40">
+                                                <div className="flex flex-col items-center justify-center gap-3 motion-safe:animate-in motion-safe:fade-in duration-200">
+                                                    <p className="text-muted-foreground font-medium">No values configured</p>
+                                                    <p className="text-xs text-muted-foreground">Add the first value to begin configuring this category.</p>
+                                                    <Button onClick={handleAddValue} variant="outline" size="sm" className="mt-2 transition-all hover:bg-primary/5 hover:text-primary"><Plus className="h-4 w-4 mr-2" /> Add Value</Button>
+                                                </div>
                                             </TableCell>
                                         </TableRow>
                                     ) : (
                                         [...values]
                                             .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
-                                            .map(val => {
+                                            .map((val, index) => {
                                                 let fieldTargetLabel = '—';
                                                 let fieldTargetVariant: 'default' | 'secondary' | 'outline' = 'outline';
                                                 let tableOrder = val.order;
@@ -634,9 +659,13 @@ export default function MasterDataPage() {
                                                     } catch { /* malformed JSON — show dash */ }
                                                 }
                                                 return (
-                                                    <TableRow key={val.id} className="hover:bg-muted/5 transition-colors">
-                                                        <TableCell className="font-mono text-xs">{tableOrder}</TableCell>
-                                                        <TableCell className="font-bold text-slate-800">
+                                                    <TableRow 
+                                                        key={val.id} 
+                                                        className="hover:bg-muted/40 transition-colors duration-150 motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-bottom-2 fill-mode-both border-border/50"
+                                                        style={{ animationDuration: '200ms', animationDelay: `${Math.min(index * 25, 200)}ms` }}
+                                                    >
+                                                        <TableCell className="font-mono text-xs text-muted-foreground">{tableOrder}</TableCell>
+                                                        <TableCell className="font-semibold text-foreground">
                                                             <div className="flex items-center gap-2">
                                                                 {val.name}
                                                                 {safeParse(val.description, {}).isDefault === true && (
@@ -658,15 +687,15 @@ export default function MasterDataPage() {
                                                                 </Badge>
                                                             </TableCell>
                                                         ) : (isCountryCodesCategory || currentCategory?.name?.toLowerCase() === 'countries') ? null : (
-                                                            <TableCell className="text-sm">
+                                                        <TableCell className="text-sm text-muted-foreground">
                                                                 {val.description}
                                                             </TableCell>
                                                         )}
                                                         <TableCell className="text-right space-x-1">
-                                                            <Button variant="ghost" size="icon" onClick={() => handleEditValue(val)} className="h-8 w-8 hover:text-primary">
+                                                            <Button variant="ghost" size="icon" onClick={() => handleEditValue(val)} className="h-8 w-8 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors duration-150" title="Edit value">
                                                                 <Edit className="h-4 w-4" />
                                                             </Button>
-                                                            <Button variant="ghost" size="icon" onClick={() => handleDeleteClick(val.id)} className="h-8 w-8 hover:text-destructive">
+                                                            <Button variant="ghost" size="icon" onClick={() => handleDeleteClick(val.id)} className="h-8 w-8 text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-colors duration-150" title="Delete value">
                                                                 <Trash2 className="h-4 w-4" />
                                                             </Button>
                                                         </TableCell>

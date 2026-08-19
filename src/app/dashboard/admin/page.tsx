@@ -9,6 +9,7 @@ import type { LucideIcon } from 'lucide-react';
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { PermissionsTab } from "@/components/dashboard/admin/PermissionsTab";
+import { PageHero } from "@/components/dashboard/page-hero";
 
 const adminLinks: { href: string; label: string; description: string; icon: LucideIcon }[] = [
   {
@@ -82,17 +83,13 @@ const adminLinks: { href: string; label: string; description: string; icon: Luci
 export default function AdminPage() {
   return (
     <div className="space-y-6">
-      <Card className="shadow-sm border-none bg-primary/5">
-        <CardHeader className="py-8">
-          <div className="flex items-center gap-4 mb-2">
-              <Badge variant="outline" className="bg-primary/10 text-primary border-primary/20 text-[10px] uppercase font-black tracking-widest">Administrative Hub</Badge>
-          </div>
-          <CardTitle className="text-4xl font-black uppercase tracking-tight text-slate-900">Admin Panel</CardTitle>
-          <CardDescription className="text-slate-600 font-medium max-w-2xl">
-            This is the central hub for managing core business settings, templates, and configurations.
-          </CardDescription>
-        </CardHeader>
-      </Card>
+      <PageHero
+                pattern="pattern-1"
+          icon={ShieldCheck}
+          badge="ADMINISTRATIVE HUB"
+          title="Admin Panel"
+          description="This is the central hub for managing core business settings, templates, and configurations."
+      />
 
       <Tabs defaultValue="modules" className="space-y-6">
         <div className="flex items-center justify-between border-b pb-1">

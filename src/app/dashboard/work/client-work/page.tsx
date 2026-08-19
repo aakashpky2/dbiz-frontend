@@ -13,7 +13,7 @@ import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAuth } from '@/hooks/use-auth';
-import { Loader2, PlusCircle, Check, Info, AlertCircle } from 'lucide-react';
+import { Loader2, PlusCircle, Check, Info, AlertCircle, ClipboardList } from 'lucide-react';
 import { format } from 'date-fns';
 import { addDays } from 'date-fns';
 import { isValid } from 'date-fns';
@@ -24,6 +24,7 @@ import { useDebounce } from '@/hooks/use-debounce';
 import { useQueryClient } from '@tanstack/react-query';
 import { useToast } from '@/hooks/use-toast';
 import { PageSkeleton } from '@/components/ui/page-skeleton';
+import { PageHero } from '@/components/dashboard/page-hero';
 
 // --- Types ---
 
@@ -358,15 +359,17 @@ export default function ClientWorkPage() {
     return (
         <div className="space-y-6 p-6 pb-20">
             {/* -- Header -- */}
-            <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-                <div>
-                    <h2 className="text-3xl font-bold tracking-tight">Client Work Register</h2>
-                    <p className="text-muted-foreground">Comprehensive tracking of all client deliverables.</p>
-                </div>
-                <Button onClick={() => setIsAddOpen(true)} size="lg" className="rounded-xl h-11 px-6 shadow-md shadow-primary/20">
+            <PageHero
+                pattern="pattern-6"
+                icon={ClipboardList}
+                badge="WORK MANAGEMENT"
+                title="Client Work Register"
+                description="Comprehensive tracking of all client deliverables."
+            >
+                <Button onClick={() => setIsAddOpen(true)} className="h-11 px-6 rounded-lg font-bold shadow-md shadow-primary/20">
                     <PlusCircle className="mr-2 h-5 w-5" /> Add New Work
                 </Button>
-            </div>
+            </PageHero>
 
             {/* -- List Card -- */}
             <Card className="shadow-sm border-muted overflow-hidden">

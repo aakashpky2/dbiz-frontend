@@ -1,5 +1,6 @@
 'use client';
 import { PageSkeleton } from '@/components/ui/page-skeleton';
+import { PageHero } from '@/components/dashboard/page-hero';
 
 import React, { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
@@ -328,63 +329,56 @@ export default function EmployeeProfilePage() {
     return (
         <>
             <div className="p-4 space-y-6">
-                <div className="flex justify-start mb-4">
-                    <Button variant="outline" asChild>
-                        <Link href="/dashboard/employee-directory">
-                            <ArrowLeft className="mr-2 h-4 w-4" />
-                            Back to Directory
-                        </Link>
-                    </Button>
-                </div>
+                <PageHero
+                pattern="pattern-4"
+                    compact
+                    icon={User}
+                    badge="DIRECTORY"
+                    title={personalDetails?.fullName || 'Unnamed Employee'}
+                    description={`${employmentDetails?.employeeRole || 'No Role Assigned'} • Employee ID: ${employmentDetails?.employeeId || 'N/A'}`}
+                >
+                    <div className="flex flex-wrap items-center gap-2">
+                        <Button variant="outline" size="sm" asChild className="mr-auto hidden sm:flex">
+                            <Link href="/dashboard/employee-directory">
+                                <ArrowLeft className="mr-2 h-4 w-4" />
+                                Back
+                            </Link>
+                        </Button>
+                        {employee?.isResigned ? (
+                            <>
+                                <Badge variant="destructive" className="h-9 px-3 text-sm bg-red-100 text-red-700 hover:bg-red-100 border-red-200">
+                                    RESIGNED
+                                </Badge>
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    className="text-muted-foreground border-muted-foreground/30 hover:bg-muted/10 hover:text-foreground"
+                                    onClick={executeCancelResignation}
+                                    disabled={isResigning}
+                                >
+                                    {isResigning ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <UserCheck className="mr-2 h-4 w-4" />}
+                                    Undo Resignation
+                                </Button>
+                            </>
+                        ) : (
+                            <Button variant="outline" size="sm" className="text-orange-600 border-orange-200 hover:bg-orange-50 hover:text-orange-700" onClick={() => setShowResignDialog(true)}>
+                                <UserMinus className="mr-2 h-4 w-4" /> Resign
+                            </Button>
+                        )}
+                        <Button asChild variant="outline" size="sm" className="print:hidden">
+                            <Link href={`/dashboard/employee-directory/${employee?.id}/edit`}>
+                                <Edit className="mr-2 h-4 w-4" /> Edit
+                            </Link>
+                        </Button>
+                        <Button variant="outline" size="sm" className="print:hidden" onClick={() => window.print()}>
+                            <Printer className="mr-2 h-4 w-4" /> Print
+                        </Button>
+                        <Button variant="destructive" size="sm" className="print:hidden" onClick={() => setShowDeleteConfirm(true)}>
+                            <Trash2 className="mr-2 h-4 w-4" /> Delete
+                        </Button>
+                    </div>
+                </PageHero>
                 <Card className="shadow-lg">
-                    <CardHeader className="bg-muted/30">
-                        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                            <div className="flex items-center gap-4">
-                                <Avatar className="h-24 w-24 border-4 border-primary">
-                                    <AvatarImage src={personalDetails?.photo} alt={personalDetails?.fullName || 'Employee'} />
-                                    <AvatarFallback>{(personalDetails?.fullName || 'E').split(' ').map((n: string) => n[0]).join('')}</AvatarFallback>
-                                </Avatar>
-                                <div>
-                                    <CardTitle className="text-3xl">{personalDetails?.fullName || 'Unnamed Employee'}</CardTitle>
-                                    <CardDescription className="text-lg text-primary">{employmentDetails?.employeeRole || 'No Role Assigned'}</CardDescription>
-                                    <p className="text-sm text-muted-foreground">Employee ID: {employmentDetails?.employeeId || 'N/A'}</p>
-                                </div>
-                            </div>
-                            <div className="flex items-center gap-2">
-                                {employee?.isResigned ? (
-                                    <>
-                                        <Badge variant="destructive" className="h-10 px-4 text-base bg-red-100 text-red-700 hover:bg-red-100 border-red-200">
-                                            RESIGNED
-                                        </Badge>
-                                        <Button
-                                            variant="outline"
-                                            className="text-muted-foreground border-muted-foreground/30 hover:bg-muted/10 hover:text-foreground"
-                                            onClick={executeCancelResignation}
-                                            disabled={isResigning}
-                                        >
-                                            {isResigning ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <UserCheck className="mr-2 h-4 w-4" />}
-                                            Undo Resignation
-                                        </Button>
-                                    </>
-                                ) : (
-                                    <Button variant="outline" className="text-orange-600 border-orange-200 hover:bg-orange-50 hover:text-orange-700" onClick={() => setShowResignDialog(true)}>
-                                        <UserMinus className="mr-2 h-4 w-4" /> Mark as Resigned
-                                    </Button>
-                                )}
-                                <Button asChild variant="outline" className="print:hidden">
-                                    <Link href={`/dashboard/employee-directory/${employee?.id}/edit`}>
-                                        <Edit className="mr-2 h-4 w-4" /> Edit Profile
-                                    </Link>
-                                </Button>
-                                <Button variant="outline" className="print:hidden" onClick={() => window.print()}>
-                                    <Printer className="mr-2 h-4 w-4" /> Print
-                                </Button>
-                                <Button variant="destructive" className="print:hidden" onClick={() => setShowDeleteConfirm(true)}>
-                                    <Trash2 className="mr-2 h-4 w-4" /> Delete Employee
-                                </Button>
-                            </div>
-                        </div>
-                    </CardHeader>
                     <CardContent className="pt-6 grid grid-cols-1 lg:grid-cols-5 gap-8">
                         {/* Personal Details */}
                         <div className="space-y-1 lg:col-span-2">

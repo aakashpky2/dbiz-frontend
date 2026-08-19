@@ -27,7 +27,7 @@ import { supabase } from '@/lib/supabase';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
-import { DashboardPageHeader } from '@/components/dashboard/dashboard-page-header';
+import { PageHero } from '@/components/dashboard/page-hero';
 import { DashboardFilterBar } from '@/components/dashboard/dashboard-filter-bar';
 
 import { FieldDefinitionData, SectionData, RoleData, BusinessTypeSetup, fieldDefinitionSchema, sectionSchema, roleFormSchema, businessTypeFormSchema, BusinessTypeFormValues, FIELD_TYPES, INPUT_TYPES, FieldDefinitionValues, RoleFormValues, slugify } from './constants';
@@ -1278,43 +1278,24 @@ export default function BusinessTypesPage() {
       
       <div className="relative z-10 max-w-[1500px] mx-auto space-y-6">
         
-        {/* TOP HEADER CONTAINER */}
-        <div className="relative h-[160px] bg-gradient-to-r from-white via-[#F7FAFF] to-[#EFF5FF] border border-[#E5EAF2] rounded-2xl shadow-sm px-8 flex items-center justify-between overflow-hidden">
-          
-          {/* Skyline decorative background */}
-          <div
-            className="absolute inset-y-0 right-0 w-[48%] max-w-[750px] pointer-events-none bg-no-repeat z-0"
-            style={{
-              backgroundImage: "url('/skyline_clean.png')",
-              backgroundSize: "100% auto",
-              backgroundPosition: "right 60%",
-              opacity: 0.2,
-            }}
-          />
-
-          {/* Left side: Icon and title info */}
-          <div className="flex items-center gap-4 relative z-[1]">
-            <div className="w-[56px] h-[56px] bg-white border border-[#E5EAF2] rounded-xl shadow-[0_4px_16px_rgba(30,64,120,0.04)] flex items-center justify-center shrink-0">
-              <Building2 className="h-6 w-6 text-[#2563EB]" />
+        <PageHero
+          pattern="pattern-5"
+          icon={Building2}
+          badge="ENTITY CONFIGURATION"
+          title={
+            <div className="flex items-center gap-3">
+              <span>Business Constitutions</span>
+              <Badge variant="secondary" className="h-6 rounded-full px-2.5 font-semibold text-xs bg-primary/10 text-primary border-transparent shadow-sm">
+                {businessTypes.length}
+              </Badge>
             </div>
-            <div>
-              <div className="flex items-center gap-3">
-                <span className="text-[30px] font-bold tracking-tight text-[#10234A] leading-none">Business Constitutions</span>
-                <Badge variant="secondary" className="h-6 rounded-full px-2.5 font-semibold text-xs bg-[#EEF4FF] text-[#2563EB] border-transparent shadow-sm">
-                  {businessTypes.length}
-                </Badge>
-              </div>
-              <p className="text-[#64748B] text-[15px] mt-1.5">Define the blueprint for different legal entity structures.</p>
-            </div>
-          </div>
-
-          {/* Right side: Add Constitution button */}
-          <div className="relative z-[1] shrink-0">
-            <Button onClick={openAddDialog} className="h-[46px] w-[185px] rounded-xl font-semibold px-5 bg-[#2563EB] hover:bg-[#1d4ed8] text-white shadow-[0_4px_12px_rgba(37,99,235,0.2)] transition-all hover:-translate-y-[1px] flex items-center justify-center gap-2">
-              <Plus className="h-4 w-4" /> Add Constitution
-            </Button>
-          </div>
-        </div>
+          }
+          description="Define the blueprint for different legal entity structures."
+        >
+          <Button onClick={openAddDialog} className="h-11 rounded-xl font-semibold px-5 shadow-sm transition-all hover:-translate-y-0.5 flex items-center justify-center gap-2">
+            <Plus className="h-4 w-4" /> Add Constitution
+          </Button>
+        </PageHero>
 
         {/* SEARCH AND FILTER CONTAINER */}
         <div className="w-full h-[70px] bg-white border border-[#E5EAF2] rounded-2xl shadow-[0_4px_16px_rgba(30,64,120,0.03)] px-4 py-3 flex items-center justify-between mb-8">

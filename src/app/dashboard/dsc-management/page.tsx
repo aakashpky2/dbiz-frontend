@@ -20,7 +20,7 @@ import { parseISO } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
-import { DashboardPageHeader } from '@/components/dashboard/dashboard-page-header';
+import { PageHero } from '@/components/dashboard/page-hero';
 import { DashboardFilterBar } from '@/components/dashboard/dashboard-filter-bar';
 import { usePermissions } from '@/hooks/use-permissions';
 import { useRouter } from 'next/navigation';
@@ -346,7 +346,10 @@ export default function DSCManagementPage() {
 
     return (
         <div className="space-y-6">
-            <DashboardPageHeader
+            <PageHero
+                pattern="pattern-2"
+                icon={KeyRound}
+                badge="DIGITAL SIGNATURE MANAGEMENT"
                 title="DSC Management Center"
                 description="Manage issuance, client-owned custody, pricing, and token inventory."
             >
@@ -358,7 +361,7 @@ export default function DSCManagementPage() {
                         <PlusCircle className="mr-2 h-4 w-4" /> New Order
                     </Button>
                 </div>
-            </DashboardPageHeader>
+            </PageHero>
 
             <DSCStats dscs={dscs} stages={dscWorkflowStages} totalIssued={totalIssued} activeIssued={activeIssued} totalClient={totalClient} activeClient={activeClient} expiringCount={expiringCount} />
 

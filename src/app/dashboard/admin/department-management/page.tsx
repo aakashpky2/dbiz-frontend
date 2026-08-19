@@ -12,7 +12,7 @@ import { TimeLimitConfig } from '@/components/dashboard/admin/department-managem
 import { Badge } from '@/components/ui/badge';
 import { History } from 'lucide-react';
 import { ViewHistoryDialog } from '@/components/dashboard/admin/department-management/view-history-dialog';
-import { DashboardPageHeader } from '@/components/dashboard/dashboard-page-header';
+import { PageHero } from '@/components/dashboard/page-hero';
 import { sortDepartmentHierarchy } from '@/lib/sorting';
 
 export default function DepartmentManagementPage() {
@@ -75,91 +75,96 @@ export default function DepartmentManagementPage() {
         <div className="space-y-6 animate-in fade-in duration-700 p-4">
             {/* Header Section */}
             {activeTab !== 'timelimits' && (
-                <DashboardPageHeader 
+                <PageHero
+                    pattern="pattern-2"
+                    icon={Building2}
+                    badge="DEPARTMENT CONFIGURATION"
                     title="Department Setup"
-                    description="Manage your departments, work categories, and approve changes."
+                    description="Manage departments, work categories, work types, and approvals."
                 >
-                    <Button 
-                        variant="outline" 
-                        className="font-bold border-slate-200 shadow-sm" 
-                        onClick={() => setIsHistoryOpen(true)}
-                    >
-                        <History className="mr-2 h-4 w-4" />
-                        History
-                    </Button>
-                    <Button 
-                        onClick={() => setIsAddDialogOpen(true)}
-                        className="font-bold shadow-sm"
-                    >
-                        <Plus className="mr-2 h-4 w-4" />
-                        Add Department
-                    </Button>
-                </DashboardPageHeader>
+                    <div className="flex items-center gap-3">
+                        <Button 
+                            variant="outline" 
+                            className="h-11 rounded-xl px-5 font-semibold border-border/70 shadow-sm hover:-translate-y-px transition-transform duration-200" 
+                            onClick={() => setIsHistoryOpen(true)}
+                        >
+                            <History className="mr-2 h-4 w-4" />
+                            History
+                        </Button>
+                        <Button 
+                            className="h-11 rounded-xl px-5 font-semibold shadow-sm hover:-translate-y-px transition-transform duration-200"
+                            onClick={() => setIsAddDialogOpen(true)}
+                        >
+                            <Plus className="mr-2 h-4 w-4" />
+                            Add Department
+                        </Button>
+                    </div>
+                </PageHero>
             )}
 
             {/* Quick Stats Overview */}
             {activeTab !== 'timelimits' && (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                    <Card className="bg-card/50 backdrop-blur-sm border-muted/50 shadow-sm transition-all">
-                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                            <CardTitle className="text-sm font-medium">Active Departments</CardTitle>
-                            <Building2 className="h-4 w-4 text-muted-foreground" />
-                        </CardHeader>
-                        <CardContent>
-                            <div className="text-2xl font-bold">{activeDeptCount}</div>
-                        </CardContent>
+                <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+                    <Card className="rounded-xl border border-border/70 bg-card shadow-sm hover:-translate-y-[1px] hover:shadow-md transition-all duration-200 ease-out group animate-in fade-in slide-in-from-bottom-2 duration-300 fill-mode-both p-3 flex items-center justify-between">
+                        <div className="flex items-center gap-2.5">
+                            <div className="w-7 h-7 rounded-lg bg-blue-500/10 dark:bg-blue-500/20 flex items-center justify-center group-hover:scale-105 transition-transform duration-200">
+                                <Building2 className="h-3.5 w-3.5 text-blue-600 dark:text-blue-400" />
+                            </div>
+                            <span className="text-xs font-semibold text-muted-foreground">Active Departments</span>
+                        </div>
+                        <div className="text-lg font-bold tracking-tight px-1">{activeDeptCount}</div>
                     </Card>
-                    <Card className="bg-card/50 backdrop-blur-sm border-muted/50 shadow-sm transition-all">
-                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                            <CardTitle className="text-sm font-medium">Active Work Categories</CardTitle>
-                            <ListFilter className="h-4 w-4 text-muted-foreground" />
-                        </CardHeader>
-                        <CardContent>
-                            <div className="text-2xl font-bold">{totalCategories}</div>
-                        </CardContent>
+                    <Card className="rounded-xl border border-border/70 bg-card shadow-sm hover:-translate-y-[1px] hover:shadow-md transition-all duration-200 ease-out group animate-in fade-in slide-in-from-bottom-2 duration-300 fill-mode-both delay-75 p-3 flex items-center justify-between">
+                        <div className="flex items-center gap-2.5">
+                            <div className="w-7 h-7 rounded-lg bg-teal-500/10 dark:bg-teal-500/20 flex items-center justify-center group-hover:scale-105 transition-transform duration-200">
+                                <ListFilter className="h-3.5 w-3.5 text-teal-600 dark:text-teal-400" />
+                            </div>
+                            <span className="text-xs font-semibold text-muted-foreground">Active Categories</span>
+                        </div>
+                        <div className="text-lg font-bold tracking-tight px-1">{totalCategories}</div>
                     </Card>
-                    <Card className={`bg-card/50 backdrop-blur-sm border-muted/50 shadow-sm transition-all ${pendingCount > 0 ? 'border-amber-200 bg-amber-50/30' : ''}`}>
-                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                            <CardTitle className="text-sm font-medium">Pending Validations</CardTitle>
-                            <ShieldCheck className={`h-4 w-4 ${pendingCount > 0 ? 'text-amber-600' : 'text-muted-foreground'}`} />
-                        </CardHeader>
-                        <CardContent>
-                            <div className={`text-2xl font-bold ${pendingCount > 0 ? 'text-amber-700' : ''}`}>{pendingCount}</div>
-                        </CardContent>
+                    <Card className={`rounded-xl border border-border/70 bg-card shadow-sm hover:-translate-y-[1px] hover:shadow-md transition-all duration-200 ease-out group animate-in fade-in slide-in-from-bottom-2 duration-300 fill-mode-both delay-150 p-3 flex items-center justify-between ${pendingCount > 0 ? 'border-amber-200/60 dark:border-amber-900/50' : ''}`}>
+                        <div className="flex items-center gap-2.5">
+                            <div className={`w-7 h-7 rounded-lg flex items-center justify-center group-hover:scale-105 transition-transform duration-200 ${pendingCount > 0 ? 'bg-amber-500/10 dark:bg-amber-500/20' : 'bg-muted/50'}`}>
+                                <ShieldCheck className={`h-3.5 w-3.5 ${pendingCount > 0 ? 'text-amber-600 dark:text-amber-400' : 'text-muted-foreground'}`} />
+                            </div>
+                            <span className="text-xs font-semibold text-muted-foreground">Pending Validations</span>
+                        </div>
+                        <div className={`text-lg font-bold tracking-tight px-1 ${pendingCount > 0 ? 'text-amber-700 dark:text-amber-400' : ''}`}>{pendingCount}</div>
                     </Card>
-                    <Card className={`bg-card/50 backdrop-blur-sm border-muted/50 shadow-sm transition-all ${incompleteCount > 0 ? 'border-yellow-200 bg-yellow-50/30' : ''}`}>
-                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                            <CardTitle className="text-sm font-medium">Incomplete Items</CardTitle>
-                            <AlertCircle className={`h-4 w-4 ${incompleteCount > 0 ? 'text-yellow-600' : 'text-muted-foreground'}`} />
-                        </CardHeader>
-                        <CardContent>
-                            <div className={`text-2xl font-bold ${incompleteCount > 0 ? 'text-yellow-700' : ''}`}>{incompleteCount}</div>
-                        </CardContent>
+                    <Card className={`rounded-xl border border-border/70 bg-card shadow-sm hover:-translate-y-[1px] hover:shadow-md transition-all duration-200 ease-out group animate-in fade-in slide-in-from-bottom-2 duration-300 fill-mode-both delay-200 p-3 flex items-center justify-between ${incompleteCount > 0 ? 'border-red-200/60 dark:border-red-900/50' : ''}`}>
+                        <div className="flex items-center gap-2.5">
+                            <div className={`w-7 h-7 rounded-lg flex items-center justify-center group-hover:scale-105 transition-transform duration-200 ${incompleteCount > 0 ? 'bg-red-500/10 dark:bg-red-500/20' : 'bg-muted/50'}`}>
+                                <AlertCircle className={`h-3.5 w-3.5 ${incompleteCount > 0 ? 'text-red-600 dark:text-red-400' : 'text-muted-foreground'}`} />
+                            </div>
+                            <span className="text-xs font-semibold text-muted-foreground">Incomplete Items</span>
+                        </div>
+                        <div className={`text-lg font-bold tracking-tight px-1 ${incompleteCount > 0 ? 'text-red-700 dark:text-red-400' : ''}`}>{incompleteCount}</div>
                     </Card>
                 </div>
             )}
 
             <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-                <TabsList className="bg-muted/30 p-1 rounded-xl w-full md:w-auto inline-flex h-auto">
-                    <TabsTrigger value="active" className="flex items-center gap-2 px-6 py-2.5 rounded-lg data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm transition-all">
+                <TabsList className="bg-muted/20 border border-border/60 p-1 rounded-xl w-full sm:w-auto inline-flex h-auto overflow-x-auto">
+                    <TabsTrigger value="active" className="flex items-center gap-2 px-5 py-2 rounded-lg data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm text-muted-foreground hover:bg-muted/30 transition-all">
                         <ListFilter className="h-4 w-4" />
-                        <span className="font-medium">Active (Overview)</span>
+                        <span className="font-semibold">Active Overview</span>
                     </TabsTrigger>
 
                     {showIncompleteTab && (
-                        <TabsTrigger value="incomplete" className="flex items-center gap-2 px-6 py-2.5 rounded-lg data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm transition-all">
-                            <AlertCircle className="h-4 w-4 text-yellow-500" />
-                            <span className="font-medium">Incomplete Items</span>
-                            <Badge variant="secondary" className="ml-1 h-5 min-w-[1.25rem] px-1 flex items-center justify-center rounded-full text-[10px] bg-yellow-100 text-yellow-700">
+                        <TabsTrigger value="incomplete" className="flex items-center gap-2 px-5 py-2 rounded-lg data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm text-muted-foreground hover:bg-muted/30 transition-all">
+                            <AlertCircle className="h-4 w-4 text-red-500" />
+                            <span className="font-semibold">Incomplete Items</span>
+                            <Badge variant="secondary" className="ml-1 h-5 min-w-[1.25rem] px-1 flex items-center justify-center rounded-full text-[10px] bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-400">
                                 {incompleteCount}
                             </Badge>
                         </TabsTrigger>
                     )}
 
                     {showValidationTab && (
-                        <TabsTrigger value="validation" className="flex items-center gap-2 px-6 py-2.5 rounded-lg data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm transition-all">
-                            <ShieldCheck className="h-4 w-4 text-brand-blue" />
-                            <span className="font-medium">Waiting for Approval</span>
+                        <TabsTrigger value="validation" className="flex items-center gap-2 px-5 py-2 rounded-lg data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm text-muted-foreground hover:bg-muted/30 transition-all">
+                            <ShieldCheck className="h-4 w-4 text-amber-500" />
+                            <span className="font-semibold">Pending Validations</span>
                             <Badge variant="destructive" className="ml-1 h-5 min-w-[1.25rem] px-1 flex items-center justify-center rounded-full text-[10px]">
                                 {pendingCount}
                             </Badge>
@@ -167,18 +172,18 @@ export default function DepartmentManagementPage() {
                     )}
 
                     {showDeletedTab && (
-                        <TabsTrigger value="deleted" className="flex items-center gap-2 px-6 py-2.5 rounded-lg data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm transition-all">
+                        <TabsTrigger value="deleted" className="flex items-center gap-2 px-5 py-2 rounded-lg data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm text-muted-foreground hover:bg-muted/30 transition-all">
                             <Trash2 className="h-4 w-4 text-destructive" />
-                            <span className="font-medium">Deleted</span>
-                            <Badge variant="secondary" className="ml-1 h-5 min-w-[1.25rem] px-1 flex items-center justify-center rounded-full text-[10px] bg-red-100 text-red-700">
+                            <span className="font-semibold">Deleted</span>
+                            <Badge variant="secondary" className="ml-1 h-5 min-w-[1.25rem] px-1 flex items-center justify-center rounded-full text-[10px] bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-400">
                                 {deletedCount}
                             </Badge>
                         </TabsTrigger>
                     )}
 
-                    <TabsTrigger value="timelimits" className="flex items-center gap-2 px-6 py-2.5 rounded-lg data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm transition-all">
+                    <TabsTrigger value="timelimits" className="flex items-center gap-2 px-5 py-2 rounded-lg data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm text-muted-foreground hover:bg-muted/30 transition-all">
                         <TrendingUp className="h-4 w-4 text-primary" />
-                        <span className="font-medium">Time Limits</span>
+                        <span className="font-semibold">Time Limits</span>
                     </TabsTrigger>
                 </TabsList>
 

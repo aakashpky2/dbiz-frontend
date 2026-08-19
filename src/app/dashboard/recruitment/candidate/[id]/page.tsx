@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Loader2, User, Mail, Phone, MapPin, Briefcase, Calendar, Download, RefreshCw, Send, CheckCircle2, FileText, Clock, ExternalLink } from "lucide-react";
 import { PageSkeleton } from '@/components/ui/page-skeleton';
+import { PageHero } from '@/components/dashboard/page-hero';
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { usePermissions } from "@/hooks/use-permissions";

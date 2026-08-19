@@ -3,6 +3,7 @@ import type { NextConfig } from 'next';
 import path from 'path';
 
 const nextConfig: NextConfig = {
+  devIndicators: false,
   async rewrites() {
     let backendUrl = process.env.BACKEND_URL;
     if (!backendUrl || backendUrl.trim() === '') {

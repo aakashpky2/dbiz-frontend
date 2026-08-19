@@ -10,6 +10,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { format } from 'date-fns';
 import { addDays } from 'date-fns';
+import { PageHero } from '@/components/dashboard/page-hero';
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import { cn } from "@/lib/utils";
@@ -150,19 +151,23 @@ export default function NotificationsPage() {
     return (
         <div className="h-[calc(100vh-6rem)] flex flex-col space-y-6 max-w-5xl mx-auto p-1">
             {/* Header */}
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 animate-in fade-in slide-in-from-top-4 duration-500">
-                <div className="space-y-1">
-                    <h2 className="text-3xl font-bold tracking-tight">Notifications</h2>
-                    <div className="text-muted-foreground flex items-center gap-2">
-                        You have <Badge variant="secondary" className="px-2 py-0.5">{unreadCount} unread</Badge> messages.
-                    </div>
-                </div>
-                <div className="flex items-center gap-2">
-                    <Button variant="outline" size="sm" onClick={markAllAsRead} disabled={unreadCount === 0} className="transition-all hover:bg-primary/5">
+            <div className="animate-in fade-in slide-in-from-top-4 duration-500 mb-6">
+                <PageHero
+                pattern="pattern-2"
+                    icon={Bell}
+                    badge="SYSTEM"
+                    title="Notifications"
+                    description={
+                        <div className="flex items-center gap-2 mt-2">
+                            You have <Badge variant="secondary" className="px-2 py-0.5">{unreadCount} unread</Badge> messages.
+                        </div>
+                    }
+                >
+                    <Button variant="outline" size="sm" onClick={markAllAsRead} disabled={unreadCount === 0} className="transition-all hover:bg-primary/5 h-10 px-4 rounded-xl">
                         <Check className="h-4 w-4 mr-2" />
                         Mark all as read
                     </Button>
-                </div>
+                </PageHero>
             </div>
 
             <Separator />

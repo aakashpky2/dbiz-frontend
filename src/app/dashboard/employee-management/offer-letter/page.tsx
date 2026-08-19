@@ -6,7 +6,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter, DialogClose } from '@/components/ui/dialog';
-import { Loader2, FileText, AlertTriangle, Download, Search, Eye, ChevronDown, ChevronRight, Bold, Italic, Underline, AlignLeft, AlignCenter, AlignRight, AlignJustify, RefreshCw } from 'lucide-react';
+import { Loader2, FileText, FileSignature, AlertTriangle, Download, Search, Eye, ChevronDown, ChevronRight, Bold, Italic, Underline, AlignLeft, AlignCenter, AlignRight, AlignJustify, RefreshCw } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { supabase } from '@/lib/supabase';
 import { useToast } from '@/hooks/use-toast';
@@ -32,7 +32,7 @@ import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
 import { getByAdvancedPath } from '@/lib/templatePaths';
-import { DashboardPageHeader } from '@/components/dashboard/dashboard-page-header';
+import { PageHero } from '@/components/dashboard/page-hero';
 import { DashboardFilterBar } from '@/components/dashboard/dashboard-filter-bar';
 import { API_ENDPOINTS } from '@/lib/api-config';
 
@@ -637,14 +637,17 @@ export default function OfferLetterPage() {
 
   return (
     <div className="space-y-6">
-      <DashboardPageHeader
+      <PageHero
+                pattern="pattern-3"
+        icon={FileSignature}
+        badge="EMPLOYEE DOCUMENTS"
         title="Offer Letters"
         description="Select a business profile and employee to generate personalized employment documents."
       >
         <Button variant="outline" size="sm" onClick={async () => { globalCache.invalidate('full_employees_list_offer_letter'); await refreshPageData(); }} className="h-9 px-3 font-bold border-muted-foreground/20">
             <RefreshCw className="h-4 w-4 mr-2" /> Reload Data
         </Button>
-      </DashboardPageHeader>
+      </PageHero>
 
       <DashboardFilterBar>
         <div className="flex-1 w-full flex flex-col md:flex-row items-stretch md:items-center gap-4">

@@ -13,6 +13,7 @@ import dynamic from 'next/dynamic';
 const ProfileForm = dynamic(() => import('@/components/dashboard/settings/profile-form').then(mod => mod.ProfileForm), { ssr: false });
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
+import { PageHero } from '@/components/dashboard/page-hero';
 import { CompanyBrandingDialog } from '@/components/dashboard/admin/company-settings/CompanyBrandingDialog';
 import {
     AlertDialog,
@@ -196,45 +197,19 @@ export default function SettingsPage() {
 
     return (
         <div className="space-y-6 pb-12 animate-in fade-in duration-300">
-            <div className="relative overflow-hidden bg-card text-card-foreground border border-border rounded-xl p-6 shadow-[0_2px_8px_rgba(59,130,246,0.05)] flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
-                
-                {/* Decorative Background Illustration */}
-                <div 
-                    className="absolute inset-y-0 right-0 w-[60%] max-w-[900px] pointer-events-none z-0 opacity-[0.22] dark:opacity-10" 
-                    style={{
-                        backgroundImage: 'url(/images/business-profile-header-bg.png)',
-                        backgroundSize: 'cover',
-                        backgroundPosition: 'right 60%',
-                        WebkitMaskImage: 'linear-gradient(to right, transparent 0%, black 35%)',
-                        maskImage: 'linear-gradient(to right, transparent 0%, black 35%)'
-                    }}
-                />
-
-                <div className="relative flex items-center gap-5 z-10">
-                    <div className="flex-shrink-0 flex items-center justify-center w-14 h-14 bg-primary/10 text-primary border border-primary/20 shadow-sm rounded-xl">
-                        <Building className="h-7 w-7 transition-transform duration-200 hover:scale-[1.02]" />
-                    </div>
-                    <div>
-                        <div className="flex items-center gap-1.5 mb-1">
-                            <Badge variant="secondary" className="bg-secondary/50 text-secondary-foreground hover:bg-secondary/70 border-transparent text-[10px] font-semibold uppercase tracking-wider px-2.5 py-0.5">Management Portal</Badge>
-                        </div>
-                        <h1 className="text-xl md:text-2xl font-bold tracking-tight mb-1 text-foreground">Business Profiles</h1>
-                        <p className="text-muted-foreground text-sm max-w-lg">
-                            Manage and view all Business Profiles
-                        </p>
-                    </div>
-                </div>
-                <div className="flex flex-wrap items-center gap-3 w-full md:w-auto relative z-10 mt-2 md:mt-0">
-
-                    {canManageSettings && (
-                        <div className="w-full md:w-auto min-w-[200px]">
-                            <Button onClick={handleCreateNew} className="w-full bg-primary hover:bg-primary/90 text-primary-foreground h-11 px-6 rounded-lg font-medium text-sm shadow-sm hover:shadow hover:-translate-y-[1px] active:translate-y-0 transition-all duration-200 ease-out flex items-center justify-center gap-2 group">
-                                <Plus className="h-4 w-4 transition-transform duration-200 group-hover:rotate-90" /> Create New Profile
-                            </Button>
-                        </div>
-                    )}
-                </div>
-            </div>
+            <PageHero
+                pattern="pattern-2"
+                icon={Building}
+                badge="MANAGEMENT PORTAL"
+                title="Business Profiles"
+                description="Manage and view all Business Profiles"
+            >
+                {canManageSettings && (
+                    <Button onClick={handleCreateNew} className="h-11 px-6 rounded-xl font-medium text-sm shadow-sm hover:shadow hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 flex items-center justify-center gap-2 group">
+                        <Plus className="h-4 w-4 transition-transform duration-200 group-hover:rotate-90" /> Create New Profile
+                    </Button>
+                )}
+            </PageHero>
 
 
 
@@ -316,7 +291,7 @@ export default function SettingsPage() {
                                                     className={cn(
                                                         "w-full min-w-0 font-medium text-xs h-9 px-2.5 rounded-lg transition-all duration-200 hover:-translate-y-[1px] inline-flex items-center justify-center gap-1.5",
                                                         profile.isDefault 
-                                                            ? "bg-green-600 text-white hover:bg-green-700 hover:text-white shadow-sm" 
+                                                            ? "bg-green-900 text-white hover:bg-green-900 hover:text-white shadow-sm" 
                                                             : "hover:bg-secondary hover:text-secondary-foreground"
                                                     )}
                                                     onClick={() => handleSetDefault(profile.id)}

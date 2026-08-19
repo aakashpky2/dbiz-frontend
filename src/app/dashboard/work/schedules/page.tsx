@@ -22,6 +22,7 @@ import { WorkflowTemplateData } from '@/components/workflow/CommonRulesForm';
 import { WorkflowStepData } from '@/components/workflow/StepWiseRulesForm';
 import { WorkflowCloneDialog } from '@/components/workflow/WorkflowCloneDialog';
 import { PageSkeleton } from '@/components/ui/page-skeleton';
+import { PageHero } from '@/components/dashboard/page-hero';
 
 interface Client {
     id: string;
@@ -418,13 +419,13 @@ export default function ClientSchedulesPage() {
         <div className="space-y-8 pb-24">
             
             {/* 1. Header Card */}
-            <div className="bg-white p-8 rounded-2xl shadow-sm border border-slate-100 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 animate-in fade-in duration-300">
-                <div>
-                    <h1 className="text-3xl font-bold text-slate-900 tracking-tight mb-2">Client Based Flow</h1>
-                    <p className="text-slate-500 max-w-2xl text-sm leading-relaxed">
-                        Create client-specific workflow overrides for selected clients and work types.
-                    </p>
-                </div>
+            <PageHero
+                pattern="pattern-5"
+                icon={ListChecks}
+                badge="WORK MANAGEMENT"
+                title="Client Based Flow"
+                description="Create client-specific workflow overrides for selected clients and work types."
+            >
                 <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto shrink-0 items-stretch sm:items-center">
                     <Select onValueChange={setSelectedClientId} value={selectedClientId}>
                         <SelectTrigger className="w-full sm:w-[220px] bg-slate-50 border-slate-200 text-slate-700 font-medium">
@@ -440,13 +441,13 @@ export default function ClientSchedulesPage() {
                                 resetModalState();
                                 setIsAddModalOpen(true);
                             }} 
-                            className="bg-indigo-600 hover:bg-indigo-700 text-white font-medium shadow-sm shrink-0 flex items-center justify-center gap-2"
+                            className="bg-primary hover:bg-primary/90 text-primary-foreground font-medium shadow-sm shrink-0 flex items-center justify-center gap-2"
                         >
                             <PlusCircle className="h-4 w-4" /> Add Client Workflow
                         </Button>
                     )}
                 </div>
-            </div>
+            </PageHero>
 
             {/* 2. Summary Cards */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 animate-in fade-in duration-400">

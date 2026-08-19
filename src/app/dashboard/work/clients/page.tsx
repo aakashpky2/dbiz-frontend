@@ -10,7 +10,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Loader2, UserPlus, Users2, Search, CheckCircle, Edit, Trash2, Clock, AlertCircle, TrendingUp } from 'lucide-react';
+import { Loader2, UserPlus, Users2, Search, CheckCircle, Edit, Trash2, Clock, AlertCircle, TrendingUp, Building2 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/lib/supabase';
@@ -27,7 +27,7 @@ import { usePagination } from '@/hooks/usePagination';
 import { useVirtualizer } from '@tanstack/react-virtual';
 import { ClientRow } from './_components/ClientRow';
 import { PaginationControls } from '@/components/common/PaginationControls';
-import { DashboardPageHeader } from '@/components/dashboard/dashboard-page-header';
+import { PageHero } from '@/components/dashboard/page-hero';
 import { usePermissions } from '@/hooks/use-permissions';
 import { useRouter } from 'next/navigation';
 import { useQueryClient } from '@tanstack/react-query';
@@ -549,7 +549,10 @@ export default function ClientsPage() {
 
     return (
         <div className="space-y-6">
-            <DashboardPageHeader
+            <PageHero
+                pattern="pattern-4"
+                icon={Building2}
+                badge="WORKFLOW MANAGEMENT"
                 title="Clients"
                 description="Manage and monitor your client database, track validation status, and profiles."
             >
@@ -581,7 +584,7 @@ export default function ClientsPage() {
                         </Button>
                     )}
                 </div>
-            </DashboardPageHeader>
+            </PageHero>
 
 
             {/* Stats Overview */}

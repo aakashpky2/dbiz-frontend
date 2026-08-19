@@ -35,6 +35,7 @@ import { useToast } from '@/hooks/use-toast';
 import { apiFetch } from '@/lib/apiFetch';
 import { useBusinessConstitutions, type BusinessTypeSetup } from '@/hooks/use-profiles';
 import { Loader2, AlertTriangle, Clock, PlusCircle, Edit, Trash2, CalendarIcon, Cog, ChevronRight, Settings, CheckCircle, ListChecks, ArrowUp, ArrowDown, Info } from 'lucide-react';
+import { PageHero } from '@/components/dashboard/page-hero';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -327,23 +328,23 @@ function V2WorkSchedules() {
         <div className="space-y-8 pb-24">
             
             {/* 1. Page Header */}
-            <div className="bg-white p-8 rounded-2xl shadow-sm border border-slate-100 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                <div>
-                    <h1 className="text-3xl font-bold text-slate-900 tracking-tight mb-2">Work Based Flow</h1>
-                    <p className="text-slate-500 max-w-2xl text-sm leading-relaxed">
-                        Create and manage reusable workflow flows for work types.
-                    </p>
-                </div>
+            <PageHero
+                pattern="pattern-1"
+                icon={CalendarIcon}
+                badge="ADMINISTRATION"
+                title="Work Based Flow"
+                description="Create and manage reusable workflow flows for work types."
+            >
                 <Button 
                     onClick={() => {
                         resetModalState();
                         setIsAddModalOpen(true);
                     }} 
-                    className="bg-indigo-600 hover:bg-indigo-700 text-white font-medium shadow-sm shrink-0"
+                    className="bg-primary hover:bg-primary/90 text-primary-foreground font-medium shadow-sm shrink-0"
                 >
                     <PlusCircle className="mr-2 h-4 w-4" /> Add Workflow
                 </Button>
-            </div>
+            </PageHero>
 
             {/* 2. Summary Cards */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">

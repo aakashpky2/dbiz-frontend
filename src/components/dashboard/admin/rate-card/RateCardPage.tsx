@@ -1,19 +1,19 @@
 'use client';
 
-import React, { useState, useMemo, useEffect, useCallback } from 'react';
-import { Plus, Search, AlertCircle, Calendar, Briefcase, User, Building, ChevronLeft, ChevronRight, ArrowLeft, ChevronDown, ChevronUp } from 'lucide-react';
-import { Card, CardContent } from '@/components/ui/card';
-import { EmptyState } from '@/components/ui/empty-state';
-import { FileQuestion } from 'lucide-react';
+import React, { useState, useMemo, useEffect } from 'react';
+import { Plus, Search, AlertCircle, Briefcase, ChevronLeft, ChevronRight, ArrowLeft, ChevronDown, ChevronUp, Receipt } from 'lucide-react';
+import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useRateCards } from '@/hooks/useRateCards';
 import { format } from 'date-fns';
 import { useProfiles } from '@/hooks/use-profiles';
 import dynamic from 'next/dynamic';
 import { Skeleton } from '@/components/ui/skeleton';
+import { usePermissions } from '@/hooks/use-permissions';
+import { useDebounce } from '@/hooks/use-debounce';
+import { getRateCardLiveStatus, getRateCardItemCount } from '@/lib/rate-card-utils';
 
 const RateCardForm = dynamic(() => import('./RateCardForm'), {
     ssr: false,
@@ -24,15 +24,17 @@ const RateCardDetails = dynamic(() => import('./RateCardDetails'), {
     ssr: false,
     loading: () => <div className="p-4 space-y-4"><Skeleton className="h-8 w-1/3" /><Skeleton className="h-[400px] w-full" /></div>
 });
+
 const PendingApprovalsTab = dynamic(() => import('./PendingApprovalsTab').then(mod => mod.PendingApprovalsTab), {
     ssr: false,
     loading: () => <div className="p-4 text-center text-muted-foreground animate-pulse">Loading pending approvals...</div>
 });
-import { usePermissions } from '@/hooks/use-permissions';
-import { useDebounce } from '@/hooks/use-debounce';
-import { getRateCardLiveStatus, getRateCardItemCount } from '@/lib/rate-card-utils';
 
-export default function RateCardPage() {
+interface RateCardPageProps {
+    createTrigger?: number;
+}
+
+export default function RateCardPage({ createTrigger }: RateCardPageProps) {
     const [searchInput, setSearchInput] = useState('');
     const [businessProfileId, setBusinessProfileId] = useState<string>('all');
     const [page, setPage] = useState(1);
@@ -50,10 +52,23 @@ export default function RateCardPage() {
 
     const { hasPermission } = usePermissions();
 
+    // Trigger create when hero action button is clicked
+    useEffect(() => {
+        if (createTrigger && createTrigger > 0) {
+            handleAdd();
+        }
+    }, [createTrigger]);
+
+    useEffect(() => {
+        const handleCreateEvent = () => handleAdd();
+        window.addEventListener('dbiz:create-rate-card', handleCreateEvent);
+        return () => window.removeEventListener('dbiz:create-rate-card', handleCreateEvent);
+    }, []);
+
     // Debounce search so we don't fire a request on every keystroke
     const debouncedSearch = useDebounce(searchInput, 350);
 
-    // Build server-side filters per tab — no more limit:10000
+    // Build server-side filters per tab
     const filters = useMemo(() => {
         const f: Record<string, any> = {
             search: debouncedSearch,
@@ -61,7 +76,6 @@ export default function RateCardPage() {
             limit,
         };
         if (businessProfileId !== 'all') f.business_profile_id = businessProfileId;
-        // Map tab to backend filter params
         if (activeTab === 'pending') {
             f.approval_status = 'pending_approval';
         } else if (activeTab === 'active') {
@@ -72,7 +86,6 @@ export default function RateCardPage() {
         } else if (activeTab === 'expired') {
             f.status = 'expired';
         }
-        // 'all' tab: no status filter
         return f;
     }, [debouncedSearch, businessProfileId, activeTab, page, limit]);
 
@@ -116,49 +129,89 @@ export default function RateCardPage() {
 
     const handleTabChange = (val: string) => {
         setActiveTab(val);
-        setPage(1); // Reset page on tab change
+        setPage(1);
     };
 
     const getStatusBadge = (status: string, approval_status?: string) => {
         if (approval_status === 'pending_approval') {
-            return <Badge variant="secondary" className="bg-amber-500 text-white">Pending Approval</Badge>;
+            return (
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20">
+                    <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
+                    Pending Approval
+                </span>
+            );
         }
         if (approval_status === 'draft') {
-            return <Badge variant="outline">Draft</Badge>;
+            return (
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-muted text-muted-foreground border border-border">
+                    <span className="w-1.5 h-1.5 rounded-full bg-muted-foreground" />
+                    Draft
+                </span>
+            );
         }
         if (approval_status === 'rejected') {
-            return <Badge variant="outline" className="border-red-500 text-red-500">Rejected</Badge>;
+            return (
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-500/10 text-red-600 dark:text-red-400 border border-red-500/20">
+                    <span className="w-1.5 h-1.5 rounded-full bg-red-500" />
+                    Rejected
+                </span>
+            );
         }
 
         switch (status) {
             case 'active':
-                return <Badge variant="default" className="bg-green-500 hover:bg-green-600">Active</Badge>;
+                return (
+                    <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
+                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                        Active
+                    </span>
+                );
             case 'scheduled':
-                return <Badge variant="secondary" className="bg-blue-500 text-white hover:bg-blue-600">Scheduled</Badge>;
+                return (
+                    <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20">
+                        <span className="w-1.5 h-1.5 rounded-full bg-blue-500" />
+                        Scheduled
+                    </span>
+                );
             case 'expired':
-                return <Badge variant="outline" className="text-red-500 border-red-500">Expired</Badge>;
+                return (
+                    <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-muted text-muted-foreground border border-border">
+                        <span className="w-1.5 h-1.5 rounded-full bg-muted-foreground" />
+                        Expired
+                    </span>
+                );
             case 'superseded':
-                return <Badge variant="outline" className="text-gray-500 border-gray-500">Superseded</Badge>;
+                return (
+                    <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-muted text-muted-foreground border border-border">
+                        <span className="w-1.5 h-1.5 rounded-full bg-muted-foreground" />
+                        Superseded
+                    </span>
+                );
             default:
-                return <Badge variant="outline">{status}</Badge>;
+                return (
+                    <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-muted text-muted-foreground border border-border">
+                        {status}
+                    </span>
+                );
         }
     };
 
     const renderListUI = () => (
-        <div className="flex flex-col gap-4">
-            <div className="flex gap-4 sm:flex-row flex-col">
+        <div className="flex flex-col gap-6">
+            {/* Filter & Search Toolbar */}
+            <div className="flex gap-3 sm:flex-row flex-col items-stretch sm:items-center">
                 <div className="relative flex-1 max-w-sm">
-                    <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                    <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
                     <Input
                         placeholder="Search rate cards..."
-                        className="pl-9 h-9"
+                        className="pl-10 h-11 rounded-xl border-border/70 focus-visible:ring-2 focus-visible:ring-primary/20 focus-visible:border-primary/50 text-sm transition-all duration-200 bg-card"
                         value={searchInput}
                         onChange={(e) => setSearchInput(e.target.value)}
                     />
                 </div>
-                <div className="w-64">
+                <div className="w-full sm:w-64">
                     <select
-                        className="flex h-9 w-full items-center justify-between rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+                        className="flex h-11 w-full items-center justify-between rounded-xl border border-border/70 bg-card px-3.5 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/50 disabled:cursor-not-allowed disabled:opacity-50 transition-all duration-200 text-foreground"
                         value={businessProfileId}
                         onChange={(e) => setBusinessProfileId(e.target.value)}
                         disabled={profilesLoading}
@@ -171,23 +224,28 @@ export default function RateCardPage() {
                 </div>
             </div>
 
-            <div className="py-2">
+            {/* Cards Grid */}
+            <div>
                 {loading ? (
-                    <div className="flex h-32 items-center justify-center">
-                        <div className="animate-spin h-6 w-6 border-2 border-primary border-t-transparent rounded-full" />
+                    <div className="flex h-44 items-center justify-center bg-card/50 rounded-2xl border border-border/60">
+                        <div className="flex flex-col items-center gap-3">
+                            <div className="animate-spin h-7 w-7 border-2 border-primary border-t-transparent rounded-full" />
+                            <span className="text-xs text-muted-foreground">Loading rate cards...</span>
+                        </div>
                     </div>
                 ) : error ? (
-                    <div className="flex h-32 flex-col items-center justify-center text-destructive gap-2">
+                    <div className="flex h-44 flex-col items-center justify-center text-destructive gap-2 bg-destructive/5 rounded-2xl border border-destructive/20 p-6 text-center">
                         <AlertCircle className="h-6 w-6" />
-                        <p>{error}</p>
+                        <p className="text-sm font-medium">{error}</p>
                     </div>
                 ) : rateCards.length === 0 ? (
-                    <div className="flex h-32 flex-col items-center justify-center text-muted-foreground">
-                        <Briefcase className="h-10 w-10 mb-2 opacity-20" />
-                        <p>No rate cards found.</p>
+                    <div className="flex h-44 flex-col items-center justify-center text-muted-foreground bg-card/40 rounded-2xl border border-border/60 p-6 text-center">
+                        <Briefcase className="h-10 w-10 mb-2 opacity-25" />
+                        <p className="text-sm font-medium text-foreground">No rate cards found</p>
+                        <p className="text-xs text-muted-foreground mt-0.5">Try adjusting your search or active filter</p>
                     </div>
                 ) : (
-                    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 items-start">
+                    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5 items-start">
                         {rateCards.map((card: any) => {
                             const totalItems = getRateCardItemCount(card);
                             
@@ -221,110 +279,140 @@ export default function RateCardPage() {
                             return (
                                 <div
                                     key={card.id}
-                                    className="group bg-background border rounded-xl shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden h-fit self-start"
+                                    className="group relative bg-card border border-border/70 rounded-2xl shadow-sm hover:shadow-[0_12px_28px_-6px_rgba(59,130,246,0.12),0_8px_12px_-4px_rgba(0,0,0,0.04)] dark:hover:shadow-[0_12px_28px_-6px_rgba(0,0,0,0.4)] hover:border-primary/35 hover:-translate-y-0.5 active:scale-[0.985] transition-all duration-300 overflow-hidden h-fit self-start"
                                 >
+                                    {/* Soft circular hover glow reveal */}
+                                    <div 
+                                        className="absolute -right-36 -bottom-36 w-80 h-80 rounded-full pointer-events-none transition-all duration-500 ease-out opacity-0 group-hover:opacity-100 group-hover:-right-16 group-hover:-bottom-16"
+                                        style={{
+                                            background: "radial-gradient(circle, rgba(59, 130, 246, 0.12) 0%, rgba(59, 130, 246, 0.03) 45%, transparent 70%)"
+                                        }}
+                                    />
+
                                     <div 
                                         onClick={() => handleToggleCard(card.id)}
-                                        className="cursor-pointer p-4 flex flex-col hover:bg-muted/30 transition-all focus:outline-none"
+                                        className="cursor-pointer p-5 flex flex-col relative z-10 focus:outline-none"
                                     >
-                                        <div className="flex items-start justify-between gap-4">
-                                            <div className="flex flex-col gap-2 flex-1">
-                                                <h3 className="font-semibold text-base line-clamp-2">
-                                                    {card.name || card.rate_card_name || 'Untitled Rate Card'}
-                                                </h3>
-                                                <div className="flex items-center gap-2">
-                                                    {getStatusBadge(getRateCardLiveStatus(card.applicable_from, card.applicable_until, card.status), card.approval_status)}
+                                        {/* Top Row: Name and Chevron */}
+                                        <div className="flex items-start justify-between gap-3">
+                                            <div className="flex items-start gap-3 flex-1 min-w-0">
+                                                <div className="w-9 h-9 rounded-xl bg-primary/10 border border-primary/15 text-primary flex items-center justify-center shrink-0 mt-0.5 group-hover:bg-primary group-hover:text-primary-foreground transition-colors duration-200">
+                                                    <Receipt className="h-4.5 w-4.5" />
                                                 </div>
-                                                <p className="text-sm font-medium text-muted-foreground">
-                                                    Total Items: {totalItems}
+                                                <div className="flex-1 min-w-0">
+                                                    <h3 className="font-bold text-base text-foreground tracking-tight line-clamp-1 group-hover:text-primary transition-colors">
+                                                        {card.name || card.rate_card_name || 'Untitled Rate Card'}
+                                                    </h3>
+                                                    <div className="mt-1.5">
+                                                        {getStatusBadge(getRateCardLiveStatus(card.applicable_from, card.applicable_until, card.status), card.approval_status)}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div className="w-8 h-8 rounded-lg flex items-center justify-center text-muted-foreground group-hover:text-primary group-hover:bg-primary/[0.08] transition-colors shrink-0">
+                                                {expandedCardId === card.id ? (
+                                                    <ChevronUp className="h-4.5 w-4.5 transition-transform duration-200" />
+                                                ) : (
+                                                    <ChevronDown className="h-4.5 w-4.5 transition-transform duration-200" />
+                                                )}
+                                            </div>
+                                        </div>
+
+                                        {/* Divider */}
+                                        <div className="border-t border-border/50 my-3.5" />
+
+                                        {/* Metadata Footer */}
+                                        <div className="grid grid-cols-2 gap-3 text-xs">
+                                            <div className="min-w-0">
+                                                <span className="text-muted-foreground text-[11px] font-normal block mb-0.5">
+                                                    {resolvedClients.length > 0 ? 'Client / Associate' : 'Business Profile'}
+                                                </span>
+                                                <span className="font-semibold text-foreground truncate block" title={forName}>
+                                                    {forName}
+                                                </span>
+                                            </div>
+                                            <div className="text-right sm:text-left">
+                                                <span className="text-muted-foreground text-[11px] font-normal block mb-0.5">
+                                                    Total Items
+                                                </span>
+                                                <span className="font-bold text-foreground text-sm block">
+                                                    {totalItems}
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* Expanded Details */}
+                                    {expandedCardId === card.id && (
+                                        <div className="border-t border-border/60 bg-muted/25 p-5 text-sm space-y-3.5 relative z-10 animate-in fade-in-50 duration-200">
+                                            <div>
+                                                <p className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">Client Type</p>
+                                                <p className="font-semibold capitalize text-foreground mt-0.5">{card.client_type || 'N/A'}</p>
+                                            </div>
+                                            <div>
+                                                <p className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">Client / Associate</p>
+                                                <div className="font-medium text-foreground mt-0.5 flex flex-col gap-1">
+                                                    {resolvedClients.length > 0 ? (
+                                                        resolvedClients.map((c: any, idx: number) => (
+                                                            <span key={idx} className="truncate">{c.client_name || c.name || c.clientName}</span>
+                                                        ))
+                                                    ) : resolvedAssociates.length > 0 ? (
+                                                        resolvedAssociates.map((a: any, idx: number) => (
+                                                            <span key={idx} className="truncate">{a.company_name || a.name}</span>
+                                                        ))
+                                                    ) : (
+                                                        <span className="text-muted-foreground">N/A</span>
+                                                    )}
+                                                </div>
+                                            </div>
+                                            <div>
+                                                <p className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">Business Profile</p>
+                                                <div className="font-medium text-foreground mt-0.5 flex flex-col gap-1">
+                                                    {resolvedProfiles.length > 0 ? (
+                                                        resolvedProfiles.map((bp: any, idx: number) => (
+                                                            <span key={idx} className="truncate">{bp.profile_name || bp.profileName}</span>
+                                                        ))
+                                                    ) : (
+                                                        <span className="text-muted-foreground">N/A</span>
+                                                    )}
+                                                </div>
+                                            </div>
+                                            <div>
+                                                <p className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">Created Date</p>
+                                                <p className="font-semibold text-foreground mt-0.5">
+                                                    {card.created_at ? format(new Date(card.created_at), 'dd MMM yyyy') : 'No Date'}
                                                 </p>
-                                                <div className="sm:hidden mt-1 text-xs text-muted-foreground line-clamp-2">
-                                                    For: {forName}
-                                                </div>
                                             </div>
-                                            <div className="flex flex-col items-end gap-2 shrink-0">
-                                                {expandedCardId === card.id ? <ChevronUp className="h-5 w-5 text-muted-foreground transition-transform" /> : <ChevronDown className="h-5 w-5 text-muted-foreground transition-transform" />}
-                                                <div className="hidden sm:block text-xs text-muted-foreground text-right max-w-[150px] line-clamp-3">
-                                                    For: {forName}
-                                                </div>
+                                            <div className="pt-2">
+                                                <Button 
+                                                    variant="outline" 
+                                                    className="w-full rounded-xl h-10 font-medium hover:bg-primary hover:text-primary-foreground hover:border-primary transition-all duration-200 shadow-sm"
+                                                    onClick={(e) => {
+                                                        e.preventDefault();
+                                                        handleSelect(card.id);
+                                                    }}
+                                                >
+                                                    View Details
+                                                </Button>
                                             </div>
                                         </div>
-                                    </div>
-                                {expandedCardId === card.id && (
-                                <div className="border-t bg-muted/10 p-4 text-sm space-y-3">
-                                    <div>
-                                        <p className="text-xs text-muted-foreground">Client Type</p>
-                                        <p className="font-medium capitalize">{card.client_type || 'N/A'}</p>
-                                    </div>
-                                    <div>
-                                        <p className="text-xs text-muted-foreground">Client / Associate</p>
-                                        <div className="font-medium flex items-center gap-1 flex-wrap">
-                                            {resolvedClients.length > 0 ? (
-                                                <div className="flex flex-col gap-1">
-                                                    {resolvedClients.map((c: any, idx: number) => (
-                                                        <span key={idx} className="truncate">{c.client_name || c.name || c.clientName}</span>
-                                                    ))}
-                                                </div>
-                                            ) : resolvedAssociates.length > 0 ? (
-                                                <div className="flex flex-col gap-1">
-                                                    {resolvedAssociates.map((a: any, idx: number) => (
-                                                        <span key={idx} className="truncate">{a.company_name || a.name}</span>
-                                                    ))}
-                                                </div>
-                                            ) : (
-                                                <span className="truncate">N/A</span>
-                                            )}
-                                        </div>
-                                    </div>
-                                    <div>
-                                        <p className="text-xs text-muted-foreground">Business Profile</p>
-                                        <div className="font-medium flex items-center gap-1 flex-wrap">
-                                            {resolvedProfiles.length > 0 ? (
-                                                <div className="flex flex-col gap-1">
-                                                    {resolvedProfiles.map((bp: any, idx: number) => (
-                                                        <span key={idx} className="truncate">{bp.profile_name || bp.profileName}</span>
-                                                    ))}
-                                                </div>
-                                            ) : (
-                                                <span className="truncate">N/A</span>
-                                            )}
-                                        </div>
-                                    </div>
-                                    <div>
-                                        <p className="text-xs text-muted-foreground">Created Date</p>
-                                        <p className="font-medium">
-                                            {card.created_at ? format(new Date(card.created_at), 'dd MMM yyyy') : 'No Date'}
-                                        </p>
-                                    </div>
-                                    <div className="pt-2">
-                                        <Button 
-                                            variant="outline" 
-                                            className="w-full"
-                                            onClick={(e) => {
-                                                e.preventDefault();
-                                                handleSelect(card.id);
-                                            }}
-                                        >
-                                            View Details
-                                        </Button>
-                                    </div>
+                                    )}
                                 </div>
-                                )}
-                            </div>
-                        )})}
+                            );
+                        })}
                     </div>
                 )}
             </div>
 
-            <div className="border-t pt-4 pb-2 flex items-center justify-between">
-                <div className="text-sm text-muted-foreground">
-                    Showing {rateCards.length} of {pagination.total} records
+            {/* Pagination */}
+            <div className="border-t border-border/60 pt-4 pb-2 flex flex-col sm:flex-row items-center justify-between gap-4">
+                <div className="text-sm text-muted-foreground order-2 sm:order-1">
+                    Showing <span className="font-medium text-foreground">{rateCards.length}</span> of <span className="font-medium text-foreground">{pagination.total}</span> records
                 </div>
-                <div className="flex items-center gap-4">
+                <div className="flex items-center gap-4 order-1 sm:order-2">
                     <div className="flex items-center gap-2">
-                        <span className="text-sm text-muted-foreground">Rows per page</span>
+                        <span className="text-xs sm:text-sm text-muted-foreground whitespace-nowrap">Rows per page</span>
                         <select 
-                            className="h-8 rounded-md border bg-transparent px-2 text-sm focus:outline-none focus:ring-1 focus:ring-ring"
+                            className="h-9 rounded-lg border border-border/70 bg-card px-2.5 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/50 transition-all"
                             value={limit}
                             onChange={(e) => {
                                 setLimit(Number(e.target.value));
@@ -337,21 +425,23 @@ export default function RateCardPage() {
                             <option value={50}>50</option>
                         </select>
                     </div>
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-1.5">
                         <Button 
                             variant="outline" 
                             size="icon" 
-                            className="h-8 w-8" 
+                            className="h-9 w-9 rounded-lg border-border/70 hover:bg-muted" 
                             disabled={page === 1}
                             onClick={() => setPage(p => Math.max(1, p - 1))}
                         >
                             <ChevronLeft className="h-4 w-4" />
                         </Button>
-                        <span className="text-sm px-2">Page {page} of {pagination.totalPages}</span>
+                        <span className="text-sm px-2.5 font-medium text-foreground whitespace-nowrap">
+                            Page {page} of {Math.max(1, pagination.totalPages)}
+                        </span>
                         <Button 
                             variant="outline" 
                             size="icon" 
-                            className="h-8 w-8" 
+                            className="h-9 w-9 rounded-lg border-border/70 hover:bg-muted" 
                             disabled={page >= pagination.totalPages}
                             onClick={() => setPage(p => Math.min(pagination.totalPages, p + 1))}
                         >
@@ -365,14 +455,17 @@ export default function RateCardPage() {
 
     if (isCreating) {
         return (
-            <div className="flex flex-col bg-card rounded-lg border shadow-sm">
-                <div className="flex items-center gap-4 border-b p-4">
-                    <Button variant="ghost" size="icon" onClick={handleCancel}>
+            <div className="flex flex-col bg-card rounded-2xl border border-border/70 shadow-sm overflow-hidden animate-in fade-in-50 duration-200">
+                <div className="flex items-center gap-4 border-b border-border/70 p-5 bg-muted/10">
+                    <Button variant="ghost" size="icon" className="rounded-xl h-9 w-9 hover:bg-muted" onClick={handleCancel}>
                         <ArrowLeft className="h-4 w-4" />
                     </Button>
-                    <h2 className="text-lg font-semibold">Create New Rate Card</h2>
+                    <div>
+                        <h2 className="text-lg font-bold tracking-tight text-foreground">Create New Rate Card</h2>
+                        <p className="text-xs text-muted-foreground">Configure service pricing, slabs, and eligibility rules</p>
+                    </div>
                 </div>
-                <div className="p-4">
+                <div className="p-6">
                     <RateCardForm onSuccess={handleSuccess} onCancel={handleCancel} />
                 </div>
             </div>
@@ -381,7 +474,7 @@ export default function RateCardPage() {
 
     if (selectedRateCardId) {
         return (
-            <div className="bg-card rounded-lg border shadow-sm overflow-hidden">
+            <div className="bg-card rounded-2xl border border-border/70 shadow-sm overflow-hidden animate-in fade-in-50 duration-200">
                 <RateCardDetails 
                     rateCardId={selectedRateCardId} 
                     onBack={handleBackFromDetails}
@@ -395,53 +488,78 @@ export default function RateCardPage() {
     }
 
     return (
-        <div className="flex flex-col gap-4">
-            <div className="flex justify-between items-center shrink-0">
-                <div>
-                    <h1 className="text-2xl font-bold tracking-tight">Rate Cards</h1>
-                    <p className="text-sm text-muted-foreground">Manage service fees, pricing, and approvals</p>
-                </div>
-                {hasPermission('rate_card.create') && (
-                    <Button onClick={handleAdd}>
-                        <Plus className="mr-2 h-4 w-4" /> Create Rate Card
-                    </Button>
-                )}
+        <div className="flex flex-col gap-6">
+            {/* Section Header without duplicate button */}
+            <div className="flex flex-col gap-1">
+                <h2 className="text-2xl font-bold tracking-tight text-foreground">Rate Cards</h2>
+                <p className="text-sm text-muted-foreground">Manage service fees, pricing, and approvals</p>
             </div>
 
-            <Tabs value={activeTab} onValueChange={handleTabChange} className="flex flex-col">
-                <TabsList className="shrink-0 max-w-max">
-                    <TabsTrigger value="active">Active</TabsTrigger>
-                    <TabsTrigger value="scheduled">Scheduled</TabsTrigger>
-                    <TabsTrigger value="expired">Expired</TabsTrigger>
-                    <TabsTrigger value="all">All</TabsTrigger>
-                    {hasPermission('rate_card.approve') && (
-                        <TabsTrigger value="pending">Pending for Approval</TabsTrigger>
-                    )}
-                </TabsList>
+            {/* Status Filter Tabs */}
+            <Tabs value={activeTab} onValueChange={handleTabChange} className="flex flex-col space-y-6">
+                <div className="flex justify-start">
+                    <TabsList className="inline-flex p-1.5 rounded-xl bg-muted/40 border border-border/60 gap-1 h-auto flex-wrap sm:flex-nowrap">
+                        <TabsTrigger 
+                            value="active" 
+                            className="px-3.5 h-9 rounded-lg text-xs sm:text-sm font-medium transition-all duration-200 data-[state=active]:bg-card data-[state=active]:text-primary data-[state=active]:shadow-sm data-[state=active]:font-semibold data-[state=inactive]:text-muted-foreground hover:bg-primary/[0.05] hover:text-primary flex items-center gap-1.5"
+                        >
+                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                            Active
+                        </TabsTrigger>
+                        <TabsTrigger 
+                            value="scheduled" 
+                            className="px-3.5 h-9 rounded-lg text-xs sm:text-sm font-medium transition-all duration-200 data-[state=active]:bg-card data-[state=active]:text-primary data-[state=active]:shadow-sm data-[state=active]:font-semibold data-[state=inactive]:text-muted-foreground hover:bg-primary/[0.05] hover:text-primary flex items-center gap-1.5"
+                        >
+                            <span className="w-1.5 h-1.5 rounded-full bg-blue-500" />
+                            Scheduled
+                        </TabsTrigger>
+                        <TabsTrigger 
+                            value="expired" 
+                            className="px-3.5 h-9 rounded-lg text-xs sm:text-sm font-medium transition-all duration-200 data-[state=active]:bg-card data-[state=active]:text-primary data-[state=active]:shadow-sm data-[state=active]:font-semibold data-[state=inactive]:text-muted-foreground hover:bg-primary/[0.05] hover:text-primary"
+                        >
+                            Expired
+                        </TabsTrigger>
+                        <TabsTrigger 
+                            value="all" 
+                            className="px-3.5 h-9 rounded-lg text-xs sm:text-sm font-medium transition-all duration-200 data-[state=active]:bg-card data-[state=active]:text-primary data-[state=active]:shadow-sm data-[state=active]:font-semibold data-[state=inactive]:text-muted-foreground hover:bg-primary/[0.05] hover:text-primary"
+                        >
+                            All
+                        </TabsTrigger>
+                        {hasPermission('rate_card.approve') && (
+                            <TabsTrigger 
+                                value="pending" 
+                                className="px-3.5 h-9 rounded-lg text-xs sm:text-sm font-medium transition-all duration-200 data-[state=active]:bg-card data-[state=active]:text-primary data-[state=active]:shadow-sm data-[state=active]:font-semibold data-[state=inactive]:text-muted-foreground hover:bg-primary/[0.05] hover:text-primary flex items-center gap-1.5"
+                            >
+                                <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
+                                Pending for Approval
+                            </TabsTrigger>
+                        )}
+                    </TabsList>
+                </div>
                 
-                <TabsContent value="active" className="m-0 mt-4">
+                <TabsContent value="active" className="m-0">
                     {activeTab === 'active' && renderListUI()}
                 </TabsContent>
-                <TabsContent value="scheduled" className="m-0 mt-4">
+                <TabsContent value="scheduled" className="m-0">
                     {activeTab === 'scheduled' && renderListUI()}
                 </TabsContent>
-                <TabsContent value="expired" className="m-0 mt-4">
+                <TabsContent value="expired" className="m-0">
                     {activeTab === 'expired' && renderListUI()}
                 </TabsContent>
-                <TabsContent value="all" className="m-0 mt-4">
+                <TabsContent value="all" className="m-0">
                     {activeTab === 'all' && renderListUI()}
                 </TabsContent>
                 
-                <TabsContent value="pending" className="m-0 mt-4 flex flex-col gap-8">
+                <TabsContent value="pending" className="m-0 flex flex-col gap-6">
                     {activeTab === 'pending' && (
                         <>
                             <div>
                                 {renderListUI()}
                             </div>
                             {hasPermission('rate_card.approve') && (
-                                <Card className="flex flex-col overflow-hidden shadow-sm">
-                                    <div className="p-4 bg-muted/10 border-b flex justify-between items-center">
-                                        <h3 className="font-semibold">Service Item Change Requests</h3>
+                                <Card className="flex flex-col overflow-hidden shadow-sm rounded-2xl border-border/70">
+                                    <div className="p-4 bg-muted/20 border-b border-border/70 flex justify-between items-center">
+                                        <h3 className="font-semibold text-foreground">Service Item Change Requests</h3>
                                     </div>
                                     <div className="p-4">
                                         <PendingApprovalsTab />

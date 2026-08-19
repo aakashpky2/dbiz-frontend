@@ -32,6 +32,7 @@ import { useProfiles, useBusinessConstitutions } from '@/hooks/use-profiles';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { PageHero } from '@/components/dashboard/page-hero';
 import dynamic from 'next/dynamic';
 const GenerateProposalDialog = dynamic(() => import('./_components/GenerateProposalDialog').then(mod => mod.GenerateProposalDialog), {
     loading: () => <div className="flex items-center justify-center p-10"><Loader2 className="h-6 w-6 animate-spin text-primary" /></div>,
@@ -1003,47 +1004,44 @@ export default function QueriesPage() {
     return (
         <div className="space-y-6 p-6 animate-in fade-in duration-700">
             {/* ── Page Header Banner ── */}
-            <div className="bg-white rounded-2xl border border-muted/20 shadow-sm p-6">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-5">
-                    <div>
-                        <div className="flex items-center gap-4 mb-2">
-                            <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center">
-                                <MessageSquare className="h-5 w-5 text-primary" />
-                            </div>
-                            <div>
-                                <h1 className="text-xl font-black text-blue-900 tracking-tight text-foreground">Enquiry Management</h1>
-                                <p className="text-muted-foreground text-sm mt-1">Track and manage client enquiries and follow-ups from a single dashboard.</p>
-                            </div>
-                        </div>
-                        <div className="flex items-center gap-3 mt-4 pl-14">
-                            <span className="inline-flex items-center gap-1.5 text-[11px] font-medium px-2.5 py-1 rounded-full bg-amber-100 text-amber-800">
-                                <span className="h-1.5 w-1.5 bg-amber-600 rounded-full animate-pulse" />
-                                {openCount} Open
-                            </span>
-                            <span className="inline-flex items-center gap-1.5 text-[11px] font-medium px-2.5 py-1 rounded-full bg-blue-100 text-blue-800">
-                                <span className="h-1.5 w-1.5 bg-blue-600 rounded-full animate-pulse" />
-                                {workingCount} Active
-                            </span>
-                            <span className="inline-flex items-center gap-1.5 text-[11px] font-medium px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-800">
-                                <span className="h-1.5 w-1.5 bg-emerald-600 rounded-full" />
-                                {closedCount} Closed
-                            </span>
-                        </div>
-                    </div>
-                    <Dialog open={isAddOpen} onOpenChange={(v) => {
-                        setIsAddOpen(v);
-                        if (!v) resetForm();
-                    }}>
-                        <DialogTrigger asChild>
-                            <Button
-                                onClick={() => resetForm()}
-                                className="bg-primary hover:bg-primary/90 text-primary-foreground h-10 px-6 rounded-lg font-bold text-[10px] uppercase tracking-wide shadow-md transition-all active:scale-95 group"
-                            >
-                                <Plus className="mr-2 h-4 w-4 transition-transform group-hover:rotate-90" />
-                                Create New Enquiry
-                            </Button>
-                        </DialogTrigger>
-                        <DialogContent className={cn(
+            <div className="flex flex-col gap-4">
+                <PageHero
+                pattern="pattern-3"
+                    icon={MessageSquare}
+                    badge="ENQUIRY MANAGEMENT"
+                    title="Enquiry Management"
+                    description="Track and manage client enquiries and follow-ups from a single dashboard."
+                >
+                    <Button
+                        onClick={() => { resetForm(); setIsAddOpen(true); }}
+                        className="bg-primary hover:bg-primary/90 text-primary-foreground h-10 px-6 rounded-lg font-bold text-[10px] uppercase tracking-wide shadow-md transition-all active:scale-95 group"
+                    >
+                        <Plus className="mr-2 h-4 w-4 transition-transform group-hover:rotate-90" />
+                        Create New Enquiry
+                    </Button>
+                </PageHero>
+                
+                <div className="flex items-center gap-3 px-2">
+                    <span className="inline-flex items-center gap-1.5 text-[11px] font-medium px-2.5 py-1 rounded-full bg-amber-100 text-amber-800">
+                        <span className="h-1.5 w-1.5 bg-amber-600 rounded-full animate-pulse" />
+                        {openCount} Open
+                    </span>
+                    <span className="inline-flex items-center gap-1.5 text-[11px] font-medium px-2.5 py-1 rounded-full bg-blue-100 text-blue-800">
+                        <span className="h-1.5 w-1.5 bg-blue-600 rounded-full animate-pulse" />
+                        {workingCount} Active
+                    </span>
+                    <span className="inline-flex items-center gap-1.5 text-[11px] font-medium px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-800">
+                        <span className="h-1.5 w-1.5 bg-emerald-600 rounded-full" />
+                        {closedCount} Closed
+                    </span>
+                </div>
+            </div>
+
+            <Dialog open={isAddOpen} onOpenChange={(v) => {
+                setIsAddOpen(v);
+                if (!v) resetForm();
+            }}>
+                <DialogContent className={cn(
                             "flex flex-col p-0 overflow-hidden shadow-2xl rounded-3xl border-none transition-all duration-500",
                             (!clientType && !isEditing) ? "max-w-4xl w-full h-auto" : "max-w-[95vw] w-full max-h-[95vh] h-[95vh]"
                         )}>
@@ -2079,9 +2077,6 @@ export default function QueriesPage() {
                             </DialogFooter>
                         </DialogContent>
                     </Dialog>
-                </div>
-                {/* end banner */}
-            </div>
 
             <Card className="bg-white border-muted/20 shadow-sm rounded-2xl overflow-hidden">
                 <CardHeader className="border-b border-muted/20 p-0">

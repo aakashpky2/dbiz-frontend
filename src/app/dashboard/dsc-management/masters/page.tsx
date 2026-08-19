@@ -1,11 +1,14 @@
 import { DSCMasters } from '../_components/dsc-masters';
-import { Settings } from 'lucide-react';
-import { DashboardPageHeader } from '@/components/dashboard/dashboard-page-header';
+import { Settings2 } from 'lucide-react';
+import { PageHero } from '@/components/dashboard/page-hero';
 
 export default function DSCMastersPage() {
     return (
         <div className="space-y-6">
-            <DashboardPageHeader
+            <PageHero
+                pattern="pattern-4"
+                icon={Settings2}
+                badge="DSC CONFIGURATION"
                 title="Masters Configuration"
                 description="Manage DSC classes, validities, authorities, token pricing formulas, and workflow execution stages."
             />

@@ -10,7 +10,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
 import { fetchWithCache } from "@/lib/fetcher";
 import { cn } from "@/lib/utils";
-import { DashboardPageHeader } from "@/components/dashboard/dashboard-page-header";
+import { PageHero } from "@/components/dashboard/page-hero";
 import { DashboardFilterBar } from "@/components/dashboard/dashboard-filter-bar";
 import { EmploymentDetailsForm } from "@/components/dashboard/employee-directory/form-sections/employment-details-form";
 import { FormProvider, useForm } from "react-hook-form";
@@ -138,7 +138,10 @@ export default function EmploymentManagementPage() {
 
   return (
     <div className="space-y-6">
-      <DashboardPageHeader
+      <PageHero
+                pattern="pattern-7"
+        icon={Briefcase}
+        badge="MANAGEMENT"
         title="Employment Management"
         description="Manage employment terms, salaries, and roles independently."
       >
@@ -147,7 +150,7 @@ export default function EmploymentManagementPage() {
                 <Briefcase className="w-3 h-3 mr-1.5" /> Standalone Module
             </Badge>
         </div>
-      </DashboardPageHeader>
+      </PageHero>
 
       <DashboardFilterBar>
         <div className="flex-1 max-w-md relative">

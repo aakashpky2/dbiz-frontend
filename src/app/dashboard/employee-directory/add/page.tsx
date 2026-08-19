@@ -1,5 +1,7 @@
 'use client';
 
+import { PageHero } from '@/components/dashboard/page-hero';
+
 import { useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { AddEmployeeForm } from "@/components/dashboard/employee-directory/add-employee-form";
@@ -39,42 +41,25 @@ export default function AddEmployeePage() {
 
   return (
     <div className="space-y-6 p-2">
-      <div className="flex items-center">
+      <PageHero
+                pattern="pattern-1"
+        compact
+        icon={UserPlus}
+        badge="DIRECTORY"
+        title={employeeName || 'Add New Employee'}
+        description="Fill in the details below to add a new employee to the system. Complete all sections to ensure data integrity."
+      >
         <Button 
-          variant="ghost" 
-          onClick={() => router.back()}
-          className="group flex items-center gap-3 px-0 hover:bg-transparent text-muted-foreground hover:text-primary transition-all duration-300"
+          variant="outline" size="sm" onClick={() => router.back()}
+          className="rounded-xl shadow-sm hover:bg-slate-50 transition-all duration-300"
         >
-          <div className="p-2 rounded-xl bg-background border shadow-sm group-hover:shadow-md transition-all">
-            <ArrowLeft className="h-4 w-4" />
-          </div>
-          <span className="font-bold text-xs uppercase tracking-[0.2em]">Back to Directory</span>
+          <ArrowLeft className="mr-2 h-4 w-4" />
+          <span>Back to Directory</span>
         </Button>
-      </div>
+      </PageHero>
 
       <Card className="shadow-lg border">
-        <CardHeader>
-          <div className="flex items-center gap-4 mb-2">
-            {headerPhotoPreview ? (
-              <Avatar className="h-16 w-16">
-                <AvatarImage src={headerPhotoPreview} alt="Employee Photo" />
-                <AvatarFallback>{employeeName ? employeeName.split(' ').map(n => n[0]).join('') : <UserPlus className="h-8 w-8" />}</AvatarFallback>
-              </Avatar>
-            ) : (
-              <UserPlus className="h-8 w-8 text-primary" />
-            )}
-            <div>
-              <CardTitle className="text-2xl flex items-center">
-                {employeeName || 'Add New Employee'}
-              </CardTitle>
-              <CardDescription>
-                Fill in the details below to add a new employee to the system.
-                Complete all sections to ensure data integrity.
-              </CardDescription>
-            </div>
-          </div>
-        </CardHeader>
-        <CardContent>
+        <CardContent className="pt-6">
           <AddEmployeeForm onPhotoChange={handlePhotoChangeForHeader} onNameChange={handleNameChange} />
         </CardContent>
       </Card>

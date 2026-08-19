@@ -21,7 +21,7 @@ import { useToast } from '@/hooks/use-toast';
 import { CATEGORIZED_PERMISSIONS } from '@/config/permissions';
 import { Role } from '@/types/rbac';
 
-import { DashboardPageHeader } from '@/components/dashboard/dashboard-page-header';
+import { PageHero } from '@/components/dashboard/page-hero';
 import { DashboardFilterBar } from '@/components/dashboard/dashboard-filter-bar';
 import { usePermissions } from '@/hooks/use-permissions';
 import { useRouter } from 'next/navigation';
@@ -314,15 +314,22 @@ export default function SystemRolesPage() {
 
   return (
     <div className="space-y-6 animate-in fade-in duration-500">
-      {/* Header Section */}
-      <DashboardPageHeader
+      {/* HERO SECTION */}
+      <PageHero
+        pattern="pattern-4"
+        icon={ShieldCheck}
+        badge="ACCESS CONTROL"
         title="System Roles"
         description="Define roles and permissions to secure application access."
       >
-        <Button onClick={openAddDialog} className="font-bold">
-          <PlusCircle className="mr-2 h-4 w-4" /> Create Role
+        <Button 
+          onClick={openAddDialog} 
+          className="font-semibold h-11 px-6 rounded-xl transition-transform duration-150 hover:-translate-y-px hover:shadow-md shadow-sm"
+        >
+          <PlusCircle className="mr-2 h-4 w-4" />
+          Create Role
         </Button>
-      </DashboardPageHeader>
+      </PageHero>
 
       {/* Search Bar */}
       <div className="relative">
@@ -445,159 +452,206 @@ export default function SystemRolesPage() {
           }
         }}
       >
-        <DialogContent className="sm:max-w-4xl max-h-[90vh] flex flex-col" onPointerDownOutside={(e) => e.preventDefault()} onEscapeKeyDown={(e) => e.preventDefault()}>
-          <DialogHeader className="pb-2 border-b">
-            <DialogTitle className="text-2xl flex items-center gap-2">
-              {editingRole ? <Edit className="h-6 w-6 text-primary" /> : <ShieldCheck className="h-6 w-6 text-primary" />}
+        <DialogContent className="sm:max-w-4xl max-h-[90vh] flex flex-col p-0 overflow-hidden bg-card border-border/60 motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-bottom-1 motion-safe:zoom-in-[0.995] duration-200" onPointerDownOutside={(e) => e.preventDefault()} onEscapeKeyDown={(e) => e.preventDefault()}>
+          <style dangerouslySetInnerHTML={{__html: `
+            @keyframes systemRoleTrace {
+              0% { stroke-dashoffset: 2000; opacity: 1; }
+              60% { opacity: 1; }
+              100% { stroke-dashoffset: 0; opacity: 0; }
+            }
+            .system-role-trace-path {
+              stroke-dasharray: 2000;
+              stroke-dashoffset: 2000;
+              animation: systemRoleTrace 1050ms cubic-bezier(0.22, 1, 0.36, 1) forwards 120ms;
+            }
+            @media (prefers-reduced-motion: reduce) {
+              .system-role-trace-path { animation: none; opacity: 0; }
+            }
+          `}} />
+          {/* Subtle One-Time Border Trace (Blue -> Cyan) */}
+          <div className="absolute inset-0 pointer-events-none z-50 rounded-[inherit] overflow-hidden">
+             <svg width="100%" height="100%" className="absolute inset-0" xmlns="http://www.w3.org/2000/svg">
+                <defs>
+                   <linearGradient id="systemRoleTraceGrad" x1="0%" y1="100%" x2="100%" y2="0%">
+                      <stop offset="0%" stopColor="#2563EB" />
+                      <stop offset="50%" stopColor="#3B82F6" />
+                      <stop offset="100%" stopColor="#38BDF8" />
+                   </linearGradient>
+                   <filter id="systemRoleTraceGlow" x="-20%" y="-20%" width="140%" height="140%">
+                      <feGaussianBlur stdDeviation="2.5" result="blur" />
+                      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+                   </filter>
+                </defs>
+                <rect 
+                   x="1" y="1" 
+                   width="calc(100% - 2px)" height="calc(100% - 2px)" 
+                   rx="7" ry="7" 
+                   fill="none" 
+                   stroke="url(#systemRoleTraceGrad)" 
+                   strokeWidth="2.5"
+                   filter="url(#systemRoleTraceGlow)"
+                   className="system-role-trace-path opacity-0"
+                   style={{ strokeLinecap: 'round' }}
+                />
+             </svg>
+          </div>
+
+          <DialogHeader className="p-6 pb-4 border-b border-border/40 relative z-10 bg-background/50 backdrop-blur-sm">
+            <DialogTitle className="text-2xl font-bold tracking-tight text-foreground flex items-center gap-3">
+              <div className="p-2 bg-primary/[0.08] text-primary rounded-xl border border-primary/10 transition-colors">
+                {editingRole ? <Edit className="h-5 w-5" /> : <ShieldCheck className="h-5 w-5" />}
+              </div>
               {editingRole ? `Editing "${editingRole.name}"` : 'Adding New System Role'}
             </DialogTitle>
-            <DialogDescription>
+            <DialogDescription className="text-sm text-muted-foreground mt-1 ml-[52px]">
               {editingRole ? 'Update the details of this item.' : 'Enter the details for System Role.'}
             </DialogDescription>
           </DialogHeader>
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(handleFormSubmit)} className="space-y-4 pt-4 flex-1 overflow-hidden flex flex-col">
-              <Tabs defaultValue="details" className="flex-1 flex flex-col overflow-hidden">
-                <TabsList className="grid w-full grid-cols-2 mb-4">
-                  <TabsTrigger value="details">Role Details</TabsTrigger>
-                  <TabsTrigger value="permissions">Permissions</TabsTrigger>
-                </TabsList>
+            <form onSubmit={form.handleSubmit(handleFormSubmit)} className="flex-1 overflow-hidden flex flex-col">
+              <div className="flex-1 overflow-hidden flex flex-col p-6 space-y-4">
+                <Tabs defaultValue="details" className="flex-1 flex flex-col overflow-hidden">
+                  <TabsList className="grid w-full grid-cols-2 mb-4 p-1 bg-muted/40 rounded-xl">
+                    <TabsTrigger value="details" className="rounded-lg data-[state=active]:bg-background data-[state=active]:shadow-sm data-[state=active]:text-primary transition-all duration-150">Role Details</TabsTrigger>
+                    <TabsTrigger value="permissions" className="rounded-lg data-[state=active]:bg-background data-[state=active]:shadow-sm data-[state=active]:text-primary transition-all duration-150">Permissions</TabsTrigger>
+                  </TabsList>
 
-                <TabsContent value="details" className="flex-1 overflow-y-auto p-1 space-y-4">
-                  <div className="border rounded-lg p-4 bg-muted/20 space-y-4">
-                    <div className="flex items-center gap-2 mb-2">
-                      <div className="p-1.5 rounded-md bg-primary/10">
-                        <Edit className="h-4 w-4 text-primary" />
-                      </div>
-                      <h3 className="font-semibold text-sm">Role Details</h3>
-                    </div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <FormField
-                        control={form.control}
-                        name="name"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Role Name</FormLabel>
-                            <FormControl>
-                              <Input placeholder="e.g. HR Manager" className="h-10 bg-background" {...field} />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      <FormField
-                        control={form.control}
-                        name="priority"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Priority Order</FormLabel>
-                            <FormControl>
-                              <Input type="number" min="1" placeholder="e.g. 1" className="h-10 bg-background" {...field} />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      <FormField
-                        control={form.control}
-                        name="description"
-                        render={({ field }) => (
-                          <FormItem className="md:col-span-2">
-                            <FormLabel>Description</FormLabel>
-                            <FormControl>
-                              <Input placeholder="Briefly describe the role..." className="h-10 bg-background" {...field} />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                    </div>
-                  </div>
-                </TabsContent>
-
-                <TabsContent value="permissions" className="flex-1 overflow-hidden flex flex-col p-1">
-                  <div className="flex flex-col border rounded-lg bg-card flex-1 relative shadow-sm overflow-hidden">
-                    <div className="p-3 border-b bg-muted/40 flex justify-between items-center sticky top-0 z-10 backdrop-blur-sm">
-                      <div className="flex items-center gap-2">
+                  <TabsContent value="details" className="flex-1 overflow-y-auto space-y-4 motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-bottom-1 duration-200">
+                    <div className="border border-border/60 rounded-xl p-5 bg-card shadow-sm space-y-5 transition-shadow hover:shadow-md duration-300">
+                      <div className="flex items-center gap-2 mb-2">
                         <div className="p-1.5 rounded-md bg-primary/10">
-                          <Shield className="h-4 w-4 text-primary" />
+                          <Edit className="h-4 w-4 text-primary" />
                         </div>
-                        <div>
-                          <FormLabel className="text-base font-semibold block">Permissions</FormLabel>
-                          <p className="text-[10px] text-muted-foreground">Select access levels</p>
-                        </div>
+                        <h3 className="font-semibold text-sm">Role Details</h3>
                       </div>
-                      <div className="flex items-center gap-4">
-                        <div className="flex items-center space-x-2">
-                          <Checkbox
-                            id="select-all-global"
-                            checked={Object.values(CATEGORIZED_PERMISSIONS).flat().every(p => selectedPermissions.includes(p.id))}
-                            onCheckedChange={(checked) => {
-                              if (checked) {
-                                const allPermissionIds = Object.values(CATEGORIZED_PERMISSIONS).flat().map(p => p.id);
-                                setSelectedPermissions(allPermissionIds);
-                              } else {
-                                setSelectedPermissions([]);
-                              }
-                            }}
-                          />
-                          <label htmlFor="select-all-global" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer select-none">
-                            Select All
-                          </label>
-                        </div>
-                        <Badge variant="outline" className="font-mono text-xs bg-background">
-                          {selectedPermissions.length} Selected
-                        </Badge>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                        <FormField
+                          control={form.control}
+                          name="name"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel className="font-medium text-foreground">Role Name</FormLabel>
+                              <FormControl>
+                                <Input placeholder="e.g. HR Manager" className="h-11 bg-background border-border/60 focus-visible:ring-2 focus-visible:ring-primary/10 focus-visible:border-primary/40 transition-all duration-150 rounded-lg" {...field} />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        <FormField
+                          control={form.control}
+                          name="priority"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel className="font-medium text-foreground">Priority Order</FormLabel>
+                              <FormControl>
+                                <Input type="number" min="1" placeholder="e.g. 1" className="h-11 bg-background border-border/60 focus-visible:ring-2 focus-visible:ring-primary/10 focus-visible:border-primary/40 transition-all duration-150 rounded-lg" {...field} />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        <FormField
+                          control={form.control}
+                          name="description"
+                          render={({ field }) => (
+                            <FormItem className="md:col-span-2">
+                              <FormLabel className="font-medium text-foreground">Description</FormLabel>
+                              <FormControl>
+                                <Input placeholder="Briefly describe the role..." className="h-11 bg-background border-border/60 focus-visible:ring-2 focus-visible:ring-primary/10 focus-visible:border-primary/40 transition-all duration-150 rounded-lg" {...field} />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
                       </div>
                     </div>
+                  </TabsContent>
 
-                    <ScrollArea
-                      ref={scrollAreaRef}
-                      className="h-[500px] bg-muted/5 p-2"
-                      type="always"
-                      onScrollCapture={(e) => {
-                        const viewport = e.target as HTMLElement;
-                        setShowScrollTop(viewport.scrollTop > 100);
-                      }}
-                    >
-                      <div className="space-y-4 p-2">
-                        {Object.entries(CATEGORIZED_PERMISSIONS).map(([category, permissions]) => (
-                          <PermissionCategoryGroup
-                            key={category}
-                            category={category}
-                            permissions={permissions}
-                            selectedPermissions={selectedPermissions}
-                            onTogglePermission={handleTogglePermission}
-                            onToggleGroup={handleToggleGroup}
-                          />
-                        ))}
+                  <TabsContent value="permissions" className="flex-1 overflow-hidden flex flex-col motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-bottom-1 duration-200">
+                    <div className="flex flex-col border border-border/60 rounded-xl bg-card flex-1 relative shadow-sm overflow-hidden hover:shadow-md transition-shadow duration-300">
+                      <div className="p-3 border-b border-border/50 bg-muted/20 flex justify-between items-center sticky top-0 z-10 backdrop-blur-sm">
+                        <div className="flex items-center gap-2">
+                          <div className="p-1.5 rounded-md bg-primary/10">
+                            <Shield className="h-4 w-4 text-primary" />
+                          </div>
+                          <div>
+                            <FormLabel className="text-sm font-semibold block text-foreground">Permissions</FormLabel>
+                            <p className="text-[10px] text-muted-foreground font-medium">Select access levels</p>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-4">
+                          <div className="flex items-center space-x-2">
+                            <Checkbox
+                              id="select-all-global"
+                              checked={Object.values(CATEGORIZED_PERMISSIONS).flat().every(p => selectedPermissions.includes(p.id))}
+                              onCheckedChange={(checked) => {
+                                if (checked) {
+                                  const allPermissionIds = Object.values(CATEGORIZED_PERMISSIONS).flat().map(p => p.id);
+                                  setSelectedPermissions(allPermissionIds);
+                                } else {
+                                  setSelectedPermissions([]);
+                                }
+                              }}
+                            />
+                            <label htmlFor="select-all-global" className="text-xs font-semibold leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer select-none">
+                              Select All
+                            </label>
+                          </div>
+                          <Badge variant="outline" className="font-mono text-[10px] bg-background border-border/60">
+                            {selectedPermissions.length} Selected
+                          </Badge>
+                        </div>
                       </div>
-                    </ScrollArea>
-                    {showScrollTop && (
-                      <Button
-                        type="button"
-                        variant="secondary"
-                        size="icon"
-                        className="absolute bottom-4 right-4 h-8 w-8 rounded-full shadow-lg z-10 opacity-90 hover:opacity-100 transition-opacity bg-primary text-primary-foreground hover:bg-primary/90"
-                        onClick={() => {
-                          const viewport = scrollAreaRef.current?.querySelector('[data-radix-scroll-area-viewport]') as HTMLElement;
-                          if (viewport) {
-                            viewport.scrollTo({ top: 0, behavior: 'smooth' });
-                          }
+
+                      <ScrollArea
+                        ref={scrollAreaRef}
+                        className="h-[500px] bg-primary/[0.01] p-3"
+                        type="always"
+                        onScrollCapture={(e) => {
+                          const viewport = e.target as HTMLElement;
+                          setShowScrollTop(viewport.scrollTop > 100);
                         }}
                       >
-                        <ArrowUp className="h-4 w-4" />
-                      </Button>
-                    )}
-                  </div>
-                </TabsContent>
-              </Tabs>
+                        <div className="space-y-4 p-1">
+                          {Object.entries(CATEGORIZED_PERMISSIONS).map(([category, permissions]) => (
+                            <PermissionCategoryGroup
+                              key={category}
+                              category={category}
+                              permissions={permissions}
+                              selectedPermissions={selectedPermissions}
+                              onTogglePermission={handleTogglePermission}
+                              onToggleGroup={handleToggleGroup}
+                            />
+                          ))}
+                        </div>
+                      </ScrollArea>
+                      {showScrollTop && (
+                        <Button
+                          type="button"
+                          variant="secondary"
+                          size="icon"
+                          className="absolute bottom-4 right-4 h-8 w-8 rounded-full shadow-lg z-10 opacity-90 hover:opacity-100 transition-opacity bg-primary text-primary-foreground hover:bg-primary/90"
+                          onClick={() => {
+                            const viewport = scrollAreaRef.current?.querySelector('[data-radix-scroll-area-viewport]') as HTMLElement;
+                            if (viewport) {
+                              viewport.scrollTo({ top: 0, behavior: 'smooth' });
+                            }
+                          }}
+                        >
+                          <ArrowUp className="h-4 w-4" />
+                        </Button>
+                      )}
+                    </div>
+                  </TabsContent>
+                </Tabs>
+              </div>
 
-              <DialogFooter className="pt-2 border-t mt-auto">
+              <DialogFooter className="p-4 border-t border-border/50 bg-background/95 backdrop-blur-sm mt-auto relative z-10 flex items-center justify-end gap-3">
                 <DialogClose asChild>
-                  <Button type="button" variant="outline" size="lg">Cancel</Button>
+                  <Button type="button" variant="outline" className="h-[44px] px-6 rounded-[10px] font-medium hover:bg-muted hover:-translate-y-px transition-all duration-150">Cancel</Button>
                 </DialogClose>
-                <Button type="submit" disabled={isSubmitting} size="lg" className="min-w-[150px]">
+                <Button type="submit" disabled={isSubmitting} className="h-[44px] px-6 rounded-[10px] font-semibold bg-primary text-primary-foreground hover:-translate-y-px hover:shadow-md active:translate-y-0 transition-all duration-150 min-w-[150px]">
                   {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                   {editingRole ? 'Save Changes' : 'Create Role'}
                 </Button>

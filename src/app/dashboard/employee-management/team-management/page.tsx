@@ -86,7 +86,7 @@ import {
   Trash2, Calendar, Clock, ArrowRightLeft,
   Settings2, UserPlus, Info, CheckCircle2,
   AlertCircle, Edit, Activity, Loader2, Search, Filter, ChevronRight, LayoutDashboard,
-  Briefcase, Split, UserCheck, Eye, Check, ChevronsUpDown
+  Briefcase, Split, UserCheck, Eye, Check, ChevronsUpDown, UsersRound
 } from 'lucide-react';
 import { 
   assignWorkItemToMember, 
@@ -99,7 +99,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { DashboardPageHeader } from '@/components/dashboard/dashboard-page-header';
+import { PageHero } from '@/components/dashboard/page-hero';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Progress } from '@/components/ui/progress';
@@ -432,7 +432,10 @@ const TeamManagementPage = () => {
   return (
     <>
     <div className="space-y-8 w-full pb-12">
-      <DashboardPageHeader 
+      <PageHero
+                pattern="pattern-4" 
+        icon={UsersRound}
+        badge="TEAM MANAGEMENT"
         title="Team Management" 
         description="Manage your teams, members, and their assignments to start collaborating."
       >
@@ -445,7 +448,7 @@ const TeamManagementPage = () => {
             <Plus className="mr-2 h-4 w-4" /> New Team
           </Button>)}
         </div>
-      </DashboardPageHeader>
+      </PageHero>
 
       {/* Team Cards Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">

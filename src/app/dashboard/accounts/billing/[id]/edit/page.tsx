@@ -13,6 +13,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
 import { Skeleton } from '@/components/ui/skeleton';
+import { PageHero } from '@/components/dashboard/page-hero';
 import { apiFetch } from '@/lib/apiFetch';
 import { supabase } from '@/lib/supabase';
 
@@ -401,20 +402,23 @@ export default function EditInvoicePage({ params }: { params: Promise<{ id: stri
     return (
         <div className="bg-slate-50/50 min-h-screen">
             {/* Page Header */}
-            <div className="px-6 py-6 md:px-10 border-b bg-white shadow-sm">
-                <div className="w-full flex items-start gap-4">
-                    <Link href="/dashboard/accounts/billing">
-                        <Button variant="ghost" size="icon" className="mt-1"><ArrowLeft className="h-5 w-5" /></Button>
-                    </Link>
-                    <div>
-                        <div className="flex items-center gap-3">
-                            <h1 className="text-3xl font-bold tracking-tight text-slate-900">Edit Bill</h1>
+            <div className="mb-6 px-6 md:px-10 pt-6">
+            <PageHero
+                pattern="pattern-5"
+                compact
+                icon={FileText}
+                badge="EDIT BILL"
+                title="Edit Bill"
+                description={
+                    <div className="flex flex-col">
+                        <div className="flex items-center gap-3 mt-1">
                             <Badge variant="secondary" className="bg-slate-100 text-slate-700 font-medium">Draft</Badge>
                         </div>
-                        <p className="text-sm text-slate-500 mt-1">Update internal draft bill.</p>
+                        <p className="text-sm text-slate-500 mt-2">Update internal draft bill.</p>
                         <p className="text-xs text-slate-400 mt-0.5">Tax invoice will be generated only after approval.</p>
                     </div>
-                </div>
+                }
+            />
             </div>
 
             {/* Main Layout */}

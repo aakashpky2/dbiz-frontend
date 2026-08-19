@@ -1,11 +1,14 @@
 import { TokenInventory } from '../_components/token-inventory';
-import { KeyRound } from 'lucide-react';
-import { DashboardPageHeader } from '@/components/dashboard/dashboard-page-header';
+import { Usb } from 'lucide-react';
+import { PageHero } from '@/components/dashboard/page-hero';
 
 export default function TokenInventoryPage() {
     return (
         <div className="space-y-6">
-            <DashboardPageHeader
+            <PageHero
+                pattern="pattern-5"
+                icon={Usb}
+                badge="TOKEN MANAGEMENT"
                 title="Token Inventory"
                 description="Manage and monitor USB Token purchases, hardware dispatch sales, and ledger histories."
             />

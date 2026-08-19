@@ -31,6 +31,7 @@ import { useDebounce } from '@/hooks/use-debounce';
 import { usePermissions } from '@/hooks/use-permissions';
 
 import { NAME_REGEX, PINCODE_REGEX, BillingRule, CommissionRule, Associate, billingRuleSchema, commissionRuleSchema, documentSchema, associateFormSchema, AssociateFormValues, BusinessProfile } from './constants';
+import { PageHero } from '@/components/dashboard/page-hero';
 
 // Main Component
 export default function AssociatesPage() {
@@ -439,19 +440,16 @@ export default function AssociatesPage() {
 
   return (
     <>
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-8">
-        <div className="flex items-center gap-4">
-          <div className="p-3 bg-blue-600/10 text-blue-700 rounded-2xl">
-            <Handshake className="h-8 w-8" />
-          </div>
-          <div>
-            <h1 className="text-3xl font-black text-slate-900 tracking-tight">Associates</h1>
-            <p className="text-sm font-medium text-slate-500 mt-1">Manage your sales associates, their billing, and commission rules.</p>
-          </div>
-        </div>
+      <PageHero
+                pattern="pattern-6"
+          icon={Handshake}
+          badge="ADMINISTRATION"
+          title="Associates"
+          description="Manage your sales associates, their billing, and commission rules."
+      >
         <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
           {canManageAssociates && (
-          <Button onClick={openAddDialog} className="bg-blue-700 hover:bg-blue-800 text-white shadow-lg shadow-blue-700/20 rounded-xl h-11 px-6 font-bold tracking-wide whitespace-nowrap transition-all active:scale-95">
+          <Button onClick={openAddDialog} className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-sm rounded-xl h-11 px-6 font-bold tracking-wide whitespace-nowrap transition-all active:scale-95">
             <PlusCircle className="mr-2 h-5 w-5" /> Add New Associate
           </Button>
           )}
@@ -459,7 +457,7 @@ export default function AssociatesPage() {
             <FileText className="mr-2 h-5 w-5" /> Billing & Commission
           </Button>
         </div>
-      </div>
+      </PageHero>
 
       <Card className="border-0 shadow-[0_8px_30px_rgb(0,0,0,0.04)] rounded-2xl overflow-hidden bg-white">
         <CardContent className="p-0">

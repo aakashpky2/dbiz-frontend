@@ -1,14 +1,18 @@
 'use client';
 
 import React from 'react';
-import { DashboardPageHeader } from '@/components/dashboard/dashboard-page-header';
+import { PageHero } from '@/components/dashboard/page-hero';
+import { BarChart } from 'lucide-react';
 import { PerformanceNav } from '@/components/dashboard/admin/performance/performance-nav';
 import { Card, CardContent } from '@/components/ui/card';
 
 export default function PerformanceAnalyticsPage() {
     return (
         <div className="space-y-6 animate-in fade-in duration-700 p-4">
-            <DashboardPageHeader 
+            <PageHero
+                pattern="pattern-7" 
+                icon={BarChart}
+                badge="ANALYTICS"
                 title="Performance Analytics"
                 description="View insights, trends, and reports on company-wide performance."
             />

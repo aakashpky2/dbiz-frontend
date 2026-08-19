@@ -14,7 +14,7 @@ import { useAuth } from '@/hooks/use-auth';
 import { usePermissions } from '@/hooks/use-permissions';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from '@/hooks/use-toast';
-import { DashboardPageHeader } from '@/components/dashboard/dashboard-page-header';
+import { PageHero } from '@/components/dashboard/page-hero';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { TableSkeleton } from '@/components/ui/page-skeleton';
@@ -785,7 +785,10 @@ toast({ title: "Success", description: "Task marked as completed!" });
     if (isLoading && activeParentTab === 'my-tasks') {
         return (
             <div className="space-y-6 pb-20">
-                <DashboardPageHeader
+                <PageHero
+                pattern="pattern-7"
+                    icon={ListTodo}
+                    badge="TASKS"
                     title="Tasks"
                     description="Manage your assigned tasks and monitor team-wide task progress."
                 />
@@ -796,7 +799,9 @@ toast({ title: "Success", description: "Task marked as completed!" });
 
     return (
         <div className="space-y-6 pb-20">
-            <DashboardPageHeader
+            <PageHero
+                icon={ListTodo}
+                badge="TASKS"
                 title="Tasks"
                 description="Manage your assigned tasks and monitor team-wide task progress."
             >
@@ -808,7 +813,7 @@ toast({ title: "Success", description: "Task marked as completed!" });
                 >
                     <RefreshCw className="h-4 w-4 mr-2" /> Sync
                 </Button>
-            </DashboardPageHeader>
+            </PageHero>
 
             {activeWork && ['in_progress', 'paused'].includes(activeWork.status) && !['COMPLETED', 'REJECTED'].includes(normalizeStatus((activeWork as any).task_status)) && (
                 <div className="bg-muted/50 border border-border dark:bg-indigo-950/20 dark:border-indigo-800 rounded-xl p-4 flex flex-col md:flex-row items-center justify-between gap-4">

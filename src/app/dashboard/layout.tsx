@@ -29,9 +29,9 @@ export default async function DashboardLayout({
       <Suspense fallback={null}>
         <NavigationProgressBar />
       </Suspense>
-      <IdleTimer />
       <RoutePrefetcher />
       <AttendanceProvider>
+        <IdleTimer />
         <TaskReminderProvider>
           <ActiveWorkProvider>
             <div className="flex h-screen w-full overflow-hidden bg-background">

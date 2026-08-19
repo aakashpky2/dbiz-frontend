@@ -3,6 +3,7 @@ import { apiFetch } from '@/lib/apiFetch';
 
 import { useEffect, useRef } from 'react';
 import { useAuth } from '@/hooks/use-auth';
+import { useAttendance } from '@/contexts/AttendanceContext';
 
 const CHECK_INTERVAL = 5 * 60 * 1000; // Check every 5 minutes
 const IDLE_THRESHOLD = 15 * 60 * 1000; // 15 minutes to become idle
@@ -10,6 +11,7 @@ const ACTIVITY_STORAGE_KEY = 'last_activity_timestamp';
 
 export default function IdleTimer() {
     const { user, loading } = useAuth();
+    const { isPunchedIn } = useAttendance();
     const checkIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
     const updateActivity = () => {
@@ -29,7 +31,7 @@ export default function IdleTimer() {
     };
 
     useEffect(() => {
-        if (loading || !user) {
+        if (loading || !user || !isPunchedIn) {
             if (checkIntervalRef.current) {
                 clearInterval(checkIntervalRef.current);
                 checkIntervalRef.current = null;

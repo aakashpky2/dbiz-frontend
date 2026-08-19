@@ -4,7 +4,8 @@ import React, { useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { ArrowRight, Clock, Link as LinkIcon } from "lucide-react";
+import { ArrowRight, Clock, Link as LinkIcon, GitMerge } from "lucide-react";
+import { PageHero } from '@/components/dashboard/page-hero';
 import { usePermissions } from '@/hooks/use-permissions';
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
@@ -24,12 +25,13 @@ export default function WorkflowPage() {
 
     return (
         <div className="space-y-6">
-            <div className="flex flex-col space-y-2">
-                <h2 className="text-3xl font-bold tracking-tight">Workflow Management</h2>
-                <p className="text-muted-foreground">
-                    Manage work schedules and client-specific workflows.
-                </p>
-            </div>
+            <PageHero
+                pattern="pattern-6"
+                icon={GitMerge}
+                badge="WORKFLOW MANAGEMENT"
+                title="Workflow Management"
+                description="Manage work schedules and client-specific workflows."
+            />
 
             <div className="grid gap-6 md:grid-cols-2">
                 <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300">

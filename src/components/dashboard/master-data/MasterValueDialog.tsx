@@ -273,7 +273,49 @@ export function MasterValueDialog({
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent className={cn("flex max-h-[88vh] flex-col overflow-hidden rounded-2xl border shadow-xl p-0 gap-0", isConstitutionCategory && isGroup ? "sm:max-w-[900px]" : "sm:max-w-[640px]")}>
-                <DialogHeader className="shrink-0 px-6 pt-6 pb-5 border-b">
+                {open && (
+                    <svg className="absolute inset-0 pointer-events-none" width="100%" height="100%" style={{ zIndex: 50, overflow: 'visible' }}>
+                        <defs>
+                            <linearGradient id="modalBorderGradient" x1="0%" y1="100%" x2="100%" y2="0%">
+                                <stop offset="0%" stopColor="transparent" />
+                                <stop offset="25%" stopColor="rgba(220, 38, 38, 0.4)" />
+                                <stop offset="50%" stopColor="rgba(239, 68, 68, 0.9)" />
+                                <stop offset="75%" stopColor="rgba(244, 63, 94, 1)" />
+                                <stop offset="95%" stopColor="rgba(251, 113, 133, 0.8)" />
+                                <stop offset="100%" stopColor="transparent" />
+                            </linearGradient>
+                            <style>
+                                {`
+                                    @keyframes modal-border-trace {
+                                        0% { stroke-dashoffset: 850; opacity: 0; }
+                                        5% { opacity: 1; }
+                                        82% { opacity: 1; }
+                                        100% { stroke-dashoffset: 0; opacity: 0; }
+                                    }
+                                    @media (prefers-reduced-motion: reduce) {
+                                        .modal-trace-path { display: none !important; }
+                                    }
+                                `}
+                            </style>
+                        </defs>
+                        <path 
+                            className="modal-trace-path"
+                            d="M 0,400 L 0,16 Q 0,0 16,0 L 450,0" 
+                            fill="none"
+                            stroke="url(#modalBorderGradient)"
+                            strokeWidth="7.5"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            style={{
+                                strokeDasharray: '850',
+                                strokeDashoffset: '850',
+                                filter: 'drop-shadow(0 0 4px rgba(239,68,68,0.55)) drop-shadow(0 0 8px rgba(244,63,94,0.25))',
+                                animation: 'modal-border-trace 1300ms cubic-bezier(0.22, 1, 0.36, 1) 120ms forwards'
+                            }}
+                        />
+                    </svg>
+                )}
+                <DialogHeader className="shrink-0 px-6 pt-6 pb-5 border-b border-border/70 bg-background relative z-10">
                     <DialogTitle className="text-xl font-semibold tracking-tight text-foreground">
                         {editingValue ? `Editing "${editingValue.name || 'Value'}"` : `Adding New Item in ${categoryName || 'Category'}`}
                     </DialogTitle>
@@ -281,15 +323,15 @@ export function MasterValueDialog({
                         {editingValue ? 'Update the details of this item.' : `Enter the details for ${categoryName || 'Category'}.`}
                     </DialogDescription>
                 </DialogHeader>
-                <div className="flex-1 min-h-0 overflow-y-auto no-scrollbar px-6 py-5 space-y-5">
+                <div className="flex-1 min-h-0 overflow-y-auto no-scrollbar px-6 py-5 space-y-5 bg-primary/[0.025] dark:bg-primary/[0.035] motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-bottom-1 duration-200">
                     <div className="space-y-2">
-                        <Label htmlFor="vname">
+                        <Label htmlFor="vname" className="text-foreground">
                             {isConstitutionCategory ? "Field Name" : isCountryCodesCategory ? "Country Name" : "Name"}
                             <span className="text-red-500">*</span>
                         </Label>
                         {isCountryCodesCategory ? (
                             <Select value={valueName} onValueChange={setValueName}>
-                                <SelectTrigger id="vname" className="h-10 rounded-lg text-sm">
+                                <SelectTrigger id="vname" className="h-10 rounded-lg text-sm bg-background border-border">
                                     <SelectValue placeholder="Select Country" />
                                 </SelectTrigger>
                                 <SelectContent>
@@ -304,7 +346,7 @@ export function MasterValueDialog({
                                 </SelectContent>
                             </Select>
                         ) : (
-                            <Input className="h-10 rounded-lg text-sm" id="vname" value={valueName} onChange={e => setValueName(e.target.value)} placeholder={isConstitutionCategory ? "e.g. DIN / PAN / Email" : "e.g. Critical"} />
+                            <Input className="h-10 rounded-lg text-sm bg-background border-border" id="vname" value={valueName} onChange={e => setValueName(e.target.value)} placeholder={isConstitutionCategory ? "e.g. DIN / PAN / Email" : "e.g. Critical"} />
                         )}
                     </div>
 
@@ -312,9 +354,9 @@ export function MasterValueDialog({
                         <div className="space-y-4">
                             <div className="flex items-center gap-4">
                                 <Label className="text-xs font-semibold text-muted-foreground mr-2">Config Type</Label>
-                                <div className="inline-flex items-center rounded-lg bg-muted p-1 h-9">
-                                    <Button type="button" variant="ghost" size="sm" className={cn("h-7 px-4 text-sm rounded-md transition-all", !isGroup ? "bg-background shadow-sm font-medium text-foreground" : "text-muted-foreground hover:text-foreground")} onClick={() => setIsGroup(false)}>Single Field</Button>
-                                    <Button type="button" variant="ghost" size="sm" className={cn("h-7 px-4 text-sm rounded-md transition-all", isGroup ? "bg-background shadow-sm font-medium text-foreground" : "text-muted-foreground hover:text-foreground")} onClick={() => setIsGroup(true)}>Field Group</Button>
+                                <div className="inline-flex items-center rounded-lg bg-background border border-border p-1 h-9 shadow-sm">
+                                    <Button type="button" variant="ghost" size="sm" className={cn("h-7 px-4 text-sm rounded-md transition-all", !isGroup ? "bg-primary/10 text-primary font-medium" : "text-muted-foreground hover:text-foreground")} onClick={() => setIsGroup(false)}>Single Field</Button>
+                                    <Button type="button" variant="ghost" size="sm" className={cn("h-7 px-4 text-sm rounded-md transition-all", isGroup ? "bg-primary/10 text-primary font-medium" : "text-muted-foreground hover:text-foreground")} onClick={() => setIsGroup(true)}>Field Group</Button>
                                 </div>
                             </div>
                             {isGroup ? (
@@ -344,7 +386,7 @@ export function MasterValueDialog({
                                         </Button>
                                     </div>
                                     {groupFields.map((gf, idx) => (
-                                        <div key={idx} className="flex flex-col gap-4 border rounded-xl bg-card p-5 shadow-sm relative group">
+                                        <div key={idx} className="flex flex-col gap-4 border rounded-xl bg-background p-5 shadow-sm relative group">
                                             <Button
                                                 type="button"
                                                 variant="ghost"
@@ -358,19 +400,19 @@ export function MasterValueDialog({
                                             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 pr-8">
                                                 <div className="md:col-span-2 space-y-1">
                                                     <Label className="text-xs font-semibold text-muted-foreground">Field Name</Label>
-                                                    <Input className="h-10 text-sm rounded-lg" placeholder="e.g. Area Code" value={gf.fieldName} onChange={e => { const updated = [...groupFields]; updated[idx].fieldName = e.target.value; setGroupFields(updated); }} />
+                                                    <Input className="h-10 text-sm rounded-lg bg-background border-border" placeholder="e.g. Area Code" value={gf.fieldName} onChange={e => { const updated = [...groupFields]; updated[idx].fieldName = e.target.value; setGroupFields(updated); }} />
                                                 </div>
                                                 <div className=" space-y-1">
                                                     <Label className="text-xs font-semibold text-muted-foreground">Data Type</Label>
                                                     <Select value={gf.fieldType} onValueChange={v => { const updated = [...groupFields]; updated[idx].fieldType = v; setGroupFields(updated); }}>
-                                                        <SelectTrigger className="h-10 text-sm rounded-lg px-3 bg-transparent"><SelectValue /></SelectTrigger>
+                                                        <SelectTrigger className="h-10 text-sm rounded-lg px-3 bg-background border-border"><SelectValue /></SelectTrigger>
                                                         <SelectContent>{FIELD_TYPES.map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}</SelectContent>
                                                     </Select>
                                                 </div>
                                                 <div className=" space-y-1">
                                                     <Label className="text-xs font-semibold text-muted-foreground">Requirement</Label>
                                                     <Select value={gf.requirement} onValueChange={v => { const updated = [...groupFields]; updated[idx].requirement = v; setGroupFields(updated); }}>
-                                                        <SelectTrigger className="h-10 text-sm rounded-lg px-3 bg-transparent"><SelectValue /></SelectTrigger>
+                                                        <SelectTrigger className="h-10 text-sm rounded-lg px-3 bg-background border-border"><SelectValue /></SelectTrigger>
                                                         <SelectContent>
                                                             <SelectItem value="Mandatory">Mandatory</SelectItem><SelectItem value="Optional">Optional</SelectItem><SelectItem value="If Available">If Available</SelectItem>
                                                         </SelectContent>
@@ -382,17 +424,17 @@ export function MasterValueDialog({
                                                 <div className="col-span-6 sm:col-span-5 space-y-1">
                                                     <Label className="text-xs font-semibold text-muted-foreground">Input Protocol</Label>
                                                     <Select value={gf.inputType} onValueChange={v => { const updated = [...groupFields]; updated[idx].inputType = v; setGroupFields(updated); }}>
-                                                        <SelectTrigger className="h-8 text-xs px-2.5 bg-muted/5"><SelectValue /></SelectTrigger>
+                                                        <SelectTrigger className="h-8 text-xs px-2.5 bg-background border-border"><SelectValue /></SelectTrigger>
                                                         <SelectContent>{INPUT_TYPES.map(t => <SelectItem key={t.value} value={t.value}>{t.label}</SelectItem>)}</SelectContent>
                                                     </Select>
                                                 </div>
                                                 <div className="col-span-3 sm:col-span-3 space-y-1">
                                                     <Label className="text-xs font-semibold text-muted-foreground">Field Order</Label>
-                                                    <Input type="number" className="h-8 text-xs bg-muted/5 font-mono" value={gf.fieldOrder} onChange={e => { const updated = [...groupFields]; updated[idx].fieldOrder = parseInt(e.target.value) || 0; setGroupFields(updated); }} />
+                                                    <Input type="number" className="h-8 text-xs bg-background border-border font-mono" value={gf.fieldOrder} onChange={e => { const updated = [...groupFields]; updated[idx].fieldOrder = parseInt(e.target.value) || 0; setGroupFields(updated); }} />
                                                 </div>
                                                 <div className="col-span-3 sm:col-span-4 space-y-1">
                                                     <Label className="text-xs font-semibold text-muted-foreground">Max Length</Label>
-                                                    <Input type="number" className="h-8 text-xs bg-muted/5 font-mono" placeholder="unlimited" value={gf.maxLength === 0 ? '' : gf.maxLength} onChange={e => { const updated = [...groupFields]; updated[idx].maxLength = parseInt(e.target.value) || 0; setGroupFields(updated); }} />
+                                                    <Input type="number" className="h-8 text-xs bg-background border-border font-mono" placeholder="unlimited" value={gf.maxLength === 0 ? '' : gf.maxLength} onChange={e => { const updated = [...groupFields]; updated[idx].maxLength = parseInt(e.target.value) || 0; setGroupFields(updated); }} />
                                                 </div>
                                             </div>
                                             {gf.requirement === 'If Available' && (
@@ -410,7 +452,7 @@ export function MasterValueDialog({
                                     <div className="space-y-2">
                                         <Label className="text-xs font-semibold text-muted-foreground">Field Type</Label>
                                         <Select onValueChange={setFieldType} value={fieldType}>
-                                            <SelectTrigger className="h-10 rounded-lg text-sm"><SelectValue /></SelectTrigger>
+                                            <SelectTrigger className="h-10 rounded-lg text-sm bg-background border-border"><SelectValue /></SelectTrigger>
                                             <SelectContent>
                                                 {FIELD_TYPES.map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}
                                             </SelectContent>
@@ -419,7 +461,7 @@ export function MasterValueDialog({
                                     <div className="space-y-2">
                                         <Label className="text-xs font-semibold text-muted-foreground">Input Control Type</Label>
                                         <Select onValueChange={setInputType} value={inputType}>
-                                            <SelectTrigger className="h-10 rounded-lg text-sm"><SelectValue /></SelectTrigger>
+                                            <SelectTrigger className="h-10 rounded-lg text-sm bg-background border-border"><SelectValue /></SelectTrigger>
                                             <SelectContent>
                                                 {INPUT_TYPES.map(t => <SelectItem key={t.value} value={t.value}>{t.label}</SelectItem>)}
                                             </SelectContent>
@@ -428,7 +470,7 @@ export function MasterValueDialog({
                                     <div className="space-y-2">
                                         <Label className="text-xs font-semibold text-muted-foreground">Requirement</Label>
                                         <Select onValueChange={setRequirement} value={requirement}>
-                                            <SelectTrigger className="h-10 rounded-lg text-sm"><SelectValue /></SelectTrigger>
+                                            <SelectTrigger className="h-10 rounded-lg text-sm bg-background border-border"><SelectValue /></SelectTrigger>
                                             <SelectContent>
                                                 <SelectItem value="Mandatory">Mandatory</SelectItem>
                                                 <SelectItem value="Optional">Optional</SelectItem>
@@ -438,18 +480,18 @@ export function MasterValueDialog({
                                     </div>
                                     <div className="space-y-2">
                                         <Label className="text-xs font-semibold text-muted-foreground">Max Length</Label>
-                                        <Input type="number" className="h-10 rounded-lg text-sm" value={maxLength} onChange={e => setMaxLength(parseInt(e.target.value) || 0)} placeholder="0 for no limit" />
+                                        <Input type="number" className="h-10 rounded-lg text-sm bg-background border-border" value={maxLength} onChange={e => setMaxLength(parseInt(e.target.value) || 0)} placeholder="0 for no limit" />
                                     </div>
                                     {requirement === 'If Available' && (
                                         <div className="col-span-2 space-y-2 p-3 bg-primary/5 rounded-xl border border-primary/20">
                                             <Label className="text-xs font-bold text-primary">Conditional Question</Label>
-                                            <Input value={availableQuestion} onChange={e => setAvailableQuestion(e.target.value)} placeholder="e.g. Do you have a GSTIN?" className="h-9 bg-background focus-visible:ring-primary" />
+                                            <Input value={availableQuestion} onChange={e => setAvailableQuestion(e.target.value)} placeholder="e.g. Do you have a GSTIN?" className="h-9 bg-background focus-visible:ring-primary border-border" />
                                         </div>
                                     )}
                                     <div className="col-span-2 space-y-2">
                                         <Label className="text-xs font-semibold text-muted-foreground">Field Applicability</Label>
                                         <Select onValueChange={setFieldTarget} value={fieldTarget}>
-                                            <SelectTrigger className="h-10 rounded-lg text-sm"><SelectValue /></SelectTrigger>
+                                            <SelectTrigger className="h-10 rounded-lg text-sm bg-background border-border"><SelectValue /></SelectTrigger>
                                             <SelectContent>
                                                 <SelectItem value="Constitution">Constitution Level</SelectItem>
                                                 <SelectItem value="Role">Role Level</SelectItem>
@@ -518,7 +560,7 @@ export function MasterValueDialog({
                                         value={valueDesc} 
                                         onChange={e => setValueDesc(e.target.value.replace(/\D/g, ""))} 
                                         placeholder="Enter numeric dial code (e.g. 91)" 
-                                        className="h-10 rounded-lg text-sm font-mono font-medium"
+                                        className="h-10 rounded-lg text-sm font-mono font-medium bg-background border-border"
                                     />
                                 </div>
                             )}
@@ -531,25 +573,32 @@ export function MasterValueDialog({
                                 value={valueDesc} 
                                 onChange={e => setValueDesc(e.target.value)} 
                                 placeholder="Optional details" 
+                                className="h-10 rounded-lg text-sm bg-background border-border"
                             />
                         </div>
                     )}
 
                     <div className="space-y-2">
                         <Label htmlFor="vorder">{isConstitutionCategory && isGroup ? "Button Display Order" : "Display / Field Order"}</Label>
-                        <Input className="h-10 rounded-lg text-sm" id="vorder" type="number" value={valueOrder} onChange={e => setValueOrder(parseInt(e.target.value) || 0)} />
+                        <Input className="h-10 rounded-lg text-sm bg-background border-border" id="vorder" type="number" value={valueOrder} onChange={e => setValueOrder(parseInt(e.target.value) || 0)} />
                     </div>
                 </div>
-                <DialogFooter className="shrink-0 border-t px-6 py-4 flex justify-end gap-3 bg-muted/10">
-                    <Button variant="outline" className="h-10 px-5 rounded-lg" onClick={() => onOpenChange(false)}>Cancel</Button>
+                <DialogFooter className="shrink-0 border-t border-border/70 px-6 py-4 flex flex-col-reverse sm:flex-row justify-end items-center gap-3 bg-background relative z-10">
+                    <Button 
+                        variant="outline" 
+                        onClick={() => onOpenChange(false)}
+                        className="w-full sm:w-[150px] h-[42px] rounded-[10px] px-5 text-[13px] font-semibold inline-flex items-center justify-center gap-2 bg-background text-foreground border border-border shadow-sm hover:bg-muted hover:border-primary/15 hover:-translate-y-[1px] active:translate-y-0"
+                        style={{ transition: 'transform 160ms ease, box-shadow 160ms ease, background-color 160ms ease, border-color 160ms ease' }}
+                    >
+                        Cancel
+                    </Button>
                     <Button 
                         onClick={handleSave} 
-                        disabled={
-                            saving || 
-                            !normalizeString(valueName)
-                        }
+                        disabled={saving || !normalizeString(valueName)}
+                        className="w-full sm:w-[150px] h-[42px] rounded-[10px] px-5 text-[13px] font-semibold inline-flex items-center justify-center gap-2 bg-primary text-primary-foreground border border-primary shadow-sm hover:bg-primary/90 hover:shadow-md hover:-translate-y-[1px] active:translate-y-0"
+                        style={{ transition: 'transform 160ms ease, box-shadow 160ms ease, background-color 160ms ease, border-color 160ms ease' }}
                     >
-                        {saving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+                        {saving && <Loader2 className="h-4 w-4 animate-spin" />}
                         {editingValue ? 'Save Changes' : 'Add Item'}
                     </Button>
                 </DialogFooter>

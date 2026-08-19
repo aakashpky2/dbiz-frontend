@@ -25,7 +25,7 @@ import { isFuture } from 'date-fns';
 import { fetchWithCache } from "@/lib/fetcher";
 import { PostponeInterviewModal } from "@/components/dashboard/recruitment/postpone-interview-modal";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { DashboardPageHeader } from '@/components/dashboard/dashboard-page-header';
+import { PageHero } from '@/components/dashboard/page-hero';
 import { DashboardFilterBar } from '@/components/dashboard/dashboard-filter-bar';
 import { cn } from "@/lib/utils";
 
@@ -176,14 +176,17 @@ export default function ScheduledInterviewsPage() {
 
     return (
         <div className="space-y-6">
-            <DashboardPageHeader
+            <PageHero
+                pattern="pattern-6"
+                icon={Calendar}
+                badge="INTERVIEWS"
                 title="Interview Dashboard"
                 description="Manage scheduling, tracking, and history of candidate interviews."
             >
                 <Button variant="outline" onClick={fetchInterviews} disabled={isLoading} className="font-bold">
                     <RefreshCw className={cn("h-4 w-4 mr-2", isLoading && "animate-spin")} /> Refresh
                 </Button>
-            </DashboardPageHeader>
+            </PageHero>
 
             {/* Metrics */}
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">

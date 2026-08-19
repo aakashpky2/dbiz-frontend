@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import { DashboardPageHeader } from '@/components/dashboard/dashboard-page-header';
+import { PageHero } from '@/components/dashboard/page-hero';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
@@ -362,7 +362,10 @@ export default function TemplateBuilder() {
 
     return (
         <div className="space-y-6">
-            <DashboardPageHeader 
+            <PageHero
+                pattern="pattern-5" 
+                icon={Layout}
+                badge="TEMPLATES"
                 title="Template Setup" 
                 description="Easily connect your templates to system data."
             />

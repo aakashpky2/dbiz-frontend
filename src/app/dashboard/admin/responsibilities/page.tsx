@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { DashboardPageHeader } from "@/components/dashboard/dashboard-page-header";
+import { PageHero } from "@/components/dashboard/page-hero";
 import { usePermissions } from "@/hooks/use-permissions";
 import { useAuth } from "@/hooks/use-auth";
 import { useRouter } from "next/navigation";
@@ -42,7 +42,10 @@ function ResponsibilitiesPageContent() {
 
   return (
     <div className="flex flex-col h-full bg-slate-50/30">
-      <DashboardPageHeader
+      <PageHero
+                pattern="pattern-7"
+        icon={Shield}
+        badge="PERMISSIONS"
         title="Responsibility Templates"
         description="Create and manage grouped permissions for delegation."
       >
@@ -52,7 +55,7 @@ function ResponsibilitiesPageContent() {
             Create Template
           </Button>
         </div>
-      </DashboardPageHeader>
+      </PageHero>
 
       <div className="flex-1 p-6 pt-0 space-y-6">
         <div className="bg-card border rounded-lg shadow-sm">

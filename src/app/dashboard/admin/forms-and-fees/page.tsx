@@ -2,7 +2,7 @@
 'use client';
 
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
-import { DashboardPageHeader } from '@/components/dashboard/dashboard-page-header';
+import { PageHero } from '@/components/dashboard/page-hero';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogClose } from '@/components/ui/dialog';
@@ -14,7 +14,7 @@ import { z } from 'zod';
 import { supabase } from '@/lib/supabase';
 import { useToast } from '@/hooks/use-toast';
 import { useRouter } from 'next/navigation';
-import { Loader2, PlusCircle, Edit, Trash2, FileSpreadsheet, Inbox, Settings, BadgeDollarSign, LayoutTemplate } from 'lucide-react';
+import { Loader2, PlusCircle, Edit, Trash2, FileSpreadsheet, Inbox, Settings, BadgeDollarSign, LayoutTemplate, FileText } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Separator } from '@/components/ui/separator';
@@ -189,14 +189,17 @@ export default function FormsAndFeesPage() {
 
     return (
         <div className="space-y-6 p-6 animate-in fade-in duration-500">
-            <DashboardPageHeader
+            <PageHero
+                pattern="pattern-3"
+                icon={FileText}
+                badge="MASTER CONFIGURATION"
                 title="Forms & Fees"
                 description="Define official forms and their associated dynamic government fees."
             >
                 <Button onClick={openAddDialog} className="font-bold">
                     <PlusCircle className="mr-2 h-4 w-4" /> Add New Form
                 </Button>
-            </DashboardPageHeader>
+            </PageHero>
 
             <Card className="border-none shadow-none bg-transparent">
                 <CardContent className="p-0">

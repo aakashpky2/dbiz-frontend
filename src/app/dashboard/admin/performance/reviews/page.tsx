@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { DashboardPageHeader } from '@/components/dashboard/dashboard-page-header';
+import { PageHero } from '@/components/dashboard/page-hero';
 import { PerformanceNav } from '@/components/dashboard/admin/performance/performance-nav';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -11,7 +11,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { usePermissions } from '@/hooks/use-permissions';
-import { Eye, Edit, CheckCircle } from 'lucide-react';
+import { Eye, Edit, CheckCircle, Users } from 'lucide-react';
 import { EmployeeReviewModal } from '@/components/dashboard/admin/performance/employee-review-modal';
 import { GenerateReviewsDialog } from '@/components/dashboard/admin/performance/generate-reviews-dialog';
 
@@ -112,7 +112,10 @@ export default function PerformanceReviewsPage() {
     return (
         <div className="space-y-6 animate-in fade-in duration-700 p-4">
             <div className="flex justify-between items-start sm:items-center flex-col sm:flex-row gap-4">
-                <DashboardPageHeader 
+                <PageHero
+                pattern="pattern-2" 
+                    icon={Users}
+                    badge="PERFORMANCE"
                     title="Employee Reviews"
                     description="Manage and finalize individual employee performance evaluations."
                 />

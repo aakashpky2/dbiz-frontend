@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Loader2, Calendar, MapPin, BriefcaseBusiness, User, CalendarDays, Search, RefreshCw } from "lucide-react";
 import { PageSkeleton } from '@/components/ui/page-skeleton';
 import { EmptyState } from '@/components/ui/empty-state';
-import { DashboardPageHeader } from '@/components/dashboard/dashboard-page-header';
+import { PageHero } from '@/components/dashboard/page-hero';
 import { DashboardFilterBar } from '@/components/dashboard/dashboard-filter-bar';
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -125,14 +125,17 @@ export default function RecruitmentPipelinePage() {
 
     return (
         <div className="space-y-6">
-            <DashboardPageHeader
+            <PageHero
+                pattern="pattern-3"
+                icon={BriefcaseBusiness}
+                badge="RECRUITMENT"
                 title="Recruitment Pipeline"
                 description="Drag and drop candidates to manage their hiring stage."
             >
                 <Button variant="outline" onClick={fetchPipeline} disabled={isLoading} className="font-bold">
                     <RefreshCw className={cn("h-4 w-4 mr-2", isLoading && "animate-spin")} /> Refresh
                 </Button>
-            </DashboardPageHeader>
+            </PageHero>
 
             <DashboardFilterBar>
                 <div className="relative flex-1 max-w-sm">
@@ -213,4 +216,4 @@ export default function RecruitmentPipelinePage() {
             )}
         </div>
     );
-}
+}

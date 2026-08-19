@@ -140,10 +140,34 @@ export function normalizeAttendanceSessions(
   // But to be safe, let's just sum all IDLE and OFFLINE logs.
   let idleOfflineMinutes = 0;
   const idleBlocks: ActivityLog[] = [];
+  
   activityLogs.forEach(log => {
       if (log.activity_type === 'IDLE' || log.activity_type === 'OFFLINE') {
-          idleOfflineMinutes += log.duration_minutes;
-          idleBlocks.push(log);
+          const logStart = new Date(log.started_at).getTime();
+          const logEnd = new Date(log.ended_at).getTime();
+          
+          let overlappingMinutes = 0;
+
+          // Find intersection with all valid sessions
+          sessions.forEach(session => {
+              const sessionStart = session.punchIn.getTime();
+              const sessionEnd = session.punchOut ? session.punchOut.getTime() : now.getTime();
+              
+              const overlapStart = Math.max(logStart, sessionStart);
+              const overlapEnd = Math.min(logEnd, sessionEnd);
+              
+              if (overlapStart < overlapEnd) {
+                  overlappingMinutes += (overlapEnd - overlapStart) / 60000;
+              }
+          });
+
+          if (overlappingMinutes > 0) {
+              idleOfflineMinutes += Math.round(overlappingMinutes);
+              idleBlocks.push({
+                  ...log,
+                  duration_minutes: Math.round(overlappingMinutes)
+              });
+          }
       }
   });
 

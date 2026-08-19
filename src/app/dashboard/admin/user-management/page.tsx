@@ -87,7 +87,7 @@ import { cn } from "@/lib/utils";
 import { hasValidEmployeePhone } from "@/lib/phone";
 import { useAuth } from "@/hooks/use-auth";
 import { usePermissions } from "@/hooks/use-permissions";
-import { DashboardPageHeader } from "@/components/dashboard/dashboard-page-header";
+import { PageHero } from "@/components/dashboard/page-hero";
 
 import { Role, Department, Employee, User, AuditLog, editUserSchema, addUserSchema, formatDate, formatLogDetails } from './constants';
 
@@ -793,30 +793,37 @@ export default function UserManagementPage() {
   }
 
   return (
-    <div className="flex flex-col h-full bg-slate-50/30">
-      <DashboardPageHeader
-        title="User Management"
-        description="Manage system access, roles, and permissions."
-      >
-        <div className="flex gap-2">
-          {selectedUserIds.size > 0 && (
-            <Button
-              variant="destructive"
-              onClick={() => setIsResetDialogOpen(true)}
-              className="font-bold"
+    <div className="flex flex-col h-full bg-background p-6">
+      <div className="mx-auto w-full max-w-full flex flex-col space-y-6">
+        {/* HERO SECTION */}
+        <PageHero
+          pattern="pattern-7"
+          icon={Users}
+          badge="ACCESS CONTROL"
+          title="User Management"
+          description="Manage system access, roles, and permissions."
+        >
+          <div className="flex items-center gap-2">
+            {selectedUserIds.size > 0 && (
+              <Button
+                variant="destructive"
+                onClick={() => setIsResetDialogOpen(true)}
+                className="font-semibold h-11 px-6 rounded-xl transition-all duration-150 hover:-translate-y-px hover:shadow-md shadow-sm"
+              >
+                <KeyRound className="mr-2 h-4 w-4" />
+                Reset ({selectedUserIds.size})
+              </Button>
+            )}
+            <Button 
+              onClick={() => setIsAddUserOpen(true)} 
+              className="font-semibold h-11 px-6 rounded-xl transition-all duration-150 hover:-translate-y-px hover:shadow-md shadow-sm"
             >
-              <KeyRound className="mr-2 h-4 w-4" />
-              Reset ({selectedUserIds.size})
+              <Plus className="mr-2 h-4 w-4" />
+              Add User
             </Button>
-          )}
-          <Button onClick={() => setIsAddUserOpen(true)} className="font-bold">
-            <Plus className="mr-2 h-4 w-4" />
-            Add User
-          </Button>
-        </div>
-      </DashboardPageHeader>
+          </div>
+        </PageHero>
 
-      <div className="flex-1 p-6 pt-0 space-y-6">
         <Tabs
           defaultValue="active"
           value={activeTab}
@@ -869,60 +876,60 @@ export default function UserManagementPage() {
           )}
 
           {/* Summary cards */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-            <div className="bg-card border rounded-lg p-4 shadow-sm">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="group bg-card border rounded-xl p-5 shadow-sm transition-all duration-200 ease-out hover:-translate-y-[2px] hover:shadow-md animate-in fade-in slide-in-from-bottom-2 duration-300" style={{ animationDelay: '0ms', animationFillMode: 'both' }}>
               <div className="flex items-center justify-between">
-                <div className="text-xs text-muted-foreground font-semibold">
+                <div className="text-sm text-muted-foreground font-semibold">
                   Total Users
                 </div>
-                <Users className="h-4 w-4 text-muted-foreground" />
+                <Users className="h-4 w-4 text-muted-foreground transition-transform duration-200 group-hover:-translate-y-[1px]" />
               </div>
-              <div className="mt-2 text-2xl font-bold">{summary.totalUsers}</div>
+              <div className="mt-3 text-3xl font-bold tracking-tight">{summary.totalUsers}</div>
             </div>
-            <div className="bg-card border rounded-lg p-4 shadow-sm">
+            <div className="group bg-card border rounded-xl p-5 shadow-sm transition-all duration-200 ease-out hover:-translate-y-[2px] hover:shadow-md animate-in fade-in slide-in-from-bottom-2 duration-300" style={{ animationDelay: '50ms', animationFillMode: 'both' }}>
               <div className="flex items-center justify-between">
-                <div className="text-xs text-muted-foreground font-semibold">
+                <div className="text-sm text-muted-foreground font-semibold">
                   Active Users
                 </div>
-                <Badge className="h-5 px-2" variant="default">
+                <Badge className="h-5 px-2 text-[10px] uppercase font-bold tracking-wider bg-blue-600 hover:bg-blue-600 text-white border-transparent transition-transform duration-200 group-hover:-translate-y-[1px]">
                   Active
                 </Badge>
               </div>
-              <div className="mt-2 text-2xl font-bold">{summary.activeUsers}</div>
+              <div className="mt-3 text-3xl font-bold tracking-tight">{summary.activeUsers}</div>
             </div>
-            <div className="bg-card border rounded-lg p-4 shadow-sm">
+            <div className="group bg-card border rounded-xl p-5 shadow-sm transition-all duration-200 ease-out hover:-translate-y-[2px] hover:shadow-md animate-in fade-in slide-in-from-bottom-2 duration-300" style={{ animationDelay: '100ms', animationFillMode: 'both' }}>
               <div className="flex items-center justify-between">
-                <div className="text-xs text-muted-foreground font-semibold">
+                <div className="text-sm text-muted-foreground font-semibold">
                   Super Admins
                 </div>
-                <Shield className="h-4 w-4 text-amber-600" />
+                <Shield className="h-4 w-4 text-amber-600 transition-transform duration-200 group-hover:-translate-y-[1px]" />
               </div>
-              <div className="mt-2 text-2xl font-bold">{summary.superAdmins}</div>
+              <div className="mt-3 text-3xl font-bold tracking-tight">{summary.superAdmins}</div>
             </div>
-            <div className="bg-card border rounded-lg p-4 shadow-sm">
+            <div className="group bg-card border rounded-xl p-5 shadow-sm transition-all duration-200 ease-out hover:-translate-y-[2px] hover:shadow-md animate-in fade-in slide-in-from-bottom-2 duration-300" style={{ animationDelay: '150ms', animationFillMode: 'both' }}>
               <div className="flex items-center justify-between">
-                <div className="text-xs text-muted-foreground font-semibold">
+                <div className="text-sm text-muted-foreground font-semibold">
                   Disabled / Deleted
                 </div>
-                <Trash2 className="h-4 w-4 text-muted-foreground" />
+                <Trash2 className="h-4 w-4 text-muted-foreground transition-transform duration-200 group-hover:-translate-y-[1px]" />
               </div>
-              <div className="mt-2 text-2xl font-bold">
+              <div className="mt-3 text-3xl font-bold tracking-tight">
                 {summary.disabledOrDeleted}
               </div>
             </div>
           </div>
 
-          <div className="bg-card border rounded-lg shadow-sm">
-            <div className="p-4 border-b flex flex-col md:flex-row md:items-center justify-between gap-4">
-              <TabsList className="grid w-full md:w-[400px] grid-cols-2">
-                <TabsTrigger value="active">Active Users</TabsTrigger>
-                <TabsTrigger value="deleted">Deleted / Inactive</TabsTrigger>
+          <div className="bg-card border border-border/60 rounded-xl shadow-sm overflow-hidden flex flex-col">
+            <div className="px-5 py-4 border-b border-border/60 flex flex-col md:flex-row md:items-center justify-between gap-4 bg-muted/10">
+              <TabsList className="grid w-full md:w-fit grid-cols-2 h-10">
+                <TabsTrigger value="active" className="text-sm">Active Users</TabsTrigger>
+                <TabsTrigger value="deleted" className="text-sm">Deleted / Inactive</TabsTrigger>
               </TabsList>
-              <div className="relative flex-1 max-w-sm">
-                <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+              <div className="relative flex-1 md:max-w-xs ml-auto">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
                   placeholder="Search users..."
-                  className="pl-9"
+                  className="pl-9 h-10 w-full"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                 />
@@ -982,20 +989,22 @@ export default function UserManagementPage() {
                           )
                         : null;
 
+                    const isSelected = selectedUserIds.has(user.uid);
+                    const isExpanded = expandedUserId === user.uid;
+                    const cellBgClass = isSelected
+                      ? "bg-slate-200/80 dark:bg-slate-700/60"
+                      : isExpanded
+                        ? "bg-slate-200/50 dark:bg-slate-800/70"
+                        : "bg-slate-100 dark:bg-slate-800/40";
+
                     return (
                       <React.Fragment key={user.uid}>
                         <TableRow
                           key={user.uid}
                           data-uid={user.uid}
                           className={cn(
-                            "hover:bg-muted/5 cursor-pointer",
-                            selectedUserIds.has(user.uid) && "bg-muted/10",
-                            !user.isEnabled &&
-                              !isResigned &&
-                              "bg-muted/40 opacity-70", // Only gray out if disabled AND NOT resigned
-                            expandedUserId === user.uid && "bg-muted/10",
-                            isResigned &&
-                              "bg-red-50 hover:bg-red-100 border-2 border-red-500", // Highlight RESIGNED strongly
+                            "group cursor-pointer transition-all duration-150 relative drop-shadow-[0_4px_8px_rgba(0,0,0,0.04)] hover:drop-shadow-[0_6px_12px_rgba(0,0,0,0.06)]",
+                            !user.isEnabled && !isResigned && "opacity-80", 
                           )}
                           onClick={(e) => {
                             if (
@@ -1006,7 +1015,11 @@ export default function UserManagementPage() {
                             toggleExpandUser(user);
                           }}
                         >
-                          <TableCell>
+                          <TableCell className={cn("relative border-none rounded-l-[18px] py-4", cellBgClass, isResigned && "border-l-4 border-l-red-500")}
+                            style={{
+                              backgroundImage: `repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(128,128,128,0.04) 10px, rgba(128,128,128,0.04) 20px)`,
+                            }}
+                          >
                             <Checkbox
                               checked={selectedUserIds.has(user.uid)}
                               disabled={!canModifyTargetUser(user)}
@@ -1020,9 +1033,13 @@ export default function UserManagementPage() {
                               )}
                             </div>
                           </TableCell>
-                          <TableCell>
+                          <TableCell className={cn("relative border-none py-4", cellBgClass)}
+                            style={{
+                              backgroundImage: `repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(128,128,128,0.04) 10px, rgba(128,128,128,0.04) 20px)`,
+                            }}
+                          >
                             <div className="flex flex-col">
-                              <span className="font-medium">
+                              <span className="font-medium text-foreground">
                                 {user.displayName}
                               </span>
                               <span className="text-xs text-muted-foreground">
@@ -1048,7 +1065,11 @@ export default function UserManagementPage() {
                               )}
                             </div>
                           </TableCell>
-                          <TableCell>
+                          <TableCell className={cn("relative border-none py-4", cellBgClass)}
+                            style={{
+                              backgroundImage: `repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(128,128,128,0.04) 10px, rgba(128,128,128,0.04) 20px)`,
+                            }}
+                          >
                             <div className="flex flex-wrap gap-1">
                               {user.roleIds?.map((rid: string) => {
                                 const r = roles.find((ro) => ro.id === rid);
@@ -1065,7 +1086,7 @@ export default function UserManagementPage() {
                                       isAdm &&
                                         "bg-blue-100/80 text-blue-900 border border-blue-300 font-semibold",
                                       !isSA && !isAdm &&
-                                        "bg-slate-100 text-slate-700 border-slate-200"
+                                        "bg-white/80 text-slate-700 border-slate-200 dark:bg-slate-800/80 dark:text-slate-300"
                                     )}
                                   >
                                     {r?.name || rid}
@@ -1074,10 +1095,14 @@ export default function UserManagementPage() {
                               })}
                             </div>
                           </TableCell>
-                          <TableCell>
+                          <TableCell className={cn("relative border-none py-4", cellBgClass)}
+                            style={{
+                              backgroundImage: `repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(128,128,128,0.04) 10px, rgba(128,128,128,0.04) 20px)`,
+                            }}
+                          >
                             {user.departmentId ? (
                               <div className="flex items-center gap-1.5">
-                                <span>
+                                <span className="text-foreground">
                                   {departments.find(
                                     (d) => d.id === user.departmentId,
                                   )?.name || "Unknown"}
@@ -1097,18 +1122,22 @@ export default function UserManagementPage() {
                               </span>
                             )}
                           </TableCell>
-                          <TableCell>
+                          <TableCell className={cn("relative border-none py-4", cellBgClass)}
+                            style={{
+                              backgroundImage: `repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(128,128,128,0.04) 10px, rgba(128,128,128,0.04) 20px)`,
+                            }}
+                          >
                             <Badge
                               variant="outline"
                               className={cn(
-                                "text-[11px] font-semibold border px-2 py-0.5 shadow-sm",
+                                "text-[11px] font-semibold border px-2 py-0.5 shadow-sm bg-white/60 dark:bg-background/60 backdrop-blur-sm",
                                 user.isDeleted
-                                  ? "bg-red-50 text-red-700 border-red-200"
+                                  ? "text-red-700 border-red-200"
                                   : !user.isEnabled
-                                    ? "bg-stone-100 text-stone-600 border-stone-200"
+                                    ? "text-stone-600 border-stone-200"
                                     : isResigned
-                                      ? "bg-amber-50 text-amber-700 border-amber-200"
-                                      : "bg-emerald-50 text-emerald-700 border-emerald-200"
+                                      ? "text-amber-700 border-amber-200"
+                                      : "text-emerald-700 border-emerald-200"
                               )}
                             >
                               <div className={cn(
@@ -1124,13 +1153,17 @@ export default function UserManagementPage() {
                               {user.isDeleted ? "Deleted" : !user.isEnabled ? "Inactive" : isResigned ? "Resigned" : "Active"}
                             </Badge>
                           </TableCell>
-                          <TableCell className="text-right">
+                          <TableCell className={cn("text-right relative border-none rounded-r-[18px] py-4 pr-4", cellBgClass)}
+                            style={{
+                              backgroundImage: `repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(128,128,128,0.04) 10px, rgba(128,128,128,0.04) 20px)`,
+                            }}
+                          >
                             <DropdownMenu>
                               <DropdownMenuTrigger asChild>
                                 <Button
                                   variant="ghost"
                                   size="icon"
-                                  className="h-8 w-8"
+                                  className="h-8 w-8 hover:bg-white/50 dark:hover:bg-background/50"
                                 >
                                   <MoreHorizontal className="h-4 w-4" />
                                 </Button>
@@ -1300,13 +1333,14 @@ export default function UserManagementPage() {
                             </TableCell>
                           </TableRow>
                         )}
+                        <tr className="h-3"><td colSpan={6} className="bg-transparent border-none"></td></tr>
                       </React.Fragment>
                     );
                   })
                 )}
               </TableBody>
             </Table>
-            <div className="flex items-center justify-between px-4 py-4 border-t bg-slate-50/50">
+            <div className="flex items-center justify-between px-5 py-4 border-t border-border/60 bg-muted/10">
               <div className="text-sm text-muted-foreground">
                 Showing <span className="font-medium text-slate-900">{totalUsers === 0 ? 0 : Math.min((page - 1) * pageSize + 1, totalUsers)}</span> to <span className="font-medium text-slate-900">{Math.min(page * pageSize, totalUsers)}</span> of <span className="font-medium text-slate-900">{totalUsers}</span> users
               </div>

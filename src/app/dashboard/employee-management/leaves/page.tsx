@@ -33,7 +33,7 @@ import { Combobox } from '@/components/ui/combobox';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { cn } from '@/lib/utils';
 import { DateRange } from 'react-day-picker';
-import { DashboardPageHeader } from '@/components/dashboard/dashboard-page-header';
+import { PageHero } from '@/components/dashboard/page-hero';
 import { DashboardFilterBar } from '@/components/dashboard/dashboard-filter-bar';
 import { PageSkeleton } from '@/components/ui/page-skeleton';
 
@@ -397,14 +397,17 @@ function EmployeeLeaveView({
 
   return (
     <div className="space-y-6">
-      <DashboardPageHeader
+      <PageHero
+                pattern="pattern-7"
+        icon={CalendarDays}
+        badge="EMPLOYEE MANAGEMENT"
         title="My Leave"
         description="Apply for leave and track your requests."
       >
         <Button onClick={onApplyLeave} className="font-bold">
           <PlusCircle className="mr-2 h-4 w-4" /> Apply Leave
         </Button>
-      </DashboardPageHeader>
+      </PageHero>
 
       {/* Leave Balance Row (placeholder — extend with real data when available) */}
       <div className="grid grid-cols-3 gap-4">
@@ -629,7 +632,9 @@ function AdminLeaveView({
 }) {
   return (
     <div className="space-y-6">
-      <DashboardPageHeader
+      <PageHero
+        icon={CalendarDays}
+        badge="EMPLOYEE MANAGEMENT"
         title="Leave Management"
         description="Monitor, approve, and track employee absences in real-time."
       >
@@ -641,7 +646,7 @@ function AdminLeaveView({
             <PlusCircle className="mr-2 h-4 w-4" /> Add Request
           </Button>
         </div>
-      </DashboardPageHeader>
+      </PageHero>
 
       {/* KPI Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">

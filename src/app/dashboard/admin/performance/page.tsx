@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
-import { DashboardPageHeader } from '@/components/dashboard/dashboard-page-header';
+import { PageHero } from '@/components/dashboard/page-hero';
 import { useToast } from '@/hooks/use-toast';
 import { BarChart, CheckCircle2, Clock, Users, Play } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -61,7 +61,10 @@ export default function PerformanceDashboardPage() {
 
     return (
         <div className="space-y-6 animate-in fade-in duration-700 p-4">
-            <DashboardPageHeader 
+            <PageHero
+                pattern="pattern-4" 
+                icon={BarChart}
+                badge="PERFORMANCE"
                 title="Performance Dashboard"
                 description="Monitor employee performance, conduct evaluations, and finalize ratings."
             >
@@ -81,7 +84,7 @@ export default function PerformanceDashboardPage() {
                         Generate Reviews
                     </Button>
                 </div>
-            </DashboardPageHeader>
+            </PageHero>
 
             <PerformanceNav />
 

@@ -130,13 +130,10 @@ export function DepartmentList({ departments, canEdit, canDelete, canCreate, onA
     }, [departments, filterMode]);
 
     useEffect(() => {
-        if (activeDepartments.length > 0 && !selectedDeptId) {
-            setSelectedDeptId(activeDepartments[0].id);
-        } else if (activeDepartments.length > 0 && selectedDeptId && !activeDepartments.find(d => d.id === selectedDeptId)) {
-            setSelectedDeptId(activeDepartments[0].id);
+        if (selectedDeptId && !activeDepartments.find(d => d.id === selectedDeptId)) {
+            setSelectedDeptId(null);
         }
     }, [activeDepartments, selectedDeptId]);
-
     // UI Helper for status display
     const renderBanner = (item: any) => {
         if (item.isDeleted) return <Badge variant="destructive" className="bg-red-100 text-red-700 border-red-200">Deleted</Badge>;
@@ -315,91 +312,203 @@ export function DepartmentList({ departments, canEdit, canDelete, canCreate, onA
 
     return (
         <div>
-            <div className="flex h-[calc(100vh-140px)] gap-6 bg-background rounded-lg border p-1 border-muted overflow-hidden">
-                {/* Sidebar: Department List */}
-                <div className="w-80 flex flex-col gap-4 border-r pr-4 pt-2 shrink-0">
-                    <div className="px-2 space-y-4">
-                        <h2 className="text-xl font-bold tracking-tight">Departments</h2>
-                        {canCreate && filterMode === 'active' && (
-                            <Button className="w-full justify-start gap-2 h-10 font-bold shadow-sm" onClick={onAddClick}>
-                                <Plus className="h-4 w-4" /> Add New Department
-                            </Button>
+            <div className="flex flex-col gap-0">
+                {!selectedDeptId ? (
+                    <div className="animate-in fade-in duration-300 pb-6 px-1">
+                        <div className="flex items-center justify-between mb-6">
+                            <h2 className="text-2xl font-bold tracking-tight">Departments</h2>
+
+                        </div>
+                        {activeDepartments.length === 0 ? (
+                            <div className="flex flex-col items-center justify-center p-12 text-center rounded-xl border border-dashed border-border/60 bg-muted/5">
+                                <div className="w-12 h-12 rounded-full bg-muted/50 flex items-center justify-center mb-4">
+                                    <Building2 className="h-6 w-6 text-muted-foreground/50" />
+                                </div>
+                                <h3 className="text-lg font-semibold mb-1">No departments configured</h3>
+                                <p className="text-sm text-muted-foreground mb-4">Create your first department to start organizing categories and work types.</p>
+                                {canCreate && filterMode === 'active' && (
+                                    <Button onClick={onAddClick} className="shadow-sm">
+                                        <Plus className="mr-2 h-4 w-4" /> Add Department
+                                    </Button>
+                                )}
+                            </div>
+                        ) : (
+                            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-5" style={{ perspective: '800px' }}>
+                                {activeDepartments.map(dept => {
+                                    // Calculate active categories and work types according to filter state
+                                    const activeCats = dept.workCategories?.filter(c => {
+                                        if (filterMode === 'active') return !c.isDeleted;
+                                        if (filterMode === 'incomplete') return c.isIncomplete && !c.isDeleted;
+                                        if (filterMode === 'validation') return !c.isValidated;
+                                        if (filterMode === 'deleted') return c.isDeleted && c.isValidated;
+                                        return true;
+                                    }) || [];
+                                    const catCount = activeCats.length;
+                                    const wtCount = activeCats.reduce((total, c) => total + (c.workTypes?.filter(wt => {
+                                        if (filterMode === 'active') return !wt.isDeleted;
+                                        if (filterMode === 'incomplete') return wt.isIncomplete && !wt.isDeleted;
+                                        if (filterMode === 'validation') return !wt.isValidated;
+                                        if (filterMode === 'deleted') return wt.isDeleted && wt.isValidated;
+                                        return true;
+                                    }).length || 0), 0);
+
+                                    return (
+                                        <div 
+                                            key={dept.id} 
+                                            onClick={() => {
+                                                setSelectedDeptId(dept.id);
+                                                if (filterMode === 'validation' && !dept.isValidated) {
+                                                    setEditingDept(dept); 
+                                                    setNewName(dept.name); 
+                                                    setNewDesc(dept.description || '');
+                                                }
+                                            }}
+                                            className="group flex flex-col cursor-pointer overflow-hidden relative min-h-[220px] dark:bg-primary/[0.05] dark:border-primary/15"
+                                            style={{
+                                                background: 'linear-gradient(145deg, rgba(239, 246, 255, 0.96), rgba(248, 251, 255, 0.98))',
+                                                border: '1px solid rgba(59, 130, 246, 0.14)',
+                                                borderRadius: '16px',
+                                                boxShadow: '0 4px 16px rgba(15, 23, 42, 0.045)',
+                                                transformStyle: 'preserve-3d',
+                                                transition: 'transform 300ms cubic-bezier(0.22, 1, 0.36, 1), box-shadow 300ms ease, border-color 300ms ease, background-color 300ms ease',
+                                                transform: 'translateZ(0) rotateX(0) rotateY(0)',
+                                            }}
+                                            onMouseEnter={(e) => {
+                                                if (window.matchMedia('(pointer: fine)').matches) {
+                                                    e.currentTarget.style.transform = 'translateY(-4px) translateZ(8px) rotateX(2deg) rotateY(-2deg)';
+                                                    e.currentTarget.style.boxShadow = '0 14px 30px rgba(59, 130, 246, 0.10)';
+                                                    e.currentTarget.style.borderColor = 'rgba(59, 130, 246, 0.28)';
+                                                }
+                                            }}
+                                            onMouseLeave={(e) => {
+                                                if (window.matchMedia('(pointer: fine)').matches) {
+                                                    e.currentTarget.style.transform = 'translateZ(0) rotateX(0) rotateY(0)';
+                                                    e.currentTarget.style.boxShadow = '0 4px 16px rgba(15, 23, 42, 0.045)';
+                                                    e.currentTarget.style.borderColor = 'rgba(59, 130, 246, 0.14)';
+                                                }
+                                            }}
+                                            onMouseDown={(e) => {
+                                                e.currentTarget.style.transform = 'translateY(-1px) translateZ(3px) rotateX(1deg) rotateY(-1deg)';
+                                            }}
+                                            onMouseUp={(e) => {
+                                                e.currentTarget.style.transform = 'translateY(-4px) translateZ(8px) rotateX(2deg) rotateY(-2deg)';
+                                            }}
+                                        >
+                                            {/* Light blue hover glow */}
+                                            <div className="absolute inset-0 pointer-events-none rounded-[inherit] opacity-0 group-hover:opacity-100 transition-opacity duration-300" style={{ background: 'radial-gradient(circle at top right, rgba(59,130,246,0.10), transparent 48%)' }} />
+                                            
+                                            <div className="p-5 flex-1 flex flex-col relative z-10" style={{ transform: 'translateZ(0)' }}>
+                                                <div className="flex items-start justify-between mb-3">
+                                                    <div className="w-11 h-11 bg-primary/[0.08] border border-primary/10 rounded-xl flex items-center justify-center transition-transform duration-300" style={{ transform: 'translateZ(0)' }} onMouseEnter={(e) => e.currentTarget.style.transform = 'translateZ(22px) translateY(-1px)'} onMouseLeave={(e) => e.currentTarget.style.transform = 'translateZ(0)'}>
+                                                        <Building2 className="w-5 h-5 text-primary" />
+                                                    </div>
+                                                    <div className="flex flex-col items-end gap-2 transition-transform duration-300" style={{ transform: 'translateZ(0)' }} onMouseEnter={(e) => e.currentTarget.style.transform = 'translateZ(12px)'} onMouseLeave={(e) => e.currentTarget.style.transform = 'translateZ(0)'}>
+                                                        {renderBanner(dept)}
+                                                        <div className="flex gap-1 relative z-20">
+                                                            {canEdit && !dept.isDeleted && canUseAction(dept) && (filterMode === 'active' || filterMode === 'incomplete') && (
+                                                                <Button variant="ghost" size="icon" className="h-7 w-7 rounded-lg hover:text-primary transition-colors bg-white/40 dark:bg-black/20" onClick={(e) => { e.stopPropagation(); setEditingDept(dept); setNewName(dept.name); setNewDesc(dept.description || ''); }} aria-label="Edit Department"><Edit className="h-3.5 w-3.5" /></Button>
+                                                            )}
+                                                            {canDelete && !dept.isDeleted && canUseAction(dept) && filterMode === 'active' && (
+                                                                <Button variant="ghost" size="icon" className="h-7 w-7 rounded-lg hover:text-destructive transition-colors bg-white/40 dark:bg-black/20" onClick={(e) => { e.stopPropagation(); setDeletingDept(dept); }} disabled={dept.workCategories?.some(c => !c.isDeleted)} title={dept.workCategories?.some(c => !c.isDeleted) ? "Cannot delete department with active categories" : "Delete Department"} aria-label="Delete Department"><Trash2 className="h-3.5 w-3.5" /></Button>
+                                                            )}
+                                                            {filterMode === 'deleted' && dept.isDeleted && (
+                                                                <Button variant="ghost" size="sm" className="h-7 text-red-600 hover:bg-red-50 hover:text-red-700 font-semibold px-2 bg-white/40 dark:bg-black/20" onClick={(e) => { e.stopPropagation(); handlePermanentDelete('DEPARTMENT', dept.id); }}>Perm. Delete</Button>
+                                                            )}
+                                                            {filterMode === 'validation' && !dept.isValidated && (
+                                                                <Button variant="outline" size="sm" className="h-7 text-[10px] font-bold uppercase tracking-wider border-orange-200 text-orange-700 hover:bg-orange-50 bg-white/40 dark:bg-black/20" onClick={(e) => { e.stopPropagation(); setEditingDept(dept); setNewName(dept.name); setNewDesc(dept.description || ''); }}>Validate</Button>
+                                                            )}
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                <div className="mb-4 transition-transform duration-300" style={{ transform: 'translateZ(0)' }} onMouseEnter={(e) => e.currentTarget.style.transform = 'translateZ(18px)'} onMouseLeave={(e) => e.currentTarget.style.transform = 'translateZ(0)'}>
+                                                    <h3 className="font-bold text-lg text-foreground line-clamp-2 leading-tight mb-1 dark:text-slate-100">{dept.name}</h3>
+                                                    {dept.description && <p className="text-sm text-muted-foreground line-clamp-2 leading-relaxed">{dept.description}</p>}
+                                                </div>
+
+                                                <div className="mt-auto pt-4 border-t border-primary/5 flex items-center justify-between transition-transform duration-300" style={{ transform: 'translateZ(0)' }} onMouseEnter={(e) => e.currentTarget.style.transform = 'translateZ(10px)'} onMouseLeave={(e) => e.currentTarget.style.transform = 'translateZ(0)'}>
+                                                    <div className="flex gap-4">
+                                                        <div className="flex flex-col">
+                                                            <span className="text-[10px] uppercase font-bold tracking-wider text-muted-foreground/70">Categories</span>
+                                                            <span className="text-sm font-semibold text-foreground/90">{catCount}</span>
+                                                        </div>
+                                                        <div className="flex flex-col">
+                                                            <span className="text-[10px] uppercase font-bold tracking-wider text-muted-foreground/70">Work Types</span>
+                                                            <span className="text-sm font-semibold text-foreground/90">{wtCount}</span>
+                                                        </div>
+                                                    </div>
+                                                    <div className="text-sm font-semibold text-primary/80 group-hover:text-primary transition-colors flex items-center gap-1">
+                                                        Open <span className="text-lg leading-none transition-transform group-hover:translate-x-1">→</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    );
+                                })}
+                            </div>
                         )}
                     </div>
-                    <div className="flex-1 overflow-y-auto space-y-2 px-2 pb-4 pt-1 custom-scrollbar">
-                        {activeDepartments.map(dept => {
-                            const isSelected = selectedDeptId === dept.id;
-                            return (
-                                    <div 
-                                        key={dept.id} 
-                                        onClick={() => {
-                                            setSelectedDeptId(dept.id);
-                                            if (filterMode === 'validation' && !dept.isValidated) {
-                                                setEditingDept(dept); 
-                                                setNewName(dept.name); 
-                                                setNewDesc(dept.description || '');
-                                            }
-                                        }} 
-                                        className={`group flex flex-col gap-1 p-3 rounded-lg cursor-pointer transition-all border ${isSelected ? 'bg-primary/5 border-primary/20 shadow-sm' : 'hover:bg-muted/50 border-transparent'}`}
-                                    >
-                                        <div className="flex items-center justify-between">
-                                            <span className={`font-medium text-sm truncate ${isSelected ? 'text-primary font-bold' : 'text-foreground'}`}>{dept.name}</span>
-                                            {isSelected && canEdit && !dept.isDeleted && canUseAction(dept) && (filterMode === 'active' || filterMode === 'incomplete') && (
-                                                <div className="flex gap-1" onClick={e => e.stopPropagation()}>
-                                                    <Button variant="ghost" size="icon" className="h-6 w-6" onClick={(e) => { e.stopPropagation(); setEditingDept(dept); setNewName(dept.name); setNewDesc(dept.description || ''); }}><Edit className="h-3 w-3" /></Button>
-                                                    {canDelete && <Button variant="ghost" size="icon" className="h-6 w-6 hover:text-destructive" onClick={(e) => { e.stopPropagation(); setDeletingDept(dept); }} disabled={dept.workCategories?.some(c => !c.isDeleted)} title={dept.workCategories?.some(c => !c.isDeleted) ? "Cannot delete department with active categories" : "Delete Department"}><Trash2 className="h-3 w-3" /></Button>}
-                                                </div>
-                                            )}
-                                            {filterMode === 'deleted' && isSelected && dept.isDeleted && (
-                                                <Button variant="ghost" size="sm" className="h-6 text-red-600 hover:bg-red-50 hover:text-red-700 font-semibold px-2" onClick={(e) => { e.stopPropagation(); handlePermanentDelete('DEPARTMENT', dept.id); }}>Delete Permanently</Button>
-                                            )}
-                                            {filterMode === 'validation' && !dept.isValidated && (
-                                                <Button variant="outline" size="sm" className="h-7 text-[10px] font-bold uppercase tracking-wider border-orange-200 text-orange-700 hover:bg-orange-50" onClick={(e) => { e.stopPropagation(); setEditingDept(dept); setNewName(dept.name); setNewDesc(dept.description || ''); }}>Validate</Button>
-                                            )}
-                                        </div>
-                                        <div className="mt-1">{renderBanner(dept)}</div>
+                ) : (
+                    <div className="bg-card rounded-xl border border-border/70 shadow-sm">
+                        {selectedDept && (
+                            <div className="space-y-6 w-full animate-in fade-in slide-in-from-bottom-1 duration-200 p-6">
+                                <div className="flex flex-col border-b border-border/60 pb-4 mb-4">
+                                    <div className="mb-6">
+                                        <Button variant="outline" size="sm" className="text-muted-foreground hover:text-foreground font-medium rounded-lg h-9 px-4 border-border/60 hover:bg-muted/30 shadow-sm" onClick={() => setSelectedDeptId(null)}>
+                                            ← All Departments
+                                        </Button>
                                     </div>
-                            );
-                        })}
-                    </div>
-                </div>
-
-                {/* Main Content: Work Categories */}
-                <div className="flex-1 overflow-y-auto pt-2 pl-2 pr-4 pb-12 custom-scrollbar">
-                    {selectedDept ? (
-                        <div className="space-y-6 max-w-5xl mx-auto">
-                            <div className="flex flex-col border-b pb-4 pt-2">
-                                <div className="flex items-start justify-between">
-                                    <div>
-                                        <h2 className="text-3xl font-bold tracking-tight mb-2">{selectedDept.name}</h2>
-                                        {selectedDept.description && <p className="text-muted-foreground max-w-3xl leading-relaxed text-sm mb-3">{selectedDept.description}</p>}
-                                        <div className="mb-4">{renderBanner(selectedDept)}</div>
+                                    <div className="flex items-start justify-between gap-4 flex-wrap">
+                                        <div>
+                                            <div className="flex items-center gap-3 mb-2">
+                                                <h2 className="text-2xl font-bold tracking-tight text-foreground">{selectedDept.name}</h2>
+                                            {renderBanner(selectedDept)}
+                                        </div>
+                                        {selectedDept.description && <p className="text-muted-foreground max-w-3xl leading-relaxed text-sm mb-1">{selectedDept.description}</p>}
                                     </div>
                                     {canEdit && !selectedDept.isDeleted && (filterMode === 'active' || filterMode === 'incomplete') && canUseAction(selectedDept) && (
-                                        <div className="flex items-center gap-2">
-                                            <Button onClick={() => setAddingCategoryTo(selectedDept.id)} className="font-bold shadow-sm" size="sm"><Plus className="mr-2 h-4 w-4" /> Add Category</Button>
-                                            <Button onClick={() => setAddingWorkTypeTo({ deptId: selectedDept.id, catId: '' })} variant="outline" className="font-bold shadow-sm" size="sm"><Plus className="mr-2 h-4 w-4" /> Add Work Type</Button>
+                                        <div className="flex items-center gap-3 shrink-0">
+                                            <Button onClick={() => setAddingCategoryTo(selectedDept.id)} className="h-10 rounded-lg px-4 font-semibold shadow-sm hover:-translate-y-px transition-transform duration-200">
+                                                <Plus className="mr-2 h-4 w-4" /> Add Category
+                                            </Button>
+                                            <Button onClick={() => setAddingWorkTypeTo({ deptId: selectedDept.id, catId: '' })} variant="outline" className="h-10 rounded-lg px-4 font-semibold shadow-sm hover:-translate-y-px transition-transform duration-200 border-border/70">
+                                                <Plus className="mr-2 h-4 w-4" /> Add Work Type
+                                            </Button>
                                         </div>
                                     )}
                                 </div>
                             </div>
 
                             <div className="mb-4 relative max-w-md">
-                                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                                <Search className="absolute left-[14px] top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                                 <Input
                                     placeholder="Search categories..."
-                                    className="pl-9 h-10 bg-background shadow-sm"
+                                    className="pl-10 h-10 rounded-lg bg-background shadow-sm focus-visible:ring-primary/10 focus-visible:border-primary/30 transition-all border-border/70"
                                     value={searchCategoryText}
                                     onChange={e => setSearchCategoryText(e.target.value)}
                                 />
                             </div>
 
                             <div className="space-y-6">
-                                {selectedDept.workCategories?.filter(cat => {
-                                    if (!searchCategoryText) return true;
-                                    const query = searchCategoryText.toLowerCase();
-                                    return cat.name.toLowerCase().includes(query) || selectedDept.name.toLowerCase().includes(query) || cat.description?.toLowerCase().includes(query);
-                                }).map(cat => {
+                                {(!selectedDept.workCategories || selectedDept.workCategories.length === 0) ? (
+                                    <div className="flex flex-col items-center justify-center p-12 text-center rounded-xl border border-dashed border-border/60 bg-muted/5">
+                                        <div className="w-12 h-12 rounded-full bg-muted/50 flex items-center justify-center mb-4">
+                                            <ListFilter className="h-6 w-6 text-muted-foreground/50" />
+                                        </div>
+                                        <h3 className="text-lg font-semibold mb-1">No work categories yet</h3>
+                                        <p className="text-sm text-muted-foreground mb-4">Add a category to start configuring this department.</p>
+                                        {canEdit && !selectedDept.isDeleted && (filterMode === 'active' || filterMode === 'incomplete') && canUseAction(selectedDept) && (
+                                            <Button onClick={() => setAddingCategoryTo(selectedDept.id)} variant="outline" className="shadow-sm">
+                                                <Plus className="mr-2 h-4 w-4" /> Add Category
+                                            </Button>
+                                        )}
+                                    </div>
+                                ) : (
+                                    selectedDept.workCategories?.filter(cat => {
+                                        if (!searchCategoryText) return true;
+                                        const query = searchCategoryText.toLowerCase();
+                                        return cat.name.toLowerCase().includes(query) || selectedDept.name.toLowerCase().includes(query) || cat.description?.toLowerCase().includes(query);
+                                    }).map(cat => {
                                     return (
                                         <Card 
                                             key={cat.id} 
@@ -410,7 +519,7 @@ export function DepartmentList({ departments, canEdit, canDelete, canCreate, onA
                                                     setNewDesc(cat.description || '');
                                                 }
                                             }}
-                                            className={`overflow-hidden border-muted shadow-sm transition-all ${filterMode === 'validation' && !cat.isValidated ? 'border-orange-200 cursor-pointer hover:border-orange-300' : ''}`}
+                                            className={`overflow-hidden border-border/70 rounded-xl shadow-sm transition-all ${filterMode === 'validation' && !cat.isValidated ? 'border-orange-200/60 cursor-pointer hover:border-orange-300' : ''}`}
                                         >
                                             <div className={`border-b p-4 flex items-center justify-between ${filterMode === 'validation' && !cat.isValidated ? 'bg-orange-50/30' : 'bg-muted/10 border-border/50'}`}>
                                                 <div className="flex items-center gap-3">
@@ -463,7 +572,7 @@ export function DepartmentList({ departments, canEdit, canDelete, canCreate, onA
                                                                                     }
                                                                                 }
                                                                             }}
-                                                                            className={`group flex flex-col p-4 rounded-xl bg-background border transition-all shadow-sm ${filterMode === 'validation' && !wt.isValidated ? 'border-orange-100 cursor-pointer hover:border-orange-300 hover:shadow-md' : 'border-border/40 hover:border-primary/20'}`}
+                                                                            className={`group flex flex-col p-5 rounded-xl bg-card border transition-all duration-200 ${filterMode === 'validation' && !wt.isValidated ? 'border-orange-100 cursor-pointer hover:border-orange-300 hover:shadow-md hover:-translate-y-0.5' : 'border-border/50 hover:border-primary/30 shadow-sm hover:shadow-md hover:-translate-y-0.5'}`}
                                                                         >
                                                                     <div className="flex items-start justify-between mb-2">
                                                                         <div className="font-semibold text-base">{wt.name}</div>
@@ -509,13 +618,13 @@ export function DepartmentList({ departments, canEdit, canDelete, canCreate, onA
                                             </CardContent>
                                         </Card>
                                     );
-                                })}
+                                    })
+                                )}
                             </div>
                         </div>
-                    ) : (
-                        <div className="flex flex-col h-full items-center justify-center text-muted-foreground"><Folder className="h-12 w-12 opacity-20 mb-4" /><p>Select an item to manage structure</p></div>
-                    )}
-                </div>
+                        )}
+                    </div>
+                )}
             </div>
 
             {/* Department Edit Dialog */}

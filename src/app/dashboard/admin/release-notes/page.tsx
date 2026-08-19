@@ -1,5 +1,7 @@
 'use client';
 
+import { PageHero } from '@/components/dashboard/page-hero';
+
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Rocket, ShieldCheck, Zap, LayoutTemplate } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
@@ -7,10 +9,13 @@ import { Badge } from '@/components/ui/badge';
 export default function ReleaseNotesPage() {
     return (
         <div className="max-w-4xl mx-auto py-8 space-y-8 animate-in fade-in duration-700">
-            <div>
-                <h1 className="text-3xl font-black text-slate-900 tracking-tight">Release Notes</h1>
-                <p className="text-slate-500 mt-2">Latest updates, improvements, and fixes to the platform.</p>
-            </div>
+            <PageHero
+                pattern="pattern-6"
+                icon={Rocket}
+                badge="SYSTEM"
+                title="Release Notes"
+                description="Latest updates, improvements, and fixes to the platform."
+            />
 
             <Card className="border-indigo-100 shadow-lg shadow-indigo-100/50 relative overflow-hidden">
                 <div className="absolute top-0 left-0 w-1 h-full bg-indigo-600" />

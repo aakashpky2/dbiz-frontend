@@ -7,13 +7,13 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { ArrowLeft, Plus, Save, Trash2, Clock, Calendar, CheckSquare, Building } from 'lucide-react';
+import { ArrowLeft, Plus, Save, Trash2, Clock, Calendar, CheckSquare, Building, FileText } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/lib/supabase';
 import { WorkType, Authority, RuleType, DueDateRule, DueDateRuleVersion, Constitution } from '@/lib/compliance/types';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Department, WorkCategory, WorkType as DeptWorkType } from '@/lib/department-management'; // Import types
-import { DashboardPageHeader } from '@/components/dashboard/dashboard-page-header';
+import { PageHero } from '@/components/dashboard/page-hero';
 import { DashboardFilterBar } from '@/components/dashboard/dashboard-filter-bar';
 import {
     Dialog, DialogContent, DialogDescription, DialogFooter,
@@ -225,7 +225,10 @@ export default function StandardRulesPage() {
 
     return (
         <div className="space-y-6 p-6 animate-in fade-in duration-500">
-            <DashboardPageHeader
+            <PageHero
+                pattern="pattern-7"
+                icon={FileText}
+                badge="COMPLIANCE"
                 title="Standard Rules"
                 description="Manage recurring due dates for different Work Types."
             >
@@ -371,7 +374,7 @@ export default function StandardRulesPage() {
                             </DialogFooter>
                         </DialogContent>
                     </Dialog>
-                </DashboardPageHeader>
+                </PageHero>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {isLoading ? (
                     <p className="text-muted-foreground col-span-full">Loading rules...</p>

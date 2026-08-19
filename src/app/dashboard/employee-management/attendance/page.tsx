@@ -42,7 +42,7 @@ import { cn } from '@/lib/utils';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { DashboardPageHeader } from '@/components/dashboard/dashboard-page-header';
+import { PageHero } from '@/components/dashboard/page-hero';
 import { fetchWithCache, clearCache } from '@/lib/fetcher';
 import { normalizeAttendanceSessions, ActivityLog } from '@/lib/attendance-utils';
 import { usePermissions } from '@/hooks/use-permissions';
@@ -519,7 +519,10 @@ export default function AttendanceManagementPage() {
 
   return (
     <div className="space-y-6">
-      <DashboardPageHeader
+      <PageHero
+                pattern="pattern-5"
+        icon={UserCheck}
+        badge="EMPLOYEE MANAGEMENT"
         title="Attendance Records"
         description="Click on a date to view employee attendance details"
       >
@@ -532,7 +535,7 @@ export default function AttendanceManagementPage() {
         <Button onClick={openAddDialog} className="font-bold">
           <Plus className="mr-2 h-4 w-4" /> Add Record
         </Button>
-      </DashboardPageHeader>
+      </PageHero>
 
       <div className="grid gap-6 lg:grid-cols-[1fr_380px]">
         {/* Left Side: Calendar + Date Detail */}

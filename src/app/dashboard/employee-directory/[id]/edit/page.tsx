@@ -1,5 +1,6 @@
 
 'use client';
+import { PageHero } from '@/components/dashboard/page-hero';
 
 import { useState, useEffect, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
@@ -54,37 +55,23 @@ export default function EditEmployeePage() {
 
   return (
     <div className="space-y-6">
+      <PageHero
+                pattern="pattern-6"
+        compact
+        icon={UserPlus}
+        badge="DIRECTORY"
+        title={`Edit ${employeeName}`}
+        description="Update the details for the employee below."
+      >
+        <Button variant="outline" size="sm" asChild className="rounded-xl shadow-sm hover:bg-slate-50 transition-all duration-300">
+          <Link href={`/dashboard/employee-directory/${employeeId}`} className="flex items-center gap-2">
+            <ArrowLeft className="h-4 w-4" />
+            <span>Back to View</span>
+          </Link>
+        </Button>
+      </PageHero>
       <Card className="shadow-lg">
-        <CardHeader>
-          <div className="flex flex-row items-center justify-between gap-4 mb-2">
-            <div className="flex items-center gap-4">
-            {headerPhotoPreview ? (
-              <Avatar className="h-16 w-16">
-                <AvatarImage src={headerPhotoPreview} alt="Employee Photo" />
-                <AvatarFallback>{employeeName ? employeeName.split(' ').map(n => n[0]).join('') : <UserPlus className="h-8 w-8" />}</AvatarFallback>
-              </Avatar>
-            ) : (
-              <UserPlus className="h-8 w-8 text-primary" />
-            )}
-            <div>
-              <CardTitle className="text-2xl flex items-center">
-                Edit {employeeName}
-              </CardTitle>
-              <CardDescription>
-                Update the details for the employee below.
-              </CardDescription>
-            </div>
-          </div>
-            
-          <Button variant="outline" size="sm" asChild className="rounded-xl shadow-sm hover:bg-slate-50 transition-all duration-300">
-              <Link href={`/dashboard/employee-directory/${employeeId}`} className="flex items-center gap-2">
-                <ArrowLeft className="h-4 w-4" />
-                <span>Back to View</span>
-              </Link>
-            </Button>
-          </div>
-        </CardHeader>
-        <CardContent>
+        <CardContent className="pt-6">
           {loading ? (<div className="p-6"><PageSkeleton /></div>) : employee ? (
             <AddEmployeeForm onPhotoChange={handlePhotoChangeForHeader} existingEmployee={employee} onNameChange={handleNameChange} />
           ) : (

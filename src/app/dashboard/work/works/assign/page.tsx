@@ -30,6 +30,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
 import { TableSkeleton } from '@/components/ui/page-skeleton';
+import { PageHero } from '@/components/dashboard/page-hero';
 import { format } from 'date-fns';
 import { 
     getAssignableMembersForTeam, 
@@ -250,23 +251,23 @@ export default function AssignWorksPage() {
 
     return (
         <div className="space-y-6">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                <div>
-                    <h1 className="text-3xl font-black tracking-tight text-slate-900 uppercase">Work Distribution</h1>
-                    <p className="text-muted-foreground text-sm font-medium">Master control for team and member assignments.</p>
+            <PageHero
+                pattern="pattern-2"
+                icon={ArrowRightLeft}
+                badge="WORK MANAGEMENT"
+                title="Work Distribution"
+                description="Master control for team and member assignments."
+            >
+                <div className="relative">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input 
+                        placeholder="Search client or work..." 
+                        className="pl-9 h-11 w-64 rounded-xl border-slate-200 shadow-sm"
+                        value={search}
+                        onChange={(e) => setSearch(e.target.value)}
+                    />
                 </div>
-                <div className="flex items-center gap-3">
-                    <div className="relative">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                        <Input 
-                            placeholder="Search client or work..." 
-                            className="pl-9 h-11 w-64 rounded-xl border-slate-200 shadow-sm"
-                            value={search}
-                            onChange={(e) => setSearch(e.target.value)}
-                        />
-                    </div>
-                </div>
-            </div>
+            </PageHero>
 
             {!loading && visibleTabs.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-24 bg-slate-50/50 rounded-3xl border border-dashed border-slate-200 mt-6">

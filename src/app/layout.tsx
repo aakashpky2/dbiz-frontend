@@ -5,6 +5,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import Script from 'next/script';
 import { ThemeProvider } from '@/components/providers/theme-provider';
+import { DevIndicator } from '@/components/dev/dev-indicator';
 
 export const metadata: Metadata = {
   title: {
@@ -89,6 +90,7 @@ export default function RootLayout({
             </AppTransitionProvider>
           </QueryProvider>
         </ThemeProvider>
+        <DevIndicator />
         <Toaster />
       </body>
     </html>

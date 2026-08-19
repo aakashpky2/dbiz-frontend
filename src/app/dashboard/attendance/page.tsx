@@ -18,7 +18,7 @@ import dynamic from 'next/dynamic';
 const LeaveDialog = dynamic(() => import('./_components/LeaveDialog').then(mod => mod.LeaveDialog), { ssr: false });
 import { cn } from '@/lib/utils';
 import { DateRange } from 'react-day-picker';
-import { DashboardPageHeader } from '@/components/dashboard/dashboard-page-header';
+import { PageHero } from '@/components/dashboard/page-hero';
 import { LiveClock } from '@/components/dashboard/attendance/live-clock';
 import { Badge } from '@/components/ui/badge';
 
@@ -118,14 +118,17 @@ export default function AttendancePage() {
 
   return (
     <div className="space-y-6">
-      <DashboardPageHeader
+      <PageHero
+                pattern="pattern-6"
+        icon={CalendarCheck2}
+        badge="ATTENDANCE"
         title="My Attendance"
         description={`View and manage your attendance records`}
       >
         <Button variant="outline" onClick={() => setIsLeaveDialogOpen(true)} className="font-bold">
           <Send className="mr-2 h-4 w-4" /> Apply for Leave
         </Button>
-      </DashboardPageHeader>
+      </PageHero>
 
       <div className="grid grid-cols-1 xl:grid-cols-[420px_1fr] gap-6">
         {/* Left Side: Clock & Date Picker */}

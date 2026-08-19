@@ -11,8 +11,10 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { ProposalList } from './_components/ProposalList';
 import { 
     Clock, 
-    Plus
+    Plus,
+    FileSignature
 } from 'lucide-react';
+import { PageHero } from '@/components/dashboard/page-hero';
 import { useToast } from '@/hooks/use-toast';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -439,22 +441,19 @@ export default function ProposalsPage() {
             <div className="flex flex-col gap-6 pb-20">
 
                 {/* Top bar */}
-                <div className="flex items-center justify-between shrink-0">
-                    <div>
-                        <h1 className="text-2xl font-black tracking-tight text-slate-900">Proposals</h1>
-                        <p className="text-sm text-slate-500">Formalise inquiries into trackable proposals.</p>
-                    </div>
-                    <div className="flex items-center gap-3">
-                         {canManageProposals && (
-                             <Button onClick={openNewProposalDialog} className="bg-primary hover:bg-primary/90 text-primary-foreground h-10 px-6 rounded-lg font-bold text-[10px] uppercase tracking-wide shadow-md transition-all active:scale-95 group">
-                <Plus className="mr-2 h-4 w-4 transition-transform group-hover:rotate-90" /> Create New Proposal
-              </Button>
-                         )}
-                        {/* <Button type="button" size="sm"  className="bg-indigo-600 hover:bg-indigo-700 shadow-md transition-all active:scale-95 px-5">
-                            <PlusCircle className="mr-2 h-4 w-4" /> New Proposal
-                        </Button> */}
-                    </div>
-                </div>
+                <PageHero
+                pattern="pattern-7"
+                    icon={FileSignature}
+                    badge="PROPOSAL MANAGEMENT"
+                    title="Proposals"
+                    description="Formalise inquiries into trackable proposals."
+                >
+                    {canManageProposals && (
+                        <Button onClick={openNewProposalDialog} className="bg-primary hover:bg-primary/90 text-primary-foreground h-10 px-6 rounded-lg font-bold text-[10px] uppercase tracking-wide shadow-md transition-all active:scale-95 group">
+                            <Plus className="mr-2 h-4 w-4 transition-transform group-hover:rotate-90" /> Create New Proposal
+                        </Button>
+                    )}
+                </PageHero>
 
                 {/* Requirement 4: Today's Follow-ups Dashboard */}
                 {todayFollowUps.length > 0 && (

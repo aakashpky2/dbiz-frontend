@@ -26,7 +26,7 @@ import dynamic from 'next/dynamic';
 const SearchableMasterDropdown = dynamic(() => import("@/components/dashboard/recruitment/searchable-master-dropdown").then(mod => mod.SearchableMasterDropdown), { ssr: false });
 const ScheduleInterviewModal = dynamic(() => import("@/components/dashboard/recruitment/schedule-interview-modal").then(mod => mod.ScheduleInterviewModal), { ssr: false });
 import { ChevronDown, SlidersHorizontal } from 'lucide-react';
-import { DashboardPageHeader } from '@/components/dashboard/dashboard-page-header';
+import { PageHero } from '@/components/dashboard/page-hero';
 import { DashboardFilterBar } from '@/components/dashboard/dashboard-filter-bar';
 import { cn } from "@/lib/utils";
 
@@ -456,14 +456,17 @@ export default function RecruitmentManagementPage() {
 
     return (
         <div className="space-y-6">
-            <DashboardPageHeader
+            <PageHero
+                pattern="pattern-7"
+                icon={Users}
+                badge="RECRUITMENT"
                 title="Recruitment Dashboard"
                 description="Manage your hiring pipeline and job applicants."
             >
                 {canManageCandidates && <Button onClick={openAddDialog} className="font-bold">
                     <PlusCircle className="mr-2 h-4 w-4" /> Add Applicant
                 </Button>}
-            </DashboardPageHeader>
+            </PageHero>
 
             {/* Analytics Dashboard */}
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">

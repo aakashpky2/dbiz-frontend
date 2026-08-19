@@ -18,8 +18,8 @@ import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Trash2, RefreshCw } from "lucide-react";
-import { DashboardPageHeader } from '@/components/dashboard/dashboard-page-header';
+import { Plus, Trash2, RefreshCw, Settings2 } from "lucide-react";
+import { PageHero } from '@/components/dashboard/page-hero';
 import { usePermissions } from '@/hooks/use-permissions';
 import { useRouter } from 'next/navigation';
 import { PageSkeleton } from '@/components/ui/page-skeleton';
@@ -413,14 +413,17 @@ export default function EmploymentConfigurationsPage() {
 
     return (
         <div className="space-y-6">
-            <DashboardPageHeader
+            <PageHero
+                pattern="pattern-2"
+                icon={Settings2}
+                badge="EMPLOYEE CONFIGURATION"
                 title="Employment Configurations"
                 description="Manage shift patterns, contract terms, salaries, and assign employment configurations to registered employees."
             >
                 <Button variant="outline" size="sm" onClick={fetchEmployees} className="h-9 px-3 font-bold border-muted-foreground/20">
                     <RefreshCw className="h-4 w-4 mr-2" /> Reload Data
                 </Button>
-            </DashboardPageHeader>
+            </PageHero>
 
             <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
                 <TabsList className="grid w-full max-w-[600px] grid-cols-3 rounded-xl h-12 bg-muted/60 p-1 border">

@@ -22,7 +22,7 @@ import {
 } from "@/components/ui/select";
 import { fetchWithCache } from "@/lib/fetcher";
 import { cn } from "@/lib/utils";
-import { DashboardPageHeader } from "@/components/dashboard/dashboard-page-header";
+import { PageHero } from "@/components/dashboard/page-hero";
 import { DashboardFilterBar } from "@/components/dashboard/dashboard-filter-bar";
 import { usePermissions } from "@/hooks/use-permissions";
 import { useRouter } from "next/navigation";
@@ -437,7 +437,10 @@ export default function EmployeeDirectoryPage() {
 
   return (
     <div className="space-y-6">
-      <DashboardPageHeader
+      <PageHero
+                pattern="pattern-3"
+        icon={Users}
+        badge="EMPLOYEE MANAGEMENT"
         title="Employee Directory"
         description="Find contact details and roles for all employees."
       >
@@ -448,7 +451,7 @@ export default function EmployeeDirectoryPage() {
           </Link>
         </Button>
         )}
-      </DashboardPageHeader>
+      </PageHero>
           <DashboardFilterBar>
             <div className="flex-1 w-full relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />

@@ -1,5 +1,7 @@
 'use client';
 
+import { PageHero } from '@/components/dashboard/page-hero';
+
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -74,12 +76,13 @@ export default function TemporaryClientsPage() {
 
     return (
         <div className="space-y-6 p-6 animate-in fade-in duration-500">
-            <div className="flex justify-between items-center">
-                <div>
-                    <h1 className="text-3xl font-bold tracking-tight">Temporary Clients</h1>
-                    <p className="text-muted-foreground text-sm mt-1">Review and approve new clients added during the inquiry process.</p>
-                </div>
-            </div>
+            <PageHero
+                pattern="pattern-3"
+                icon={User}
+                badge="ADMINISTRATION"
+                title="Temporary Clients"
+                description="Review and approve new clients added during the inquiry process."
+            />
 
             <Card className="shadow-lg border-muted/50 rounded-xl overflow-hidden">
                 <CardHeader className="border-b bg-muted/30">

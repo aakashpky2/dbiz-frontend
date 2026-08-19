@@ -28,6 +28,7 @@ import { useToast } from '@/hooks/use-toast';
 import { usePermissions } from '@/hooks/use-permissions';
 import { useRouter } from 'next/navigation';
 import { PageSkeleton, TableSkeleton } from '@/components/ui/page-skeleton';
+import { PageHero } from '@/components/dashboard/page-hero';
 import {
     AlertDialog,
     AlertDialogAction,
@@ -288,29 +289,31 @@ export default function WorksPage() {
     return (
         <div className="space-y-6 p-6 pb-24">
             {/* ── Header ── */}
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                <div>
-                    <h1 className="text-3xl font-bold tracking-tight text-foreground">Work Register</h1>
-                    <p className="text-muted-foreground text-sm mt-1">Enterprise work management with discovery & validation.</p>
-                </div>
+            <PageHero
+                pattern="pattern-1"
+                icon={Briefcase}
+                badge="WORK MANAGEMENT"
+                title="Work Register"
+                description="Enterprise work management with discovery & validation."
+            >
                 <div className="flex items-center gap-2">
                     <Button
                         variant="outline" size="icon"
                         onClick={fetchWorks}
                         disabled={loading}
                         title="Refresh"
-                        className="shrink-0 transition-all active:rotate-180 duration-500"
+                        className="shrink-0 transition-all active:rotate-180 duration-500 h-11 w-11 rounded-lg"
                     >
                         <RefreshCw className={cn("h-4 w-4", loading && "animate-spin")} />
                     </Button>
                     {canManageWork && (
-                        <Button onClick={() => { setDialogResetKey(k => k + 1); setFormMode('create'); setAddOpen(true); }} className="shadow-md gap-2" size="lg">
+                        <Button onClick={() => { setDialogResetKey(k => k + 1); setFormMode('create'); setAddOpen(true); }} className="shadow-md shadow-primary/20 gap-2 h-11 px-6 rounded-lg font-bold" size="lg">
                             <PlusCircle className="h-5 w-5" />
                             Add Work
                         </Button>
                     )}
                 </div>
-            </div>
+            </PageHero>
 
             {/* ── Stats ── */}
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">

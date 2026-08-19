@@ -565,18 +565,18 @@ export function TimeLimitConfig({ departments }: TimeLimitConfigProps) {
         if (examples.length === 0) return null;
 
         return (
-            <div className="mt-6 space-y-3">
-                <div className="flex items-center gap-2 mb-1 px-1">
-                    <div className="h-2 w-2 rounded-full bg-indigo-500 animate-pulse" />
-                    <strong className="text-indigo-900 uppercase tracking-widest text-[10px]">How it works</strong>
-                </div>
+            <div className="mt-6 space-y-3 motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-bottom-1 duration-300" style={{ animationDelay: '120ms', animationFillMode: 'both' }}>
                 {examples.map((ex: any, i) => (
-                    <div key={i} className="p-4 bg-indigo-50/80 border border-indigo-200 rounded-xl shadow-sm text-sm">
-                        <p className="text-indigo-900 leading-relaxed text-xs">
-                            If this task is filed for the period <strong>{ex.periodName}</strong>, the calculation begins from the <strong>{ex.position === 'beginning' ? 'first day' : 'last day'}</strong>.
+                    <div key={i} className="p-5 bg-primary/[0.035] border border-primary/15 rounded-xl text-sm">
+                        <div className="mb-2">
+                            <strong className="text-foreground uppercase tracking-widest text-[10px] font-bold">How it works</strong>
+                        </div>
+                        <p className="text-muted-foreground leading-relaxed text-xs mb-4">
+                            For <strong>{ex.periodName}</strong>, calculating from the <strong>{ex.position === 'beginning' ? 'start' : 'end'}</strong>...
                         </p>
-                        <div className="mt-2 text-indigo-950 font-bold bg-white inline-block px-3 py-1.5 rounded text-xs border border-indigo-100 shadow-sm">
-                            Target Due Date: {format(ex.dueDate, 'dd MMM yyyy')}
+                        <div className="flex flex-col gap-0.5 bg-background border border-border/50 px-4 py-2.5 rounded-lg w-fit shadow-sm">
+                            <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Target Due Date</span>
+                            <span className="text-base font-semibold text-foreground">{format(ex.dueDate, 'dd MMM yyyy')}</span>
                         </div>
                     </div>
                 ))}
@@ -617,51 +617,53 @@ export function TimeLimitConfig({ departments }: TimeLimitConfigProps) {
         }
 
         return (
-            <div className="space-y-3 animate-in zoom-in-95 duration-200">
-                <RadioGroup value={cfg.mode} onValueChange={(v: any) => updateFreqConfig(f, { mode: v })} className="flex gap-4">
-                    <div className="flex items-center space-x-2">
-                        <RadioGroupItem value="days" id={`${f}-days`} className="h-3 w-3" />
-                        <Label htmlFor={`${f}-days`} className="text-xs">By Days</Label>
+            <div className="space-y-5 animate-in zoom-in-95 duration-200">
+                <RadioGroup value={cfg.mode} onValueChange={(v: any) => updateFreqConfig(f, { mode: v })} className="flex gap-3">
+                    <div className={cn("flex-1 flex items-center space-x-2 border rounded-lg p-2.5 cursor-pointer transition-colors", cfg.mode === 'days' ? 'bg-primary/[0.06] border-primary' : 'bg-transparent border-border/50 hover:bg-muted/50')}>
+                        <RadioGroupItem value="days" id={`${f}-days`} className="h-4 w-4" />
+                        <Label htmlFor={`${f}-days`} className="text-xs font-medium cursor-pointer w-full">By Days</Label>
                     </div>
-                    <div className="flex items-center space-x-2">
-                        <RadioGroupItem value="month" id={`${f}-month`} className="h-3 w-3" />
-                        <Label htmlFor={`${f}-month`} className="text-xs">By Month</Label>
+                    <div className={cn("flex-1 flex items-center space-x-2 border rounded-lg p-2.5 cursor-pointer transition-colors", cfg.mode === 'month' ? 'bg-primary/[0.06] border-primary' : 'bg-transparent border-border/50 hover:bg-muted/50')}>
+                        <RadioGroupItem value="month" id={`${f}-month`} className="h-4 w-4" />
+                        <Label htmlFor={`${f}-month`} className="text-xs font-medium cursor-pointer w-full">By Month</Label>
                     </div>
-                    <div className="flex items-center space-x-2">
-                        <RadioGroupItem value="fixed" id={`${f}-fixed`} className="h-3 w-3" />
-                        <Label htmlFor={`${f}-fixed`} className="text-xs">Fixed Date</Label>
+                    <div className={cn("flex-1 flex items-center space-x-2 border rounded-lg p-2.5 cursor-pointer transition-colors", cfg.mode === 'fixed' ? 'bg-primary/[0.06] border-primary' : 'bg-transparent border-border/50 hover:bg-muted/50')}>
+                        <RadioGroupItem value="fixed" id={`${f}-fixed`} className="h-4 w-4" />
+                        <Label htmlFor={`${f}-fixed`} className="text-xs font-medium cursor-pointer w-full">Fixed Date</Label>
                     </div>
                 </RadioGroup>
 
                 {(cfg.mode === 'days' || cfg.mode === 'month') && (
-                    <div className="pt-2">
-                        <Label className="text-[10px] font-black uppercase text-muted-foreground/70 mb-1.5 block">Start counting from</Label>
-                        <RadioGroup value={cfg.periodPosition || 'end'} onValueChange={(v: any) => updateFreqConfig(f, { periodPosition: v })} className="flex gap-4">
+                    <div className="space-y-3">
+                        <Label className="text-xs font-semibold text-foreground">Start Counting From</Label>
+                        <RadioGroup value={cfg.periodPosition || 'end'} onValueChange={(v: any) => updateFreqConfig(f, { periodPosition: v })} className="flex gap-6 items-center">
                             <div className="flex items-center space-x-2">
-                                <RadioGroupItem value="beginning" id={`${f}-pos-beg`} className="h-3 w-3" />
-                                <Label htmlFor={`${f}-pos-beg`} className="text-xs">Start of Choice/Month</Label>
+                                <RadioGroupItem value="beginning" id={`${f}-pos-beg`} className="h-4 w-4" />
+                                <Label htmlFor={`${f}-pos-beg`} className="text-sm cursor-pointer">Start of Period</Label>
                             </div>
                             <div className="flex items-center space-x-2">
-                                <RadioGroupItem value="end" id={`${f}-pos-end`} className="h-3 w-3" />
-                                <Label htmlFor={`${f}-pos-end`} className="text-xs">End of Choice/Month</Label>
+                                <RadioGroupItem value="end" id={`${f}-pos-end`} className="h-4 w-4" />
+                                <Label htmlFor={`${f}-pos-end`} className="text-sm cursor-pointer">End of Period</Label>
                             </div>
                         </RadioGroup>
                     </div>
                 )}
 
                 {cfg.mode === 'days' ? (
-                    <div className="space-y-1.5">
-                        <Label className="text-[10px] uppercase font-bold text-muted-foreground/70">
-                            Days From {f === 'monthly' ? 'Next Month' : f === 'quarterly' ? 'Quarter End' : f === 'half-yearly' ? 'Half-Year End' : 'Year End'}
+                    <div className="space-y-2">
+                        <Label className="text-xs font-semibold text-foreground">
+                            Days from {f === 'monthly' ? 'Period End' : f === 'quarterly' ? 'Quarter End' : f === 'half-yearly' ? 'Half-Year End' : 'Year End'}
                         </Label>
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center w-full max-w-[160px] h-11 border border-border/70 rounded-lg overflow-hidden bg-background focus-within:ring-1 focus-within:ring-primary focus-within:border-primary transition-all">
                             <Input
                                 type="number"
-                                className="w-24 h-9 text-sm"
+                                className="h-full border-none focus-visible:ring-0 rounded-none w-full font-medium"
                                 value={cfg.daysAfter || ''}
                                 onChange={(e) => updateFreqConfig(f, { daysAfter: parseInt(e.target.value) || 0 })}
                             />
-                            <span className="text-xs text-muted-foreground">Days</span>
+                            <div className="h-full px-3 bg-muted/30 border-l border-border/50 flex items-center justify-center text-xs text-muted-foreground font-medium shrink-0">
+                                Days
+                            </div>
                         </div>
                     </div>
                 ) : cfg.mode === 'month' ? (
@@ -741,17 +743,17 @@ export function TimeLimitConfig({ departments }: TimeLimitConfigProps) {
         }
 
         return (
-            <div className="mt-6 space-y-3">
-                <div className="flex items-center gap-2 mb-1 px-1">
-                    <div className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
-                    <strong className="text-emerald-900 uppercase tracking-widest text-[10px]">How it works</strong>
-                </div>
-                <div className="p-4 bg-emerald-50/80 border border-emerald-200 rounded-xl shadow-sm text-sm">
-                    <p className="text-emerald-900 leading-relaxed text-xs">
+            <div className="mt-4 space-y-3">
+                <div className="p-4 bg-primary/[0.035] border border-primary/15 rounded-xl text-sm">
+                    <div className="mb-2">
+                        <strong className="text-foreground uppercase tracking-widest text-[10px] font-bold">How it works</strong>
+                    </div>
+                    <p className="text-muted-foreground leading-relaxed text-xs mb-3">
                         If {baseDateLabel.toLowerCase()} is the reference, {finishByMode === 'days_based' ? 'adding' : finishByDirection} <strong>{days} days</strong> result in:
                     </p>
-                    <div className="mt-2 text-emerald-950 font-bold bg-white inline-block px-3 py-1.5 rounded text-xs border border-emerald-100 shadow-sm">
-                        Finish By Date: {format(resultDate, 'dd MMM yyyy')}
+                    <div className="flex flex-col gap-0.5 bg-background border border-border/50 px-3 py-2 rounded-lg w-fit shadow-sm">
+                        <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Finish By</span>
+                        <span className="text-sm font-semibold text-foreground">{format(resultDate, 'dd MMM yyyy')}</span>
                     </div>
                 </div>
             </div>
@@ -759,7 +761,7 @@ export function TimeLimitConfig({ departments }: TimeLimitConfigProps) {
     };
 
     return (
-        <div className="max-w-5xl mx-auto py-8">
+        <div className="w-full pb-8">
             <Tabs defaultValue="overview" className="space-y-8">
                 <div className="flex items-center justify-between">
                     <TabsList className="bg-blue-100/50 p-1 rounded-xl h-auto border border-blue-200/50">
@@ -780,25 +782,24 @@ export function TimeLimitConfig({ departments }: TimeLimitConfigProps) {
                 </div>
 
                 <TabsContent value="overview" className="m-0 focus-visible:outline-none animate-in fade-in duration-500">
-                    <Card className="shadow-xl border-none bg-blue-50/40 overflow-hidden rounded-2xl border-l-4 border-l-blue-500">
-                        <div className="h-1.5 w-full bg-blue-500/20" />
-                        <CardHeader className="p-10 pb-6">
-                            <div className="flex items-center gap-5">
-                                <div className="p-4 bg-primary/10 rounded-2xl shadow-inner ring-1 ring-primary/20">
-                                    <TrendingUp className="h-8 w-8 text-primary" />
+                    <Card className="w-full rounded-xl border border-border/70 bg-card shadow-sm overflow-hidden">
+                        <CardHeader className="px-6 py-5 md:px-8 border-b border-border/50">
+                            <div className="flex items-center gap-4">
+                                <div className="p-3 bg-primary/10 rounded-xl shadow-inner ring-1 ring-primary/20">
+                                    <TrendingUp className="h-6 w-6 text-primary" />
                                 </div>
                                 <div>
-                                    <CardTitle className="text-2xl font-bold tracking-tight mb-1">Due Date Settings</CardTitle>
-                                    <CardDescription className="text-muted-foreground font-medium text-sm leading-relaxed max-w-md">
+                                    <CardTitle className="text-xl font-bold tracking-tight mb-1">Due Date Settings</CardTitle>
+                                    <CardDescription className="text-muted-foreground font-medium text-sm">
                                         Set how many days you have to finish the work and when the deadlines are.
                                     </CardDescription>
                                 </div>
                             </div>
                         </CardHeader>
-                        <CardContent className="p-10 pt-4 space-y-10">
-                            <div className="bg-slate-50/50 p-6 rounded-xl border border-border shadow-sm">
-                                <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-end">
-                                    <div className="md:col-span-4 space-y-2">
+                        <CardContent className="p-6 md:p-8 space-y-8">
+                            <div className="bg-slate-50/50 p-6 rounded-xl border border-border/60 shadow-sm">
+                                <div className="grid grid-cols-1 md:grid-cols-[1fr_1fr_0.85fr] gap-4 items-end">
+                                    <div className="space-y-2">
                                         <div className="flex items-center gap-2 px-1">
                                             <LayoutGrid className="h-3.5 w-3.5 text-primary/60" />
                                             <Label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Main Department</Label>
@@ -808,16 +809,16 @@ export function TimeLimitConfig({ departments }: TimeLimitConfigProps) {
                                             setSelectedCatId('');
                                             setSelectedWorkTypeId('');
                                         }}>
-                                            <SelectTrigger className="h-11 bg-background border focus:ring-primary rounded-lg text-sm font-semibold px-4">
+                                            <SelectTrigger className="h-[46px] bg-background border focus:ring-primary rounded-lg text-sm font-semibold px-4 transition-all shadow-sm">
                                                 <SelectValue placeholder="Choose Department" />
                                             </SelectTrigger>
                                             <SelectContent className="rounded-lg">
-                                                {deptList.map(d => <SelectItem key={d.id} value={d.id} className="py-3 rounded-lg font-medium">{d.name}</SelectItem>)}
+                                                {deptList.map(d => <SelectItem key={d.id} value={d.id} className="py-2.5 rounded-lg font-medium">{d.name}</SelectItem>)}
                                             </SelectContent>
                                         </Select>
                                     </div>
 
-                                    <div className="md:col-span-4 space-y-2">
+                                    <div className="space-y-2">
                                         <div className="flex items-center gap-2 px-1">
                                             <Layers className="h-3.5 w-3.5 text-primary/60" />
                                             <Label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Work Category</Label>
@@ -830,20 +831,20 @@ export function TimeLimitConfig({ departments }: TimeLimitConfigProps) {
                                             }} 
                                             disabled={!selectedDeptId}
                                         >
-                                            <SelectTrigger className="h-11 bg-background border focus:ring-primary rounded-lg text-sm font-semibold px-4 disabled:opacity-50 transition-all">
+                                            <SelectTrigger className="h-[46px] bg-background border focus:ring-primary rounded-lg text-sm font-semibold px-4 disabled:opacity-50 transition-all shadow-sm">
                                                 <SelectValue placeholder={selectedDeptId ? "Choose Category" : "Waiting for Dept..."} />
                                             </SelectTrigger>
                                             <SelectContent className="rounded-lg">
-                                                {catList.map(c => <SelectItem key={c.id} value={c.id} className="py-3 rounded-lg font-medium">{c.name}</SelectItem>)}
+                                                {catList.map(c => <SelectItem key={c.id} value={c.id} className="py-2.5 rounded-lg font-medium">{c.name}</SelectItem>)}
                                             </SelectContent>
                                         </Select>
                                     </div>
 
-                                    <div className="md:col-span-4 pb-0.5">
+                                    <div className="pb-[1px]">
                                         <Button 
                                             disabled={!selectedCatId}
                                             onClick={() => setIsDialogOpen(true)}
-                                            className="w-full h-11 bg-primary hover:bg-primary/90 text-primary-foreground rounded-lg font-bold text-xs uppercase tracking-widest shadow-md transition-all active:scale-95 disabled:opacity-50"
+                                            className="w-full h-[46px] bg-primary hover:bg-primary/90 text-primary-foreground rounded-lg font-bold text-xs uppercase tracking-widest shadow-sm transition-all hover:-translate-y-px disabled:opacity-50 disabled:hover:translate-y-0"
                                         >
                                             <Plus className="mr-2 h-4 w-4" /> Add Due Date
                                         </Button>
@@ -854,96 +855,96 @@ export function TimeLimitConfig({ departments }: TimeLimitConfigProps) {
                             {configuredWorkTypes.length > 0 ? (
                                 <div className="space-y-6 pt-4">
                                     <div className="flex items-center justify-between px-1">
-                                        <div className="space-y-1">
-                                            <h3 className="text-sm font-bold text-slate-800 uppercase tracking-widest flex items-center gap-2">
-                                                <Layers className="h-4 w-4 text-blue-500" />
+                                        <div className="flex items-center gap-3">
+                                            <h3 className="text-sm font-bold text-foreground uppercase tracking-widest flex items-center gap-2">
+                                                <Layers className="h-4 w-4 text-primary" />
                                                 Existing Due Dates
                                             </h3>
-                                            <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-widest">List of work already having deadline rules</p>
+                                            <span className="text-[11px] font-medium text-muted-foreground">List of work already having deadline rules</span>
                                         </div>
-                                        <Badge variant="secondary" className="h-6 px-3 bg-blue-100 text-blue-700 hover:bg-blue-200 border-none rounded-full font-bold text-[10px]">
+                                        <Badge variant="secondary" className="h-[22px] px-2.5 bg-primary/10 text-primary hover:bg-primary/20 border-none rounded-md font-bold text-[10px]">
                                             {configuredWorkTypes.length} ITEMS
                                         </Badge>
                                     </div>
 
-                                    <div className="border rounded-xl overflow-hidden bg-white shadow-sm border-blue-100/50">
+                                    <div className="rounded-xl border border-border/60 overflow-hidden bg-card animate-in fade-in slide-in-from-bottom-1 duration-200">
                                         <div className="overflow-x-auto">
                                             <table className="w-full text-left border-collapse">
                                                 <thead>
-                                                    <tr className="bg-slate-50/80 border-b border-blue-50">
-                                                        <th className="px-6 py-4 text-[10px] font-black text-slate-500 uppercase tracking-widest">Name of Work</th>
-                                                        <th className="px-6 py-4 text-[10px] font-black text-slate-500 uppercase tracking-widest">Config Name</th>
-                                                        <th className="px-6 py-4 text-[10px] font-black text-slate-500 uppercase tracking-widest">Override</th>
-                                                        <th className="px-6 py-4 text-[10px] font-black text-slate-500 uppercase tracking-widest">Time Limit</th>
-                                                        <th className="px-6 py-4 text-[10px] font-black text-slate-500 uppercase tracking-widest">Finish By</th>
-                                                        <th className="px-6 py-4 text-[10px] font-black text-slate-500 uppercase tracking-widest">Rules</th>
-                                                        <th className="px-6 py-4 text-[10px] font-black text-slate-500 uppercase tracking-widest text-right">Actions</th>
+                                                    <tr className="bg-muted/20 border-b border-border/50">
+                                                        <th className="w-[22%] px-5 py-3 text-[11px] font-semibold text-muted-foreground uppercase tracking-wide whitespace-nowrap align-middle">Name of Work</th>
+                                                        <th className="w-[18%] px-5 py-3 text-[11px] font-semibold text-muted-foreground uppercase tracking-wide whitespace-nowrap align-middle">Config Name</th>
+                                                        <th className="w-[10%] px-5 py-3 text-[11px] font-semibold text-muted-foreground uppercase tracking-wide whitespace-nowrap align-middle">Override</th>
+                                                        <th className="w-[10%] px-5 py-3 text-[11px] font-semibold text-muted-foreground uppercase tracking-wide whitespace-nowrap align-middle">Time Limit</th>
+                                                        <th className="w-[13%] px-5 py-3 text-[11px] font-semibold text-muted-foreground uppercase tracking-wide whitespace-nowrap align-middle">Finish By</th>
+                                                        <th className="w-[15%] px-5 py-3 text-[11px] font-semibold text-muted-foreground uppercase tracking-wide whitespace-nowrap align-middle">Rules</th>
+                                                        <th className="w-[12%] px-5 py-3 text-[11px] font-semibold text-muted-foreground uppercase tracking-wide whitespace-nowrap align-middle text-right">Actions</th>
                                                     </tr>
                                                 </thead>
-                                                <tbody className="divide-y divide-blue-50">
+                                                <tbody className="divide-y divide-border/50">
                                                     {configuredWorkTypes.map((item) => (
-                                                        <tr key={`${item.id}-${item.configName || item.configIndex || 'default'}`} className="group hover:bg-blue-50/30 transition-colors">
-                                                            <td className="px-6 py-4">
-                                                                <div className="font-bold text-sm text-slate-700">{item.name}</div>
-                                                                <div className="text-[10px] text-muted-foreground uppercase font-medium mt-0.5">{item.deptName} • {item.catName}</div>
+                                                        <tr key={`${item.id}-${item.configName || item.configIndex || 'default'}`} className="group hover:bg-primary/[0.018] transition-colors duration-150 h-[76px]">
+                                                            <td className="px-5 py-3 align-middle">
+                                                                <div className="font-semibold text-sm text-foreground line-clamp-2">{item.name}</div>
+                                                                <div className="text-[10px] text-muted-foreground font-medium mt-0.5 line-clamp-1">{item.deptName} • {item.catName}</div>
                                                             </td>
-                                                            <td className="px-6 py-4">
-                                                                <Badge variant="outline" className="text-[10px] font-bold text-blue-600 uppercase tracking-widest bg-blue-50 border-blue-100">
+                                                            <td className="px-5 py-3 align-middle">
+                                                                <div className="inline-flex items-center max-w-full rounded-lg px-3 py-1.5 bg-muted/30 border border-border/50 text-xs font-semibold whitespace-nowrap overflow-hidden text-ellipsis">
                                                                     {item.configName}
-                                                                </Badge>
-                                                            </td>
-                                                            <td className="px-6 py-4">
-                                                                {item.allowOccurrenceOverride || item.allowDueDateOverride || item.allowFinishByOverride ? (
-                                                                    <div className="flex flex-col gap-1">
-                                                                        {item.allowOccurrenceOverride && <Badge variant="outline" className="text-[8px] font-bold bg-green-50 text-green-700 border-green-200">OCCURRENCE</Badge>}
-                                                                        {item.allowDueDateOverride && <Badge variant="outline" className="text-[8px] font-bold bg-green-50 text-green-700 border-green-200">DUE DATE</Badge>}
-                                                                        {item.allowFinishByOverride && <Badge variant="outline" className="text-[8px] font-bold bg-green-50 text-green-700 border-green-200">FINISH BY</Badge>}
-                                                                    </div>
-                                                                ) : (
-                                                                    <Badge variant="outline" className="text-[9px] font-bold bg-slate-50 text-slate-400 border-slate-200">NO</Badge>
-                                                                )}
-                                                            </td>
-                                                            <td className="px-6 py-4 text-[10px] font-bold uppercase tracking-widest text-slate-600">
-                                                                <div className="flex items-center gap-2">
-                                                                    {(item.timeToFinish?.days > 0) && <span className="bg-slate-100 px-1.5 py-0.5 rounded">{item.timeToFinish.days}D</span>}
-                                                                    {(item.timeToFinish?.hours > 0) && <span className="bg-slate-100 px-1.5 py-0.5 rounded">{item.timeToFinish.hours}H</span>}
-                                                                    {(!item.timeToFinish?.days && !item.timeToFinish?.hours) && <span className="text-muted-foreground/30">-</span>}
                                                                 </div>
                                                             </td>
-                                                            <td className="px-6 py-4 text-[10px] font-bold uppercase tracking-widest text-slate-600">
-                                                                {item.finishByEnabled ? (
+                                                            <td className="px-5 py-3 align-middle">
+                                                                {item.allowOccurrenceOverride || item.allowDueDateOverride || item.allowFinishByOverride ? (
                                                                     <div className="flex flex-col gap-1">
-                                                                        <span className="text-primary">{item.finishByMode === 'days_based' ? 'Days Based' : 'Event Based'}</span>
-                                                                        <span className="text-muted-foreground">{item.finishByDays} Days</span>
+                                                                        {item.allowOccurrenceOverride && <Badge variant="outline" className="text-[9px] font-bold bg-green-50 text-green-700 border-green-200 dark:bg-green-500/10 dark:text-green-400 dark:border-green-500/20 w-fit whitespace-nowrap">OCCURRENCE</Badge>}
+                                                                        {item.allowDueDateOverride && <Badge variant="outline" className="text-[9px] font-bold bg-green-50 text-green-700 border-green-200 dark:bg-green-500/10 dark:text-green-400 dark:border-green-500/20 w-fit whitespace-nowrap">DUE DATE</Badge>}
+                                                                        {item.allowFinishByOverride && <Badge variant="outline" className="text-[9px] font-bold bg-green-50 text-green-700 border-green-200 dark:bg-green-500/10 dark:text-green-400 dark:border-green-500/20 w-fit whitespace-nowrap">FINISH BY</Badge>}
                                                                     </div>
                                                                 ) : (
-                                                                    <span className="text-muted-foreground/30">-</span>
+                                                                    <Badge variant="outline" className="text-[10px] font-semibold bg-muted/30 text-muted-foreground border-border/50 w-fit whitespace-nowrap">NO</Badge>
                                                                 )}
                                                             </td>
-                                                            <td className="px-6 py-4">
+                                                            <td className="px-5 py-3 align-middle">
+                                                                <div className="inline-flex gap-1.5 whitespace-nowrap text-[11px] font-bold uppercase text-foreground/80">
+                                                                    {(item.timeToFinish?.days > 0) && <span className="bg-muted/40 px-2 py-1 rounded-md">{item.timeToFinish.days}D</span>}
+                                                                    {(item.timeToFinish?.hours > 0) && <span className="bg-muted/40 px-2 py-1 rounded-md">{item.timeToFinish.hours}H</span>}
+                                                                    {(!item.timeToFinish?.days && !item.timeToFinish?.hours) && <span className="text-muted-foreground/40">-</span>}
+                                                                </div>
+                                                            </td>
+                                                            <td className="px-5 py-3 align-middle">
+                                                                {item.finishByEnabled ? (
+                                                                    <div className="flex flex-col gap-0.5">
+                                                                        <span className="text-[11px] font-bold text-primary uppercase whitespace-nowrap">{item.finishByMode === 'days_based' ? 'Days Based' : 'Event Based'}</span>
+                                                                        <span className="text-xs font-medium text-muted-foreground whitespace-nowrap">{item.finishByDays} Days</span>
+                                                                    </div>
+                                                                ) : (
+                                                                    <span className="text-muted-foreground/40 font-bold">-</span>
+                                                                )}
+                                                            </td>
+                                                            <td className="px-5 py-3 align-middle">
                                                                 <div className="flex flex-wrap gap-1.5">
                                                                     {item.displayDueConfigs?.map((c: any, i: number) => (
-                                                                        <Badge key={i} variant="outline" className="text-[9px] font-bold uppercase tracking-tighter bg-white border-blue-200 text-blue-800">
+                                                                        <Badge key={i} variant="outline" className="text-[10px] font-semibold uppercase whitespace-nowrap bg-background border-border/80 text-foreground/80">
                                                                             {c.frequency}
                                                                         </Badge>
                                                                     ))}
                                                                 </div>
                                                             </td>
-                                                            <td className="px-6 py-4 text-right">
-                                                                <div className="flex items-center justify-end gap-2">
+                                                            <td className="px-5 py-3 align-middle text-right">
+                                                                <div className="flex items-center justify-end gap-2 whitespace-nowrap">
                                                                     <Button
                                                                         variant="ghost"
-                                                                        size="sm"
+                                                                        size="icon"
                                                                         onClick={() => handleEditItem(item)}
-                                                                        className="h-8 w-8 p-0 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                                                                        className="h-8 w-8 text-muted-foreground hover:text-primary hover:bg-primary/10 rounded-lg transition-colors"
                                                                     >
                                                                         <Pencil className="h-4 w-4" />
                                                                     </Button>
                                                                     <Button
                                                                         variant="ghost"
-                                                                        size="sm"
+                                                                        size="icon"
                                                                         onClick={() => handleDeleteItem(item)}
-                                                                        className="h-8 w-8 p-0 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                                                                        className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-lg transition-colors"
                                                                     >
                                                                         <Trash2 className="h-4 w-4" />
                                                                     </Button>
@@ -970,19 +971,21 @@ export function TimeLimitConfig({ departments }: TimeLimitConfigProps) {
                 </TabsContent>
 
                 <TabsContent value="pending" className="m-0 focus-visible:outline-none animate-in fade-in duration-500">
-                    <Card className="shadow-lg border-none bg-white rounded-2xl overflow-hidden border border-blue-50">
-                        <CardHeader className="bg-slate-50/50 border-b border-blue-50 p-8">
+                    <Card className="w-full rounded-xl border border-border/70 bg-card shadow-sm overflow-hidden">
+                        <CardHeader className="px-6 py-5 md:px-8 border-b border-border/50">
                             <div className="flex items-center justify-between">
-                                <div className="space-y-1">
-                                    <CardTitle className="text-xl font-bold text-slate-800 flex items-center gap-3">
-                                        <div className="p-2 bg-amber-100 rounded-lg">
-                                            <AlertCircle className="h-5 w-5 text-amber-600" />
-                                        </div>
-                                        Pending Due Dates
-                                    </CardTitle>
-                                    <CardDescription className="text-xs font-medium uppercase tracking-widest text-muted-foreground">List of work that doesn't have any repeat rules yet</CardDescription>
+                                <div className="flex items-center gap-4">
+                                    <div className="p-3 bg-amber-500/10 rounded-xl shadow-inner ring-1 ring-amber-500/20">
+                                        <AlertCircle className="h-6 w-6 text-amber-500" />
+                                    </div>
+                                    <div>
+                                        <CardTitle className="text-xl font-bold tracking-tight mb-1">Pending Setup</CardTitle>
+                                        <CardDescription className="text-muted-foreground font-medium text-sm">
+                                            List of work that doesn't have any repeat rules yet
+                                        </CardDescription>
+                                    </div>
                                 </div>
-                                <Badge variant="outline" className="h-8 px-4 font-bold text-xs bg-amber-50 text-amber-700 border-amber-200">
+                                <Badge variant="outline" className="h-[26px] px-3 font-semibold text-xs bg-amber-500/10 text-amber-600 border-amber-500/20 rounded-md">
                                     {unconfiguredWorkTypes.length} WORKS REMAINING
                                 </Badge>
                             </div>
@@ -991,32 +994,32 @@ export function TimeLimitConfig({ departments }: TimeLimitConfigProps) {
                             <div className="overflow-x-auto">
                                 <table className="w-full text-left border-collapse">
                                     <thead>
-                                        <tr className="bg-slate-50/50">
-                                            <th className="px-8 py-5 text-[10px] font-black text-slate-500 uppercase tracking-[0.1em]">Details of Work</th>
-                                            <th className="px-8 py-5 text-[10px] font-black text-slate-500 uppercase tracking-[0.1em]">Placement</th>
-                                            <th className="px-8 py-5 text-[10px] font-black text-slate-500 uppercase tracking-[0.1em] text-right">Action</th>
+                                        <tr className="bg-muted/20 border-b border-border/50">
+                                            <th className="w-[50%] px-6 py-4 text-[11px] font-semibold text-muted-foreground uppercase tracking-wide whitespace-nowrap align-middle">Details of Work</th>
+                                            <th className="w-[35%] px-6 py-4 text-[11px] font-semibold text-muted-foreground uppercase tracking-wide whitespace-nowrap align-middle">Placement</th>
+                                            <th className="w-[15%] px-6 py-4 text-[11px] font-semibold text-muted-foreground uppercase tracking-wide whitespace-nowrap align-middle text-right">Action</th>
                                         </tr>
                                     </thead>
-                                    <tbody className="divide-y divide-slate-100">
+                                    <tbody className="divide-y divide-border/50">
                                         {unconfiguredWorkTypes.map((item, index) => (
-                                            <tr key={`${item.id}-unconfigured`} className="hover:bg-slate-50/30 transition-colors">
-                                                <td className="px-8 py-6">
-                                                    <div className="font-bold text-slate-700">{item.name}</div>
-                                                    <div className="text-[10px] font-medium text-muted-foreground uppercase mt-1">Row #{index + 1}</div>
+                                            <tr key={`${item.id}-unconfigured`} className="hover:bg-primary/[0.018] transition-colors duration-150 h-[76px]">
+                                                <td className="px-6 py-3 align-middle">
+                                                    <div className="font-semibold text-sm text-foreground line-clamp-2">{item.name}</div>
+                                                    <div className="text-[10px] text-muted-foreground font-medium mt-0.5 line-clamp-1">Row #{index + 1}</div>
                                                 </td>
-                                                <td className="px-8 py-6">
-                                                    <div className="flex items-center gap-2">
-                                                        <span className="text-[10px] font-bold text-blue-600 uppercase bg-blue-50 px-2.5 py-1 rounded-full">{item.deptName}</span>
-                                                        <span className="h-1 w-1 rounded-full bg-slate-300" />
-                                                        <span className="text-[10px] font-bold text-slate-500 uppercase">{item.catName}</span>
+                                                <td className="px-6 py-3 align-middle">
+                                                    <div className="flex items-center gap-2 whitespace-nowrap">
+                                                        <span className="text-[10px] font-bold text-primary uppercase bg-primary/10 px-2.5 py-1 rounded-full">{item.deptName}</span>
+                                                        <span className="h-1 w-1 rounded-full bg-muted-foreground/30" />
+                                                        <span className="text-[10px] font-bold text-muted-foreground uppercase">{item.catName}</span>
                                                     </div>
                                                 </td>
-                                                <td className="px-8 py-6 text-right">
+                                                <td className="px-6 py-3 align-middle text-right">
                                                     <Button 
                                                         size="sm"
                                                         variant="outline"
                                                         onClick={() => handleEditItem(item)}
-                                                        className="h-9 px-4 border-blue-200 text-blue-700 font-bold text-[10px] uppercase tracking-widest hover:bg-blue-50 transition-all active:scale-95"
+                                                        className="h-9 px-4 border-border/80 text-foreground font-semibold text-xs shadow-sm hover:bg-primary hover:text-primary-foreground hover:border-primary transition-all active:scale-95 whitespace-nowrap"
                                                     >
                                                         Set Rules
                                                         <Plus className="ml-2 h-3.5 w-3.5" />
@@ -1027,8 +1030,8 @@ export function TimeLimitConfig({ departments }: TimeLimitConfigProps) {
                                         {unconfiguredWorkTypes.length === 0 && (
                                             <tr>
                                                 <td colSpan={3} className="py-20 text-center">
-                                                    <ShieldCheck className="h-12 w-12 text-blue-200 mx-auto mb-4" />
-                                                    <p className="text-slate-400 font-bold uppercase tracking-widest text-sm">Great! All work has rules set up.</p>
+                                                    <ShieldCheck className="h-12 w-12 text-primary/30 mx-auto mb-4" />
+                                                    <p className="text-muted-foreground font-semibold text-sm">Great! All work has rules set up.</p>
                                                 </td>
                                             </tr>
                                         )}
@@ -1041,35 +1044,80 @@ export function TimeLimitConfig({ departments }: TimeLimitConfigProps) {
             </Tabs>
 
             <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-                <DialogContent className="max-w-5xl h-[90vh] p-0 overflow-hidden border border-blue-100 shadow-2xl rounded-2xl bg-[#ffffff] flex flex-col">
-                    <DialogHeader className="px-8 py-5 border-b bg-white">
-                        <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-4">
-                                <div className="p-2.5 bg-primary/10 rounded-xl text-primary">
-                                    <Clock className="h-6 w-6" />
-                                </div>
-                                <div>
-                                    <DialogTitle className="text-xl font-bold tracking-tight">Due Dates Configuration</DialogTitle>
-                                    <DialogDescription className="text-xs font-semibold text-muted-foreground/80 uppercase tracking-widest">
-                                        Manage Your Deadlines
-                                    </DialogDescription>
-                                </div>
+                <DialogContent className="max-w-[1140px] h-[88vh] p-0 overflow-hidden border border-border/70 shadow-2xl rounded-2xl bg-card flex flex-col motion-safe:animate-in motion-safe:fade-in motion-safe:zoom-in-[0.99] motion-safe:slide-in-from-bottom-2 duration-200">
+                    {isDialogOpen && (
+                        <svg className="absolute inset-0 pointer-events-none" width="100%" height="100%" style={{ zIndex: 50, overflow: 'visible' }}>
+                            <defs>
+                                <linearGradient id="modalBorderGradient" x1="0%" y1="100%" x2="100%" y2="0%">
+                                    <stop offset="0%" stopColor="transparent" />
+                                    <stop offset="25%" stopColor="rgba(220, 38, 38, 0.4)" />
+                                    <stop offset="50%" stopColor="rgba(239, 68, 68, 0.9)" />
+                                    <stop offset="75%" stopColor="rgba(244, 63, 94, 1)" />
+                                    <stop offset="95%" stopColor="rgba(251, 113, 133, 0.8)" />
+                                    <stop offset="100%" stopColor="transparent" />
+                                </linearGradient>
+                                <style>
+                                    {`
+                                        @keyframes modal-border-trace {
+                                            0% { stroke-dashoffset: 1400; opacity: 0; }
+                                            5% { opacity: 1; }
+                                            82% { opacity: 1; }
+                                            100% { stroke-dashoffset: 0; opacity: 0; }
+                                        }
+                                        @media (prefers-reduced-motion: reduce) {
+                                            .modal-trace-path { display: none !important; }
+                                        }
+                                    `}
+                                </style>
+                            </defs>
+                            <path 
+                                className="modal-trace-path"
+                                d="M 0,500 L 0,16 Q 0,0 16,0 L 750,0" 
+                                fill="none"
+                                stroke="url(#modalBorderGradient)"
+                                strokeWidth="4.5"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                style={{
+                                    strokeDasharray: '1400',
+                                    strokeDashoffset: '1400',
+                                    filter: 'drop-shadow(0 0 4px rgba(239,68,68,0.55)) drop-shadow(0 0 8px rgba(244,63,94,0.25))',
+                                    animation: 'modal-border-trace 1300ms cubic-bezier(0.22, 1, 0.36, 1) 120ms forwards'
+                                }}
+                            />
+                        </svg>
+                    )}
+                    
+                    <DialogHeader className="shrink-0 px-7 py-6 border-b border-border/70 relative z-10 bg-card" style={{ backgroundImage: 'linear-gradient(110deg, hsl(var(--primary) / 0.04), transparent 55%)' }}>
+                        <div className="flex items-start gap-4">
+                            <div className="p-2.5 bg-background rounded-xl text-primary border border-border/60 shadow-sm mt-0.5">
+                                <Clock className="h-5 w-5" />
+                            </div>
+                            <div className="space-y-1">
+                                <Badge variant="secondary" className="bg-primary/10 text-primary hover:bg-primary/20 border-none rounded-md font-bold text-[9px] uppercase tracking-widest px-2 py-0.5 mb-1.5">
+                                    DEADLINE RULES
+                                </Badge>
+                                <DialogTitle className="text-xl font-bold tracking-tight text-foreground">Due Dates Configuration</DialogTitle>
+                                <DialogDescription className="text-sm font-medium text-muted-foreground">
+                                    Configure repeat cycles, completion time, and due-date calculation.
+                                </DialogDescription>
                             </div>
                         </div>
                     </DialogHeader>
                     
-                    <ScrollArea className="flex-1 min-h-0 px-8 py-8">
-                        <div className="space-y-8 pb-8">
-                            <div className="bg-blue-50 border border-blue-100 p-6 rounded-xl space-y-4">
+                    <div className="flex-1 min-h-0 overflow-y-auto no-scrollbar bg-primary/[0.012] dark:bg-muted/[0.08]">
+                        <div className="p-6 md:p-8 space-y-6">
+                            {/* Work Type Selection */}
+                            <div className="bg-card p-5 rounded-xl border border-border/70 shadow-sm space-y-4">
                                 <div className="flex items-center gap-3">
-                                    <div className="flex items-center gap-2 font-bold text-[10px] uppercase tracking-widest text-blue-600/70">
+                                    <div className="flex items-center gap-2 font-bold text-[10px] uppercase tracking-widest text-primary/70">
                                         <Search className="h-4 w-4" />
                                         Select Work Type
                                     </div>
-                                    <div className="h-px flex-1 bg-blue-100" />
+                                    <div className="h-px flex-1 bg-border/50" />
                                 </div>
                                 <div className="max-w-md mx-auto space-y-2">
-                                    <Label className="text-xs font-bold text-blue-700 ml-1">Name of Work</Label>
+                                    <Label className="text-xs font-semibold text-foreground ml-1">Name of Work</Label>
                                     <Combobox
                                         options={workTypeOptions}
                                         value={selectedWorkTypeId}
@@ -1080,96 +1128,88 @@ export function TimeLimitConfig({ departments }: TimeLimitConfigProps) {
                             </div>
 
                             {!selectedWorkTypeId ? (
-                                <div className="flex flex-col items-center justify-center py-20 border-2 border-dashed rounded-xl bg-muted/5 opacity-50">
+                                <div className="flex flex-col items-center justify-center py-20 border border-border/50 border-dashed rounded-xl bg-card shadow-sm opacity-80">
                                     <Calendar className="h-12 w-12 text-muted-foreground/40 mb-4" />
-                                    <div className="text-sm font-bold text-muted-foreground/60">Choose work to start</div>
+                                    <div className="text-sm font-semibold text-foreground/80">Choose work to start</div>
                                 </div>
                             ) : (
-                                <div className="space-y-8 animate-in fade-in duration-500">
-                                    <div className="bg-white p-6 rounded-xl border border-blue-100 shadow-sm space-y-4">
-                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                            <div className="space-y-2">
-                                                <Label className="text-[10px] font-bold uppercase tracking-widest text-primary">Configuration Name</Label>
+                                <div className="grid grid-cols-1 md:grid-cols-[0.85fr_1.15fr] gap-6 animate-in fade-in duration-300">
+                                    <div className="space-y-6 motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-bottom-2 duration-300" style={{ animationDelay: '40ms', animationFillMode: 'both' }}>
+                                        <div className="rounded-xl border border-border/70 bg-card p-5 space-y-6 shadow-sm">
+                                            <div className="space-y-3">
+                                                <Label className="text-sm font-semibold text-foreground">Configuration Name</Label>
                                                 <Input 
                                                     value={configName}
                                                     onChange={(e) => setConfigName(e.target.value)}
                                                     placeholder="e.g. Common Task April"
-                                                    className="h-11 border-2 focus:ring-2 focus:ring-primary/20"
+                                                    className="h-10 border-border/70 text-sm"
                                                 />
                                             </div>
-                                        </div>
-                                    </div>
 
-                                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-                                        <div className="lg:col-span-5 space-y-6 lg:sticky lg:top-0 bg-[#f8fafc] p-6 rounded-xl border border-blue-100">
+                                            <div className="h-px bg-border/50" />
+
                                             <div className="space-y-3">
-                                                <div className="flex items-center gap-2 text-primary font-bold text-xs uppercase tracking-widest">
-                                                    <Repeat className="h-4 w-4" />
-                                                    Repeat Cycle
+                                                <div className="space-y-1">
+                                                    <h3 className="text-sm font-semibold text-foreground">Repeat Cycle</h3>
+                                                    <p className="text-xs text-muted-foreground">How often does this work repeat?</p>
                                                 </div>
-                                                <p className="text-[10px] font-medium text-muted-foreground leading-relaxed">
-                                                    How often does this work repeat?
-                                                </p>
                                                 <MultiSelect
                                                     options={frequencyOptions}
                                                     selected={selectedFrequencies}
                                                     onChange={(vals) => setSelectedFrequencies(vals as Frequency[])}
-                                                    className="text-sm bg-background border-2 rounded-lg px-3"
+                                                    className="text-sm bg-background border-border/70 rounded-lg px-3"
                                                     placeholder="Choose Repeat Cycle..."
                                                 />
                                             </div>
-                                            <div className="flex items-center justify-between p-3 bg-blue-100/30 rounded-lg border border-blue-200/50">
-                                                <div className="space-y-0.5">
-                                                    <Label className="text-[9px] font-black uppercase tracking-widest text-blue-700">Allow occurrence override?</Label>
-                                                    <p className="text-[8px] text-blue-500 font-medium leading-tight italic">If ON, users can change the repeat cycle in Add Work Dialog.</p>
+
+                                            <div className="flex items-center justify-between p-3.5 bg-muted/20 rounded-lg border border-border/50">
+                                                <div className="space-y-1 pr-4">
+                                                    <Label className="text-sm font-medium text-foreground">Allow Occurrence Override</Label>
+                                                    <p className="text-[11px] text-muted-foreground leading-snug">Users can change the repeat cycle when adding work.</p>
                                                 </div>
                                                 <Switch 
                                                     checked={allowOccurrenceOverride}
                                                     onCheckedChange={setAllowOccurrenceOverride}
-                                                    className="scale-75"
                                                 />
                                             </div>
 
-                                            <div className="pt-6 border-t border-border space-y-4">
-                                                <div className="flex items-center gap-2 text-primary font-bold text-xs uppercase tracking-widest">
-                                                    <Clock className="h-4 w-4" />
-                                                    Time to Finish
-                                                </div>
-                                                <div className="grid grid-cols-2 gap-4">
-                                                    <div className="relative">
+                                            <div className="h-px bg-border/50" />
+
+                                            <div className="space-y-4">
+                                                <h3 className="text-sm font-semibold text-foreground">Time to Finish</h3>
+                                                <div className="grid grid-cols-2 gap-3">
+                                                    <div className="flex items-center h-11 border border-border/70 rounded-lg overflow-hidden bg-background focus-within:ring-1 focus-within:ring-primary focus-within:border-primary transition-all">
                                                         <Input
                                                             type="number"
-                                                            className="h-12 pl-4 pr-16 text-xl font-bold bg-background border-2 focus:ring-2 focus:ring-primary/20 rounded-xl"
+                                                            className="h-full border-none focus-visible:ring-0 rounded-none w-full font-medium"
                                                             value={timeLimit}
                                                             onChange={(e) => setTimeLimit(e.target.value ? parseInt(e.target.value) : '')}
                                                             placeholder="0"
                                                         />
-                                                        <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-[10px] font-bold text-primary uppercase tracking-widest">
+                                                        <div className="h-full px-3 bg-muted/30 border-l border-border/50 flex items-center justify-center text-xs text-muted-foreground font-medium shrink-0">
                                                             Days
                                                         </div>
                                                     </div>
-                                                    <div className="relative">
+                                                    <div className="flex items-center h-11 border border-border/70 rounded-lg overflow-hidden bg-background focus-within:ring-1 focus-within:ring-primary focus-within:border-primary transition-all">
                                                         <Input
                                                             type="number"
-                                                            className="h-12 pl-4 pr-16 text-xl font-bold bg-background border-2 focus:ring-2 focus:ring-primary/20 rounded-xl"
+                                                            className="h-full border-none focus-visible:ring-0 rounded-none w-full font-medium"
                                                             value={timeLimitHours}
                                                             onChange={(e) => setTimeLimitHours(e.target.value ? parseInt(e.target.value) : '')}
                                                             placeholder="0"
                                                         />
-                                                        <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-[10px] font-bold text-primary uppercase tracking-widest">
+                                                        <div className="h-full px-3 bg-muted/30 border-l border-border/50 flex items-center justify-center text-xs text-muted-foreground font-medium shrink-0">
                                                             Hours
                                                         </div>
                                                     </div>
                                                 </div>
-                                                <p className="text-[10px] font-medium text-muted-foreground/60 text-center italic">Days and Hours allowed to complete this work.</p>
                                             </div>
 
-                                            <div className="pt-6 border-t border-border space-y-4">
+                                            <div className="h-px bg-border/50" />
+
+                                            <div className="space-y-4">
                                                 <div className="flex items-center justify-between">
-                                                    <div className="flex items-center gap-2 text-emerald-600 font-bold text-xs uppercase tracking-widest">
-                                                        <Calendar className="h-4 w-4" />
-                                                        Finish By Date
-                                                    </div>
+                                                    <h3 className="text-sm font-semibold text-foreground">Finish By Date</h3>
                                                     <Switch 
                                                         checked={finishByEnabled}
                                                         onCheckedChange={setFinishByEnabled}
@@ -1180,45 +1220,47 @@ export function TimeLimitConfig({ departments }: TimeLimitConfigProps) {
                                                     <div className="space-y-4 animate-in fade-in duration-300">
                                                         <RadioGroup value={finishByMode} onValueChange={(v: any) => setFinishByMode(v)} className="flex gap-4">
                                                             <div className="flex items-center space-x-2">
-                                                                <RadioGroupItem value="days_based" id="fb-days" className="h-3 w-3" />
-                                                                <Label htmlFor="fb-days" className="text-xs">Days Based</Label>
+                                                                <RadioGroupItem value="days_based" id="fb-days" className="h-4 w-4" />
+                                                                <Label htmlFor="fb-days" className="text-xs cursor-pointer">Days Based</Label>
                                                             </div>
                                                             <div className="flex items-center space-x-2">
-                                                                <RadioGroupItem value="event_based" id="fb-event" className="h-3 w-3" />
-                                                                <Label htmlFor="fb-event" className="text-xs">Event Based</Label>
+                                                                <RadioGroupItem value="event_based" id="fb-event" className="h-4 w-4" />
+                                                                <Label htmlFor="fb-event" className="text-xs cursor-pointer">Event Based</Label>
                                                             </div>
                                                         </RadioGroup>
 
                                                         {finishByMode === 'days_based' ? (
-                                                            <div className="space-y-1.5">
-                                                                <Label className="text-[10px] uppercase font-bold text-muted-foreground/70">Number of Days</Label>
-                                                                <div className="flex items-center gap-2">
+                                                            <div className="space-y-2">
+                                                                <Label className="text-xs font-semibold text-foreground">Number of Days</Label>
+                                                                <div className="flex items-center w-full max-w-[160px] h-11 border border-border/70 rounded-lg overflow-hidden bg-background focus-within:ring-1 focus-within:ring-primary focus-within:border-primary transition-all">
                                                                     <Input
                                                                         type="number"
-                                                                        className="h-10 text-xl font-bold rounded-xl"
+                                                                        className="h-full border-none focus-visible:ring-0 rounded-none w-full font-medium"
                                                                         value={finishByDays}
                                                                         onChange={(e) => setFinishByDays(e.target.value ? parseInt(e.target.value) : '')}
                                                                         onKeyDown={blockInvalidNumberKeys}
                                                                     />
-                                                                    <span className="text-xs text-muted-foreground">Days</span>
+                                                                    <div className="h-full px-3 bg-muted/30 border-l border-border/50 flex items-center justify-center text-xs text-muted-foreground font-medium shrink-0">
+                                                                        Days
+                                                                    </div>
                                                                 </div>
-                                                                <p className="text-[9px] text-muted-foreground italic">Calculated from work start date.</p>
+                                                                <p className="text-[10px] text-muted-foreground italic">Calculated from work start date.</p>
                                                             </div>
                                                         ) : (
-                                                            <div className="space-y-3">
+                                                            <div className="space-y-4">
                                                                 <div className="grid grid-cols-2 gap-3">
-                                                                    <div className="space-y-1.5">
-                                                                        <Label className="text-[10px] uppercase font-bold text-muted-foreground/70">Days</Label>
+                                                                    <div className="space-y-2">
+                                                                        <Label className="text-xs font-semibold text-foreground">Days</Label>
                                                                         <Input
                                                                             type="number"
-                                                                            className="h-9 font-bold"
+                                                                            className="h-9 font-medium"
                                                                             value={finishByDays}
                                                                             onChange={(e) => setFinishByDays(e.target.value ? parseInt(e.target.value) : '')}
                                                                             onKeyDown={blockInvalidNumberKeys}
                                                                         />
                                                                     </div>
-                                                                    <div className="space-y-1.5">
-                                                                        <Label className="text-[10px] uppercase font-bold text-muted-foreground/70">Direction</Label>
+                                                                    <div className="space-y-2">
+                                                                        <Label className="text-xs font-semibold text-foreground">Direction</Label>
                                                                         <Select value={finishByDirection} onValueChange={(v: any) => setFinishByDirection(v)}>
                                                                             <SelectTrigger className="h-9 text-xs">
                                                                                 <SelectValue />
@@ -1230,8 +1272,8 @@ export function TimeLimitConfig({ departments }: TimeLimitConfigProps) {
                                                                         </Select>
                                                                     </div>
                                                                 </div>
-                                                                <div className="space-y-1.5">
-                                                                    <Label className="text-[10px] uppercase font-bold text-muted-foreground/70">Trigger Event</Label>
+                                                                <div className="space-y-2">
+                                                                    <Label className="text-xs font-semibold text-foreground">Trigger Event</Label>
                                                                     <Select value={finishByEvent} onValueChange={(v: any) => setFinishByEvent(v)}>
                                                                         <SelectTrigger className="h-9 text-xs">
                                                                             <SelectValue />
@@ -1247,15 +1289,14 @@ export function TimeLimitConfig({ departments }: TimeLimitConfigProps) {
                                                             </div>
                                                         )}
 
-                                                        <div className="flex items-center justify-between p-3 bg-emerald-100/30 rounded-lg border border-emerald-200/50">
-                                                            <div className="space-y-0.5">
-                                                                <Label className="text-[9px] font-black uppercase tracking-widest text-emerald-700">Allow finish-by override?</Label>
-                                                                <p className="text-[8px] text-emerald-500 font-medium leading-tight italic">If ON, users can change the finish-by date in Add Work Dialog.</p>
+                                                        <div className="flex items-center justify-between p-3.5 bg-muted/20 rounded-lg border border-border/50">
+                                                            <div className="space-y-1 pr-4">
+                                                                <Label className="text-sm font-medium text-foreground">Allow Finish-By Override</Label>
+                                                                <p className="text-[11px] text-muted-foreground leading-snug">Users can change the finish-by date.</p>
                                                             </div>
                                                             <Switch 
                                                                 checked={allowFinishByOverride}
                                                                 onCheckedChange={setAllowFinishByOverride}
-                                                                className="scale-75"
                                                             />
                                                         </div>
 
@@ -1263,82 +1304,79 @@ export function TimeLimitConfig({ departments }: TimeLimitConfigProps) {
                                                     </div>
                                                 )}
                                             </div>
-                                        </div>
 
-                                        <div className="lg:col-span-7 space-y-5">
-                                            {selectedFrequencies.length === 0 ? (
-                                                <div className="flex flex-col items-center justify-center p-16 border-2 rounded-xl border-dashed bg-muted/5 opacity-60">
-                                                    <Repeat className="h-10 w-10 text-muted-foreground/30 mb-4" />
-                                                    <h3 className="text-sm font-bold text-foreground/70 uppercase tracking-widest mb-1">No Cycle Selected</h3>
-                                                    <p className="text-[10px] font-medium text-center text-muted-foreground/60 max-w-[200px] tracking-wide">Choose a cycle to set the due date rules.</p>
-                                                </div>
-                                            ) : (
-                                                <div className="space-y-5">
-                                                    {selectedFrequencies.map(f => (
-                                                        <Card key={f} className="border-none shadow-md border-l-4 border-l-primary rounded-xl overflow-hidden group">
-                                                            <div className="px-5 py-3 bg-muted/20 flex items-center justify-between border-b border-border/50">
-                                                                <span className="text-[10px] font-bold uppercase tracking-widest text-primary flex items-center gap-x-2">
-                                                                    <LayoutGrid className="h-3 w-3" />
-                                                                    {frequencyOptions.find(o => o.value === f)?.label} Rules
-                                                                </span>
-                                                                <Badge className="h-5 px-2 text-[9px] font-bold tracking-widest bg-primary/20 text-primary hover:bg-primary/30 pointer-events-none">READY</Badge>
-                                                            </div>
-                                                            <div className="p-6 bg-background space-y-4">
-                                                                {renderFreqInputs(f)}
-                                                                
-                                                                <div className="pt-4 border-t border-slate-100 flex items-center justify-between">
-                                                                    <div className="space-y-0.5">
-                                                                        <Label className="text-[9px] font-black uppercase tracking-widest text-slate-600">Allow due date override?</Label>
-                                                                        <p className="text-[8px] text-slate-400 font-medium leading-tight italic">If ON, users can change the calculated due date in Add Work Dialog.</p>
-                                                                    </div>
-                                                                    <Switch 
-                                                                        checked={allowDueDateOverride}
-                                                                        onCheckedChange={setAllowDueDateOverride}
-                                                                        className="scale-75"
-                                                                    />
-                                                                </div>
-                                                            </div>
-                                                        </Card>
-                                                    ))}
-                                                </div>
-                                            )}
                                         </div>
+                                    </div>
+
+                                    <div className="space-y-6 motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-bottom-2 duration-300" style={{ animationDelay: '80ms', animationFillMode: 'both' }}>
+                                        {selectedFrequencies.length === 0 ? (
+                                            <div className="flex flex-col items-center justify-center p-16 border border-border/50 rounded-xl bg-card shadow-sm">
+                                                <Repeat className="h-10 w-10 text-muted-foreground/30 mb-4" />
+                                                <h3 className="text-sm font-semibold text-foreground mb-1">No Cycle Selected</h3>
+                                                <p className="text-xs text-muted-foreground text-center max-w-[200px]">Choose a cycle to set the due date rules.</p>
+                                            </div>
+                                        ) : (
+                                            <div className="space-y-5">
+                                                {selectedFrequencies.map(f => (
+                                                    <div key={f} className="rounded-xl border border-border/70 bg-card overflow-hidden shadow-sm">
+                                                        <div className="px-5 py-4 bg-card flex items-center justify-between border-b border-border/50">
+                                                            <span className="text-sm font-bold uppercase tracking-wide text-foreground">
+                                                                {frequencyOptions.find(o => o.value === f)?.label} Rules
+                                                            </span>
+                                                            <Badge variant="outline" className="h-5 px-2 text-[10px] font-semibold tracking-wider bg-green-50 text-green-700 border-green-200 pointer-events-none dark:bg-green-500/10 dark:text-green-400 dark:border-green-500/20">READY</Badge>
+                                                        </div>
+                                                        <div className="p-5 space-y-6">
+                                                            {renderFreqInputs(f)}
+                                                            <div className="h-px bg-border/50" />
+                                                            <div className="flex items-center justify-between pt-1">
+                                                                <div className="space-y-1">
+                                                                    <Label className="text-sm font-medium text-foreground">Allow Due Date Override</Label>
+                                                                    <p className="text-[11px] text-muted-foreground leading-snug">Users can change the calculated due date.</p>
+                                                                </div>
+                                                                <Switch 
+                                                                    checked={allowDueDateOverride}
+                                                                    onCheckedChange={setAllowDueDateOverride}
+                                                                />
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        )}
                                     </div>
                                 </div>
                             )}
                         </div>
-                    </ScrollArea>
-                    {selectedWorkTypeId && (
-                        <div className="px-8 py-4 border-t bg-slate-50/50 flex justify-end gap-3 rounded-b-2xl shrink-0">
-                            <Button
-                                variant="outline"
-                                onClick={() => {
-                                    setIsDialogOpen(false);
-                                    setEditingConfigIndex(null);
-                                    setConfigName('');
-                                    setAllowOccurrenceOverride(false);
-                                    setAllowDueDateOverride(false);
-                                    setAllowFinishByOverride(false);
-                                    setFinishByEnabled(false);
-                                    setFinishByMode('days_based');
-                                    setFinishByDays('');
-                                    setFinishByEvent('work_start_date');
-                                    setFinishByDirection('after');
-                                }}
-                                className="h-11 px-6 font-bold text-xs uppercase tracking-widest border-slate-200"
-                            >
-                                Cancel
-                            </Button>
-                            <Button
-                                className="h-11 px-8 rounded-lg font-bold text-xs uppercase tracking-widest shadow-lg transition-all hover:scale-[1.02] bg-primary hover:bg-primary/90"
-                                disabled={loading || selectedFrequencies.length === 0}
-                                onClick={handleSave}
-                            >
-                                {loading ? "Saving..." : "Save Settings"}
-                                {!loading && <Save className="ml-2 h-4 w-4" />}
-                            </Button>
-                        </div>
-                    )}
+                    </div>
+
+                    <div className="shrink-0 px-6 py-4 border-t border-border/70 bg-background/95 backdrop-blur-sm flex justify-end gap-3 rounded-b-2xl shadow-[0_-4px_10px_-4px_rgba(0,0,0,0.05)]">
+                        <Button
+                            variant="outline"
+                            onClick={() => {
+                                setIsDialogOpen(false);
+                                setEditingConfigIndex(null);
+                                setConfigName('');
+                                setAllowOccurrenceOverride(false);
+                                setAllowDueDateOverride(false);
+                                setAllowFinishByOverride(false);
+                                setFinishByEnabled(false);
+                                setFinishByMode('days_based');
+                                setFinishByDays('');
+                                setFinishByEvent('work_start_date');
+                                setFinishByDirection('after');
+                            }}
+                            className="h-[44px] min-w-[120px] rounded-[10px] font-semibold text-[13px] border-border/80 text-foreground hover:bg-muted"
+                        >
+                            Cancel
+                        </Button>
+                        <Button
+                            className="h-[44px] min-w-[120px] rounded-[10px] font-semibold text-[13px] shadow-sm hover:shadow-md transition-all hover:-translate-y-px active:translate-y-0"
+                            disabled={loading || selectedFrequencies.length === 0 || !selectedWorkTypeId}
+                            onClick={handleSave}
+                        >
+                            {loading ? "Saving..." : "Save Settings"}
+                        </Button>
+                    </div>
                 </DialogContent>
             </Dialog>
         </div>

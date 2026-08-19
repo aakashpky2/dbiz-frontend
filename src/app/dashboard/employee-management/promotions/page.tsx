@@ -16,7 +16,7 @@ import { supabase } from '@/lib/supabase';
 import { useToast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
 import { startOfDay } from 'date-fns';
-import { DashboardPageHeader } from '@/components/dashboard/dashboard-page-header';
+import { PageHero } from '@/components/dashboard/page-hero';
 import { globalCache } from '@/lib/cache-utils';
 import { usePermissions } from '@/hooks/use-permissions';
 import { useRouter } from 'next/navigation';
@@ -208,7 +208,10 @@ export default function PromotionDetailsPage() {
 
   return (
     <div className="space-y-6">
-      <DashboardPageHeader
+      <PageHero
+                pattern="pattern-6"
+        icon={TrendingUp}
+        badge="EMPLOYEE MANAGEMENT"
         title="Promotions & Salary"
         description="Update an employee's role and salary with an effective date."
       >
@@ -221,7 +224,7 @@ export default function PromotionDetailsPage() {
               <Input placeholder="Search system..." className="pl-9 h-9 w-[250px]" value={searchTerm} onChange={e => setSearchTerm(e.target.value)} />
             </div>
         </div>
-      </DashboardPageHeader>
+      </PageHero>
 
       <Card className="shadow-sm border">
         <CardHeader className="py-4 border-b border-border/50 bg-muted/5">

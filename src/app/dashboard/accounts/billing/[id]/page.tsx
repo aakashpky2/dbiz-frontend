@@ -2,7 +2,8 @@
 
 import React, { useEffect, useState, use, useRef, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Printer, Download, Edit } from 'lucide-react';
+import { ArrowLeft, Printer, Download, Edit, FileText } from 'lucide-react';
+import { PageHero } from '@/components/dashboard/page-hero';
 import Link from 'next/link';
 import { format } from 'date-fns';
 import { apiFetch } from '@/lib/apiFetch';
@@ -191,31 +192,31 @@ export default function InvoicePreviewPage({ params }: PageProps) {
     return (
         <div className="p-4 sm:p-6 w-full mx-auto space-y-6 pb-24">
             {/* Header Actions */}
-            <div className="flex flex-col sm:flex-row items-center justify-between no-print mb-6 gap-4 border-b pb-4">
-                <div className="flex items-center gap-4">
-                    <Link href="/dashboard/accounts/billing">
-                        <Button variant="outline" size="icon"><ArrowLeft className="h-4 w-4" /></Button>
-                    </Link>
-                    <h1 className="text-2xl font-bold tracking-tight text-slate-900">
-                        {isTaxInvoice ? 'Tax Invoice' : 'Internal Bill'} Preview
-                    </h1>
-                </div>
-                <div className="flex gap-2 flex-wrap">
-                    {isEditable && (
-                        <Link href={'/dashboard/accounts/billing/' + id + '/edit'}>
-                            <Button variant="default" className="bg-slate-900 text-white hover:bg-slate-800">
-                                <Edit className="h-4 w-4 mr-2" /> Edit Bill
-                            </Button>
-                        </Link>
-                    )}
-                    <Button variant="outline" onClick={handlePrint} disabled={!isReady}>
-                        <Printer className="h-4 w-4 mr-2" /> Print
-                    </Button>
-                    <Button variant="outline" onClick={handleDownloadPDF} disabled={downloading || !isReady}>
-                        <Download className="h-4 w-4 mr-2" /> 
-                        {downloading ? 'Generating...' : 'Download PDF'}
-                    </Button>
-                </div>
+            <div className="no-print mb-6">
+                <PageHero
+                pattern="pattern-2"
+                    compact
+                    icon={FileText}
+                    badge={isTaxInvoice ? 'TAX INVOICE' : 'INTERNAL BILL'}
+                    title={`${isTaxInvoice ? 'Tax Invoice' : 'Internal Bill'} Preview`}
+                >
+                    <div className="flex gap-2 flex-wrap">
+                        {isEditable && (
+                            <Link href={'/dashboard/accounts/billing/' + id + '/edit'}>
+                                <Button variant="default" className="bg-slate-900 text-white hover:bg-slate-800">
+                                    <Edit className="h-4 w-4 mr-2" /> Edit Bill
+                                </Button>
+                            </Link>
+                        )}
+                        <Button variant="outline" onClick={handlePrint} disabled={!isReady}>
+                            <Printer className="h-4 w-4 mr-2" /> Print
+                        </Button>
+                        <Button variant="outline" onClick={handleDownloadPDF} disabled={downloading || !isReady}>
+                            <Download className="h-4 w-4 mr-2" /> 
+                            {downloading ? 'Generating...' : 'Download PDF'}
+                        </Button>
+                    </div>
+                </PageHero>
             </div>
 
             {/* Print Container */}

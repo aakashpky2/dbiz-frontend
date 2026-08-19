@@ -7,6 +7,7 @@ import { Scale, FileText, AlertTriangle } from 'lucide-react';
 import { usePermissions } from '@/hooks/use-permissions';
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
+import { PageHero } from '@/components/dashboard/page-hero';
 
 export default function ComplianceRulesPage() {
     const { hasPermission, loading: permLoading } = usePermissions();
@@ -24,14 +25,13 @@ export default function ComplianceRulesPage() {
 
     return (
         <div className="space-y-6 p-6 animate-in fade-in duration-500">
-            <div className="flex flex-col gap-2">
-                <h1 className="text-3xl font-bold tracking-tight text-primary flex items-center gap-2">
-                    <Scale className="h-8 w-8" /> Compliance Rule Engine
-                </h1>
-                <p className="text-muted-foreground">
-                    Manage due dates, fees, and government circulars.
-                </p>
-            </div>
+            <PageHero
+                pattern="pattern-4"
+                icon={Scale}
+                badge="COMPLIANCE"
+                title="Compliance Rule Engine"
+                description="Manage due dates, fees, and government circulars."
+            />
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 <Link href="/dashboard/admin/compliance-rules/standard" className="block h-full">

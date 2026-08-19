@@ -9,7 +9,8 @@ import Link from "next/link";
 import { usePermissions } from '@/hooks/use-permissions';
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Shield } from 'lucide-react';
+import { PageHero } from '@/components/dashboard/page-hero';
 
 export default function PermissionsPage() {
     const { hasPermission, loading } = usePermissions();
@@ -35,15 +36,20 @@ export default function PermissionsPage() {
 
     return (
         <div className="space-y-6">
-            <div className="flex items-center gap-4">
-                <Button variant="ghost" size="icon" asChild>
-                    <Link href="/dashboard/admin"><ArrowLeft className="h-5 w-5" /></Link>
-                </Button>
-                <div>
-                    <h1 className="text-3xl font-bold tracking-tight">System Permissions</h1>
-                    <p className="text-muted-foreground text-sm">Configure system-wide module permissions and automated workflows.</p>
-                </div>
-            </div>
+            <PageHero
+                pattern="pattern-3"
+                icon={Shield}
+                badge="SECURITY"
+                title={
+                    <div className="flex items-center gap-2">
+                        <Button variant="ghost" size="icon" className="h-6 w-6 -ml-2 text-muted-foreground hover:text-foreground" asChild>
+                            <Link href="/dashboard/admin"><ArrowLeft className="h-4 w-4" /></Link>
+                        </Button>
+                        System Permissions
+                    </div>
+                }
+                description="Configure system-wide module permissions and automated workflows."
+            />
 
             <div className="bg-white border rounded-2xl p-8 shadow-sm">
                 <PermissionsTab />

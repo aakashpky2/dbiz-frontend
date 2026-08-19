@@ -22,7 +22,7 @@ import { useToast } from "@/hooks/use-toast";
 import { usePermissions } from "@/hooks/use-permissions";
 import { SearchableMasterDropdown } from "@/components/dashboard/recruitment/searchable-master-dropdown";
 import { DepartmentDropdown } from "@/components/dashboard/recruitment/department-dropdown";
-import { DashboardPageHeader } from '@/components/dashboard/dashboard-page-header';
+import { PageHero } from '@/components/dashboard/page-hero';
 import { DashboardFilterBar } from '@/components/dashboard/dashboard-filter-bar';
 import { fetchWithCache } from "@/lib/fetcher";
 
@@ -286,14 +286,17 @@ export default function JobOpeningsPage() {
 
     return (
         <div className="space-y-6">
-            <DashboardPageHeader
+            <PageHero
+                pattern="pattern-1"
+                icon={BriefcaseBusiness}
+                badge="RECRUITMENT"
                 title="Job Management"
                 description="Manage your company's career opportunities and hiring pipeline."
             >
                 <Button onClick={openAdd} className="font-bold">
                     <PlusCircle className="mr-2 h-4 w-4" /> Create Job Opening
                 </Button>
-            </DashboardPageHeader>
+            </PageHero>
 
             {jobs.some(j => j.status !== 'Closed' && (j.selected_candidates_count || 0) >= (j.required_candidates || 1)) && (
                 <Card className="bg-amber-50 border-amber-200 shadow-lg animate-pulse">

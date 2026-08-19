@@ -16,7 +16,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AddTaskDialog } from '@/components/tasks/add-task-dialog';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { DashboardPageHeader } from '@/components/dashboard/dashboard-page-header';
+import { PageHero } from '@/components/dashboard/page-hero';
 import { DashboardFilterBar } from '@/components/dashboard/dashboard-filter-bar';
 import { Search, RefreshCw } from 'lucide-react';
 import { Input } from '@/components/ui/input';
@@ -119,7 +119,10 @@ export default function MyTasksPage() {
 
     return (
         <div className="space-y-6">
-            <DashboardPageHeader
+            <PageHero
+                pattern="pattern-1"
+                icon={ListTodo}
+                badge="TASKS"
                 title="My Tasks"
                 description="Work items assigned to you and your team."
             >
@@ -129,7 +132,7 @@ export default function MyTasksPage() {
                     </Button>
                     {hasPermission('MANAGE_WORK') && <AddTaskDialog />}
                 </div>
-            </DashboardPageHeader>
+            </PageHero>
 
             <DashboardFilterBar>
                 <div className="relative flex-1 max-w-sm">

@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { PlusCircle, Loader2, Settings2, Info, LayoutTemplate, ShieldCheck, Database, Layers } from 'lucide-react';
 import { PageSkeleton } from '@/components/ui/page-skeleton';
 import { MasterTable } from '@/components/dashboard/recruitment/master-table';
+import { PageHero } from '@/components/dashboard/page-hero';
 import { supabase } from '@/lib/supabase';
 import { useToast } from '@/hooks/use-toast';
 import {
@@ -249,28 +250,21 @@ export default function RecruitmentMasterPage() {
         <div className="p-6 max-w-[1600px] mx-auto min-h-screen bg-slate-50/30">
             {/* Header Section */}
             <div className="mb-10 space-y-4">
-                <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 border-b pb-8 bg-white/50 backdrop-blur-sm p-6 rounded-3xl border shadow-sm ring-1 ring-black/5">
-                    <div className="flex items-center gap-5">
-                        <div className="p-4 bg-primary rounded-2xl shadow-lg shadow-primary/20">
-                            <Database className="h-8 w-8 text-white" />
-                        </div>
-                        <div>
-                            <h1 className="text-4xl font-extrabold tracking-tight text-slate-900 flex items-center gap-2">
-                                Recruitment Master
-                            </h1>
-                            <p className="text-slate-500 mt-1 font-medium max-w-lg">
-                                Control dynamic fields, dropdowns, and configurations across the hiring pipeline.
-                            </p>
-                        </div>
-                    </div>
+                <PageHero
+                pattern="pattern-5"
+                    icon={Database}
+                    badge="RECRUITMENT"
+                    title="Recruitment Master"
+                    description="Control dynamic fields, dropdowns, and configurations across the hiring pipeline."
+                >
                     <Button
                         onClick={() => setIsAddModalOpen(true)}
-                        className="bg-primary hover:bg-primary/90 text-white font-black h-12 px-10 rounded-2xl shadow-xl shadow-primary/20 transition-all hover:scale-105 active:scale-95 flex gap-2 uppercase tracking-widest text-xs"
+                        className="bg-primary hover:bg-primary/90 text-white font-black h-11 px-6 rounded-xl shadow-sm transition-all hover:scale-105 active:scale-95 flex gap-2 uppercase tracking-widest text-xs"
                     >
                         <PlusCircle className="h-5 w-5" />
                         Create Master Category
                     </Button>
-                </div>
+                </PageHero>
 
                 {/* Quick Stats */}
                 <div className="flex flex-wrap gap-4 pt-2">

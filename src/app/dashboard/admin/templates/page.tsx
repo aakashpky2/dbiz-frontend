@@ -22,6 +22,7 @@ import TemplateDataMapping from '@/features/templates/components/TemplateDataMap
 import { useTemplateDetection, Placeholder, detectPlaceholdersFromContent } from '@/features/templates/hooks/useTemplateDetection';
 import { cn } from '@/lib/utils';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
+import { PageHero } from '@/components/dashboard/page-hero';
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue, SelectLabel } from '@/components/ui/select';
 import { API_ENDPOINTS } from '@/lib/api-config';
 import Handlebars from 'handlebars';
@@ -437,11 +438,14 @@ export default function TemplatesPage() {
       {/* SaaS Header Area */}
       <div className="bg-white border-b border-[#E2E8F0] px-6 py-6 pb-0">
         <div className="max-w-none w-full mx-auto">
-            <div className="flex items-start justify-between mb-8">
-                <div>
-                    <h1 className="text-2xl font-bold tracking-tight text-[#0F172A] mb-1">Template Hub</h1>
-                    <p className="text-sm font-medium text-[#64748B]">Manage proposal, offer letter, quotation, agreement and document templates.</p>
-                </div>
+            <PageHero
+                pattern="pattern-2"
+                icon={LayoutTemplate}
+                badge="TEMPLATE MANAGEMENT"
+                title="Template Hub"
+                description="Manage proposal, offer letter, quotation, agreement and document templates."
+                className="mb-8"
+            >
                 <div className="flex items-center gap-3">
                     <Button variant="outline" className="bg-white text-[#0F172A] border-[#E2E8F0] hover:bg-[#F8FAFC] h-10 px-4 rounded-xl font-semibold shadow-sm transition-all">
                         <Download className="w-4 h-4 mr-2" /> Import Template
@@ -453,7 +457,7 @@ export default function TemplatesPage() {
                         <Plus className="w-4 h-4 mr-2" /> New Template
                     </Button>
                 </div>
-            </div>
+            </PageHero>
 
             {/* KPI Row */}
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">

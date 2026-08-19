@@ -25,7 +25,7 @@ import { format } from 'date-fns';
 import { parse } from 'date-fns';
 import { useToast } from '@/hooks/use-toast';
 import { indianStates } from '@/lib/indian-states-data';
-import { DashboardPageHeader } from '@/components/dashboard/dashboard-page-header';
+import { PageHero } from '@/components/dashboard/page-hero';
 import { usePermissions } from '@/hooks/use-permissions';
 import { useRouter } from 'next/navigation';
 
@@ -301,7 +301,10 @@ export default function HolidayListPage() {
 
     return (
         <div className="space-y-6">
-            <DashboardPageHeader
+            <PageHero
+                pattern="pattern-1"
+                icon={CalendarDays}
+                badge="EMPLOYEE MANAGEMENT"
                 title="Holiday Register"
                 description="View and manage official company holidays and regional observances."
             >
@@ -313,7 +316,7 @@ export default function HolidayListPage() {
                         <PlusCircle className="mr-2 h-4 w-4" /> Add Holiday
                     </Button>
                 </div>
-            </DashboardPageHeader>
+            </PageHero>
 
             <Card className="shadow-sm border">
                 <CardHeader className="py-4 border-b border-border/50 bg-muted/5">

@@ -11,7 +11,7 @@ import { EmptyState } from '@/components/ui/empty-state';
 import { useToast } from "@/hooks/use-toast";
 import { usePermissions } from '@/hooks/use-permissions';
 import { supabase } from "@/lib/supabase";
-import { DashboardPageHeader } from '@/components/dashboard/dashboard-page-header';
+import { PageHero } from '@/components/dashboard/page-hero';
 import { DashboardFilterBar } from '@/components/dashboard/dashboard-filter-bar';
 import dynamic from 'next/dynamic';
 const ScheduleInterviewModal = dynamic(() => import("@/components/dashboard/recruitment/schedule-interview-modal").then(mod => mod.ScheduleInterviewModal), { ssr: false });
@@ -95,7 +95,10 @@ export default function ShortlistedPage() {
 
     return (
         <div className="space-y-6">
-            <DashboardPageHeader
+            <PageHero
+                pattern="pattern-4"
+                icon={CheckCircle2}
+                badge="RECRUITMENT"
                 title="Shortlisted Candidates"
                 description="Review candidates who have passed the initial screening."
             />
